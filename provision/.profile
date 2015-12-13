@@ -23,3 +23,4 @@ fi
 
 export SOURCE_PATH=/vagrant/code
 export BUILD_PATH=/home/vagrant/build
+export RYZOM_PATH=${SOURCE_PATH}/ryzom
