@@ -17,6 +17,8 @@ function service-prepare-folder() {
 
 SHARD_PATH=/home/vagrant
 
+hg clone https://bitbucket.org/ryzom/ryzomcore-data ${SHARD_PATH}/ryzomcore-data
+
 service-prepare-folder admin_service
 service-prepare-folder admin_executor_service
 service-prepare-folder backup_service

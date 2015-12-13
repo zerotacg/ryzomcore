@@ -6,6 +6,8 @@ apt-get -qq update
 
 apt-get -y install \
 apache2 \
+mysql-server \
+phpmyadmin \
 build-essential \
 cmake \
 libcurl4-openssl-dev \
@@ -21,3 +23,5 @@ libjpeg62-dev \
 libpng12-dev \
 libfreetype6-dev \
 libxml2-dev
+
+php5enmod mcrypt

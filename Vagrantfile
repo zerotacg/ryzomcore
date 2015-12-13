@@ -26,5 +26,7 @@ Vagrant.configure(2) do |config|
             type: "shell",
             privileged: true,
             path: "provision/install.sh"
+
+        shard.vm.network "public_network"
     end
 end
