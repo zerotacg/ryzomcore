@@ -8,24 +8,38 @@ Vagrant.configure(2) do |config|
         vb.memory = "2048"
     end
 
-    config.vm.provision "shell",
-        path: "provision/dependencies.sh"
-
-    config.vm.provision "before-build",
+    config.vm.provision "common-links",
         type: "shell",
         privileged: false,
-        path: "provision/before-build.sh"
+        path: "provision/common-links.sh"
 
-    config.vm.provision "build",
-        type: "shell",
-        privileged: false,
-        path: "provision/build.sh"
+    config.vm.define "build", autostart: false do |build|
+        build.vm.provision "shell",
+            path: "provision/build-dependencies.sh"
+
+        build.vm.provision "build",
+            type: "shell",
+            privileged: false,
+            path: "provision/build.sh"
+    end
 
     config.vm.define "shard" do |shard|
-        shard.vm.provision "install",
+        shard.vm.provision "shard-dependencies",
             type: "shell",
-            privileged: true,
-            path: "provision/install.sh"
+            path: "provision/shard-dependencies.sh"
+
+        #shard.vm.provision "shard-links",
+        #    type: "shell",
+        #    path: "provision/shard-links.sh"
+
+        #shard.vm.provision "shard-install",
+        #    type: "shell",
+        #    path: "provision/shard-install.sh"
+
+        #shard.vm.provision "shard-folder",
+        #    type: "shell",
+        #    privileged: false,
+        #    path: "provision/shard-folder.sh"
 
         shard.vm.network "public_network"
     end

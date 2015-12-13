@@ -25,6 +25,7 @@ export PATH=/vagrant/provision:$PATH
 export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
 
 export SOURCE_PATH=/vagrant/code
-export BUILD_PATH=/home/vagrant/build
+export BUILD_PATH=/vagrant/build
 export RYZOM_PATH=${SOURCE_PATH}/ryzom
 export RYZOM_SERVER_PATH=${RYZOM_PATH}/server
+export SHARD_PATH=/home/vagrant

@@ -2,9 +2,7 @@
 
 source /vagrant/provision/.profile
 
-echo "cmake --build ${BUILD_PATH} --target install"
-cmake --build ${BUILD_PATH} --target install
-
+site-enable 010-shard
 
 function site-enable () {
     local site=$1
@@ -18,4 +16,7 @@ function link-provision () {
     ln -s /vagrant/provision/${target} ${target}
 }
 
-site-enable 010-shard
+link-provision /etc/init.d/admin-executor-service
+link-provision /etc/init.d/admin-service
+link-provision /etc/init.d/backup-player-service
+link-provision /etc/init.d/backup-service
