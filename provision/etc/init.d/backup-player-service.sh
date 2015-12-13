@@ -1,21 +1,22 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          admin-executor-service
+# Provides:          backup-player-service
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # X-Interactive:     true
-# Short-Description: Start/stop admin executor service
-# Description:       Start/stop admin executor service
-#  This script will start admin executor service
+# Short-Description: Start/stop
+# Description:       Start/stop
+#  This script will start
 ### END INIT INFO
 
-DAEMON=/usr/local/sbin/ryzom_admin_service
-RunningDirectory=/home/vagrant/admin_executor_service
-ConfigDirectory=/home/vagrant/admin_executor_service
-LogDirectory=/home/vagrant/admin_executor_service
-PARAMS="--writepid --fulladminname=admin_executor_service --shortadminname=AES -A${RunningDirectory}"
+DAEMON=/usr/local/sbin/ryzom_backup_service
+RunningDirectory=/home/vagrant/backup_service
+ConfigDirectory=/home/vagrant/backup_service
+LogDirectory=/home/vagrant/backup_service
+PORT=49992
+PARAMS="--writepid -P${PORT} -A${RunningDirectory}"
 PIDFILE=${RunningDirectory}/pid.state
 
 case "$1" in
