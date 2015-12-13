@@ -5,6 +5,7 @@
 apt-get -qq update
 
 apt-get -y install \
+apache2 \
 build-essential \
 cmake \
 libcurl4-openssl-dev \

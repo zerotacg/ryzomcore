@@ -21,6 +21,10 @@ if [ -d "$HOME/bin" ] ; then
     PATH="$HOME/bin:$PATH"
 fi
 
+export PATH=/vagrant/provision:$PATH
+export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
+
 export SOURCE_PATH=/vagrant/code
 export BUILD_PATH=/home/vagrant/build
 export RYZOM_PATH=${SOURCE_PATH}/ryzom
+export RYZOM_SERVER_PATH=${RYZOM_PATH}/server
