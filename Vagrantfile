@@ -22,5 +22,9 @@ Vagrant.configure(2) do |config|
         path: "provision/build.sh"
 
     config.vm.define "shard" do |shard|
+        shard.vm.provision "install",
+            type: "shell",
+            privileged: true,
+            path: "provision/install.sh"
     end
 end
