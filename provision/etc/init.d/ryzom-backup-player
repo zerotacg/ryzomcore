@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          backup-service
+# Provides:          ryzom-backup-player
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -15,8 +15,8 @@ DAEMON=/vagrant/build/bin/ryzom_backup_service
 RunningDirectory=/home/vagrant/backup_service
 ConfigDirectory=/home/vagrant/backup_service
 LogDirectory=/home/vagrant/backup_service
-PORT=49990
-PARAMS="--writepid -P${PORT} -A${RunningDirectory}"
+PORT=49992
+PARAMS="--writepid -P${PORT}"
 PIDFILE=${RunningDirectory}/pid.state
 
 case "$1" in

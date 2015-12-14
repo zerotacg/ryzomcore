@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          backup-player-service
+# Provides:          ryzom-admin
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -11,12 +11,11 @@
 #  This script will start
 ### END INIT INFO
 
-DAEMON=/vagrant/build/bin/ryzom_backup_service
-RunningDirectory=/home/vagrant/backup_service
-ConfigDirectory=/home/vagrant/backup_service
-LogDirectory=/home/vagrant/backup_service
-PORT=49992
-PARAMS="--writepid -P${PORT} -A${RunningDirectory}"
+DAEMON=/vagrant/build/bin/ryzom_admin_service
+RunningDirectory=/home/vagrant/admin_service
+ConfigDirectory=/home/vagrant/admin_service
+LogDirectory=/home/vagrant/admin_service
+PARAMS="--writepid --fulladminname=admin_service --shortadminname=AS"
 PIDFILE=${RunningDirectory}/pid.state
 
 case "$1" in

@@ -3,23 +3,19 @@
 source /vagrant/provision/.profile
 
 function link-provision () {
-    local target=$1
-    ln -s /vagrant/provision/${target} ${target}
+    local source=$1
+    local target=${source#/vagrant/provision}
+
+    echo "creating link: ${source} -> ${target}"
+    ln -s ${source} ${target}
 }
 
-function site-enable () {
-    local site=$1
+for i in $(find /vagrant/provision/etc -type f); do
+    link-provision "$i"
+done
 
-    link-provision /etc/apache2/sites-available/${site}.conf
-    a2ensite ${site}
-}
 
-site-enable 010-shard
 a2dissite 000-default
+a2ensite 010-shard
 
 service apache2 reload
-
-link-provision /etc/init.d/admin-executor-service
-link-provision /etc/init.d/admin-service
-link-provision /etc/init.d/backup-player-service
-link-provision /etc/init.d/backup-service

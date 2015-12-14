@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          admin-executor-service
+# Provides:          ryzom-admin-executor
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -15,7 +15,7 @@ DAEMON=/vagrant/build/bin/ryzom_admin_service
 RunningDirectory=/home/vagrant/admin_executor_service
 ConfigDirectory=/home/vagrant/admin_executor_service
 LogDirectory=/home/vagrant/admin_executor_service
-PARAMS="--writepid --fulladminname=admin_executor_service --shortadminname=AES -A${RunningDirectory}"
+PARAMS="--writepid --fulladminname=admin_executor_service --shortadminname=AES"
 PIDFILE=${RunningDirectory}/pid.state
 
 case "$1" in
