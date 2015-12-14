@@ -11,7 +11,7 @@
 #  This script will start admin executor service
 ### END INIT INFO
 
-DAEMON=/vagrant/bin/ryzom_admin_service
+DAEMON=/vagrant/build/bin/ryzom_admin_service
 RunningDirectory=/home/vagrant/admin_executor_service
 ConfigDirectory=/home/vagrant/admin_executor_service
 LogDirectory=/home/vagrant/admin_executor_service

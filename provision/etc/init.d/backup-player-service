@@ -11,7 +11,7 @@
 #  This script will start
 ### END INIT INFO
 
-DAEMON=/vagrant/bin/ryzom_backup_service
+DAEMON=/vagrant/build/bin/ryzom_backup_service
 RunningDirectory=/home/vagrant/backup_service
 ConfigDirectory=/home/vagrant/backup_service
 LogDirectory=/home/vagrant/backup_service
