@@ -23,24 +23,25 @@ Vagrant.configure(2) do |config|
             path: "provision/build.sh"
     end
 
-    config.vm.define "shard" do |shard|
+    config.vm.define "shard", primary: true do |shard|
         shard.vm.provision "shard-dependencies",
             type: "shell",
             path: "provision/shard-dependencies.sh"
 
-        #shard.vm.provision "shard-links",
-        #    type: "shell",
-        #    path: "provision/shard-links.sh"
+        shard.vm.provision "shard-links",
+            type: "shell",
+            path: "provision/shard-links.sh"
 
         #shard.vm.provision "shard-install",
         #    type: "shell",
         #    path: "provision/shard-install.sh"
 
-        #shard.vm.provision "shard-folder",
-        #    type: "shell",
-        #    privileged: false,
-        #    path: "provision/shard-folder.sh"
+        shard.vm.provision "shard-folder",
+            type: "shell",
+            privileged: false,
+            path: "provision/shard-folder.sh"
 
-        shard.vm.network "public_network"
+        #shard.vm.network "public_network"
+        shard.vm.network "private_network", :type => 'dhcp', :name => 'vboxnet0', :adapter => 2
     end
 end

@@ -2,7 +2,10 @@
 
 source /vagrant/provision/.profile
 
-site-enable 010-shard
+function link-provision () {
+    local target=$1
+    ln -s /vagrant/provision/${target} ${target}
+}
 
 function site-enable () {
     local site=$1
@@ -11,10 +14,10 @@ function site-enable () {
     a2ensite ${site}
 }
 
-function link-provision () {
-    local target=$1
-    ln -s /vagrant/provision/${target} ${target}
-}
+site-enable 010-shard
+a2dissite 000-default
+
+service apache2 reload
 
 link-provision /etc/init.d/admin-executor-service
 link-provision /etc/init.d/admin-service
