@@ -32,10 +32,6 @@ Vagrant.configure(2) do |config|
             type: "shell",
             path: "provision/shard-links.sh"
 
-        #shard.vm.provision "shard-install",
-        #    type: "shell",
-        #    path: "provision/shard-install.sh"
-
         shard.vm.provision "shard-folder",
             type: "shell",
             privileged: false,
