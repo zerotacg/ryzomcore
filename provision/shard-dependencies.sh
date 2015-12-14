@@ -21,7 +21,8 @@ php5-mcrypt \
 mysql-server \
 phpmyadmin \
 cmake \
-mercurial
+mercurial \
+libgif4
 
 #libcurl4-openssl-dev \
 #libgl1-mesa-dev \
@@ -30,7 +31,6 @@ mercurial
 #libogg-dev \
 #libvorbis-dev \
 #libopenal-dev \
-libgif4 \
 #libjpeg62-dev \
 #libpng12-dev \
 #libfreetype6-dev \
