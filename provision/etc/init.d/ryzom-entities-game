@@ -11,8 +11,8 @@
 #  This script will start
 ### END INIT INFO
 
-DAEMON=/vagrant/build/bin/ryzom_entities_game_service
-RunningDirectory=/home/vagrant/entities_game_service
+DAEMON=${BUILD_PATH}/bin/ryzom_entities_game_service
+RunningDirectory=${SHARD_PATH}/entities_game_service
 PARAMS="--writepid"
 PIDFILE=${RunningDirectory}/pid.state
 

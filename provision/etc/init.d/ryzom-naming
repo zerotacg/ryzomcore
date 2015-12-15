@@ -11,8 +11,8 @@
 #  This script will start
 ### END INIT INFO
 
-DAEMON=/vagrant/build/bin/ryzom_naming_service
-RunningDirectory=/home/vagrant/naming_service
+DAEMON=${BUILD_PATH}/bin/ryzom_naming_service
+RunningDirectory=${SHARD_PATH}/naming_service
 PARAMS="--writepid"
 PIDFILE=${RunningDirectory}/pid.state
 

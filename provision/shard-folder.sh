@@ -4,12 +4,9 @@ source /vagrant/provision/.profile
 
 function service-prepare-folder() {
     local service_name=$1
-    local service_path=/home/vagrant/${service_name}
     local config=${service_name}
     local config_default=${service_name}_default
     local config_common=common
-
-    mkdir --parents ${service_path}
 
     config-link ${service_name} ${config}
     config-link ${service_name} ${config_default}
@@ -18,10 +15,12 @@ function service-prepare-folder() {
 
 function config-link () {
     local service_name=$1
-    local service_path=/home/vagrant/${service_name}
+    local service_path=${SHARD_PATH}/${service_name}
     local config_name=$2
     local file=${config_name}.cfg
     local link=${service_path}/${file}
+
+    mkdir --parents ${service_path}
 
     if [ ! -f ${link} ]; then
         ln -s ${RYZOM_SERVER_PATH}/${file} ${service_path}/
