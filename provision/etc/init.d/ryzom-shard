@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          ryzom-admin
+# Provides:          ryzom-shard
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -11,20 +11,24 @@
 #  This script will start
 ### END INIT INFO
 
-DAEMON=/vagrant/build/bin/ryzom_admin_service
-RunningDirectory=/home/vagrant/admin_service
-PARAMS="--writepid --fulladminname=admin_service --shortadminname=AS"
-PIDFILE=${RunningDirectory}/pid.state
-
+function shard() {
+    local command=$1
+    /etc/init.d/ryzom-admin ${command}
+    /etc/init.d/ryzom-admin-executor ${command}
+    /etc/init.d/ryzom-backup  ${command}
+    /etc/init.d/ryzom-entities-game  ${command}
+    /etc/init.d/ryzom-input-output  ${command}
+    /etc/init.d/ryzom-naming  ${command}
+}
 case "$1" in
     start)
-        start-stop-daemon --start --background --oknodo --pidfile ${PIDFILE} --chdir ${RunningDirectory} --startas ${DAEMON} -- ${PARAMS}
+        shard start
         ;;
     stop)
-        start-stop-daemon --stop --oknodo --pidfile ${PIDFILE}
+        shard stop
         ;;
     status)
-        start-stop-daemon --status --oknodo --pidfile ${PIDFILE}
+        shard status
         exit $?
         ;;
     *)

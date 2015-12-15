@@ -13,8 +13,6 @@
 
 DAEMON=/vagrant/build/bin/ryzom_admin_service
 RunningDirectory=/home/vagrant/admin_executor_service
-ConfigDirectory=/home/vagrant/admin_executor_service
-LogDirectory=/home/vagrant/admin_executor_service
 PARAMS="--writepid --fulladminname=admin_executor_service --shortadminname=AES"
 PIDFILE=${RunningDirectory}/pid.state
 

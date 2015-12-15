@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          ryzom-admin
+# Provides:          ryzom-input-output
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -11,9 +11,9 @@
 #  This script will start
 ### END INIT INFO
 
-DAEMON=/vagrant/build/bin/ryzom_admin_service
-RunningDirectory=/home/vagrant/admin_service
-PARAMS="--writepid --fulladminname=admin_service --shortadminname=AS"
+DAEMON=/vagrant/build/bin/ryzom_ios_service
+RunningDirectory=/home/vagrant/input_output_service
+PARAMS="--writepid"
 PIDFILE=${RunningDirectory}/pid.state
 
 case "$1" in

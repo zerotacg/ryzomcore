@@ -13,8 +13,6 @@
 
 DAEMON=/vagrant/build/bin/ryzom_backup_service
 RunningDirectory=/home/vagrant/backup_service
-ConfigDirectory=/home/vagrant/backup_service
-LogDirectory=/home/vagrant/backup_service
 PORT=49990
 PARAMS="--writepid -P${PORT}"
 PIDFILE=${RunningDirectory}/pid.state

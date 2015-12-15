@@ -29,10 +29,25 @@ function config-link () {
 }
 
 service-prepare-folder admin_service
+
 service-prepare-folder admin_executor_service
+
 service-prepare-folder backup_service
-ln -s ${RYZOM_PATH}/common ${SHARD_PATH}/common
+if [ ! -d ${SHARD_PATH}/common ]; then
+    ln -s ${RYZOM_PATH}/common ${SHARD_PATH}/
+fi
+
 cp -R ${SHARD_PATH}/backup_service ${SHARD_PATH}/backup_pd_service
+
 service-prepare-folder entities_game_service
 config-link entities_game_service used_continents
 config-link entities_game_service backup_service_interface
+
+service-prepare-folder gpm_service
+config-link gpm_service used_continents
+
+service-prepare-folder input_output_service
+config-link input_output_service backup_service_interface
+
+service-prepare-folder naming_service
+#config-link input_output_service backup_service_interface
