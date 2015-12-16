@@ -28,4 +28,4 @@ export SOURCE_PATH=/vagrant/code
 export BUILD_PATH=/vagrant/build
 export RYZOM_PATH=${SOURCE_PATH}/ryzom
 export RYZOM_SERVER_PATH=${RYZOM_PATH}/server
-export SHARD_PATH=/home/vagrant
+export SHARD_PATH=${BUILD_PATH}/shard
