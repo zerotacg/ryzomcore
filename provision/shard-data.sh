@@ -11,3 +11,4 @@ fi
 
 cp ${SHEET_ID_BIN} ${SHARD_PATH}/backup_service/
 cp ${SHEET_ID_BIN} ${SHARD_PATH}/backup_pd_service/
+cp ${SHEET_ID_BIN} ${SHARD_PATH}/entities_game_service/
