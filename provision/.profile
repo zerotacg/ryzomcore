@@ -29,3 +29,4 @@ export BUILD_PATH=/vagrant/build
 export RYZOM_PATH=${SOURCE_PATH}/ryzom
 export RYZOM_SERVER_PATH=${RYZOM_PATH}/server
 export SHARD_PATH=${BUILD_PATH}/shard
+export SHARD_DATA_PATH=${SHARD_PATH}/ryzomcore-data
