@@ -2,14 +2,7 @@
 
 source /vagrant/provision/.profile
 
-if [ ! -d ${SHARD_DATA_PATH} ]; then
-    hg clone https://bitbucket.org/ryzom/ryzomcore-data ${SHARD_DATA_PATH}
-fi
-
-SHEETS_PATH=${SHARD_PATH}/sheets
-SHEET_ID_BIN=${SHEETS_PATH}/sheet_id.bin
-
-mkdir --parents $SHEETS_PATH
+SHEET_ID_BIN=${SHARD_PATH}/common/data_leveldesign/leveldesign/game_elem/sheet_id.bin
 
 make_sheet_id -o${SHEET_ID_BIN} \
     ${SHARD_DATA_PATH}/leveldesign/game_elem \
@@ -17,6 +10,7 @@ make_sheet_id -o${SHEET_ID_BIN} \
     ${SHARD_DATA_PATH}/leveldesign/world \
     ${SHARD_DATA_PATH}/leveldesign/ecosystems \
     ${SHARD_DATA_PATH}/sound
+
 
 function copy-sheet-id-bin () {
     local service_name=$1

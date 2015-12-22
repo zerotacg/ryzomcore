@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          ryzom-shard
+# Provides:          ryzom-global-position
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -11,26 +11,20 @@
 #  This script will start
 ### END INIT INFO
 
-function shard() {
-    local command=$1
-    /etc/init.d/ryzom-admin ${command}
-    /etc/init.d/ryzom-admin-executor ${command}
-    /etc/init.d/ryzom-backup  ${command}
-    /etc/init.d/ryzom-entities-game  ${command}
-    /etc/init.d/ryzom-input-output  ${command}
-    /etc/init.d/ryzom-naming  ${command}
-    /etc/init.d/ryzom-global-position ${command}
-}
+DAEMON=${BUILD_PATH}/bin/ryzom_gpm_service
+RunningDirectory=${SHARD_PATH}/gpm_service
+PARAMS="--writepid"
+PIDFILE=${RunningDirectory}/pid.state
 
 case "$1" in
     start)
-        shard start
+        start-stop-daemon --start --background --oknodo --pidfile ${PIDFILE} --chdir ${RunningDirectory} --startas ${DAEMON} -- ${PARAMS}
         ;;
     stop)
-        shard stop
+        start-stop-daemon --stop --oknodo --pidfile ${PIDFILE}
         ;;
     status)
-        shard status
+        start-stop-daemon --status --oknodo --pidfile ${PIDFILE}
         exit $?
         ;;
     *)

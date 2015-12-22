@@ -37,10 +37,25 @@ Vagrant.configure(2) do |config|
             privileged: false,
             path: "provision/shard-folder.sh"
 
-        shard.vm.provision "shard-data",
+        shard.vm.provision "shard-data-local",
             type: "shell",
             privileged: false,
-            path: "provision/shard-data.sh"
+            path: "provision/shard-data-local.sh"
+
+        shard.vm.provision "shard-data-remote",
+            type: "shell",
+            privileged: false,
+            path: "provision/shard-data-remote.sh"
+
+        shard.vm.provision "sheet-id-bin",
+            type: "shell",
+            privileged: false,
+            path: "provision/sheet-id-bin.sh"
+
+        shard.vm.provision "packed-sheets",
+            type: "shell",
+            privileged: false,
+            path: "provision/packed-sheets.sh"
 
         shard.vm.network "private_network", :type => 'dhcp', :name => 'vboxnet0', :adapter => 2
     end

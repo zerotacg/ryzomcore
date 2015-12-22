@@ -39,7 +39,7 @@ function copy () {
     cp -R ${RYZOM_SERVER_PATH}/${file} ${service_path}/
 }
 
-ln -s ${SHARD_PATH} /home/vagrant/shard
+ln -s ${SHARD_PATH} /home/vagrant/
 
 service-prepare-folder admin_service
 
@@ -59,9 +59,10 @@ copy entities_game_service data_shard
 
 service-prepare-folder gpm_service
 copy-config gpm_service used_continents
+ln -s ${SHARD_PATH}/entities_game_service/data_shard ${SHARD_PATH}/gpm_service/
 
 service-prepare-folder input_output_service
 copy-config input_output_service backup_service_interface
+ln -s ${SHARD_PATH}/entities_game_service/data_shard ${SHARD_PATH}/input_output_service/
 
 service-prepare-folder naming_service
-#copy-config input_output_service backup_service_interface
