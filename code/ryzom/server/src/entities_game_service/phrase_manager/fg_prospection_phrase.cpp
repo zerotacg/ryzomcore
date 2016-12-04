@@ -17,7 +17,6 @@
 
 
 #include "stdpch.h"
-#include <functional>
 #include "fg_prospection_phrase.h"
 #include "nel/misc/common.h"
 #include "nel/misc/fast_floor.h"
@@ -1885,13 +1884,13 @@ void CDepositMapsBatchTask::run()
 	if ( ! CFile::isExists( pathName ) )
 		CFile::createDirectory( pathName );
 	pathName += "/";
-	FILE *outputF = fopen( (pathName + "deposit_maps.html").c_str(), "w" );
+	FILE *outputF = nlfopen(pathName + "deposit_maps.html", "w");
 	if ( ! outputF )
 	{
 		nlwarning( "Can't create file %sdeposit_maps.html", pathName.c_str() );
 		return;
 	}
-	FILE *inputF = fopen( _InputFilename.c_str(), "r" );
+	FILE *inputF = nlfopen(_InputFilename, "r");
 	if ( ! inputF )
 	{
 		fprintf( outputF, "File %s not found", _InputFilename.c_str() );

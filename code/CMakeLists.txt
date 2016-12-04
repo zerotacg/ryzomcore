@@ -31,6 +31,11 @@ IF(COMMAND cmake_policy)
   # Works around warnings about escaped quotes in ADD_DEFINITIONS
   # statements
   cmake_policy(SET CMP0005 OLD)
+
+  # allow to link to qtmain automatically under Windows
+  IF(POLICY CMP0020)
+    CMAKE_POLICY(SET CMP0020 NEW)
+  ENDIF()
 ENDIF(COMMAND cmake_policy)
 
 INCLUDE(nel)
@@ -44,12 +49,18 @@ CHECK_OUT_OF_SOURCE()
 # To be able to specify a different deployment target on Mac OS X :
 # export MACOSX_DEPLOYMENT_TARGET=10.6
 
+IF(CMAKE_VERSION VERSION_GREATER "2.8.10")
+  STRING(TIMESTAMP CURRENT_YEAR "%Y")
+ELSE()
+  SET(CURRENT_YEAR "2016")
+ENDIF()
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(RyzomCore CXX C)
 SET(NL_VERSION_MAJOR 0)
 SET(NL_VERSION_MINOR 12)
 SET(NL_VERSION_PATCH 0)
-SET(YEAR "2004-2015")
+SET(YEAR "2004-${CURRENT_YEAR}")
 SET(AUTHOR "Winchgate and The Ryzom Core Community")
 
 #-----------------------------------------------------------------------------
@@ -103,6 +114,7 @@ ENDIF(WIN32)
 FIND_PACKAGE(ZLIB REQUIRED)
 FIND_PACKAGE(LibXml2 REQUIRED)
 FIND_PACKAGE(PNG REQUIRED)
+FIND_PACKAGE(OpenSSL REQUIRED)
 FIND_PACKAGE(GIF)
 FIND_PACKAGE(Jpeg)
 
@@ -118,13 +130,17 @@ ENDIF(WITH_LIBXML2_ICONV)
 
 IF(WITH_STATIC)
   # libxml2 could need winsock2 library
-  SET(LIBXML2_LIBRARIES ${LIBXML2_LIBRARIES} ${WINSOCK2_LIB})
+  IF(WINSOCK2_LIB)
+    SET(LIBXML2_LIBRARIES ${LIBXML2_LIBRARIES} ${WINSOCK2_LIB})
+  ENDIF()
 
-  # on Mac OS X libxml2 requires iconv and liblzma
-  IF(APPLE)
-    FIND_PACKAGE(LibLZMA REQUIRED)
-    SET(LIBXML2_LIBRARIES ${LIBXML2_LIBRARIES} ${LIBLZMA_LIBRARIES})
-  ENDIF(APPLE)
+  IF(UNIX)
+    # under Linux and OS X, recent libxml2 versions are linked against liblzma
+    FIND_PACKAGE(LibLZMA)
+    IF(LIBLZMA_LIBRARIES)
+      SET(LIBXML2_LIBRARIES ${LIBXML2_LIBRARIES} ${LIBLZMA_LIBRARIES})
+    ENDIF()
+  ENDIF()
 ENDIF(WITH_STATIC)
 
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/PCHSupport.cmake)
@@ -139,6 +155,28 @@ IF(WITH_SSE2)
     ADD_DEFINITIONS(-DNL_HAS_SSE3)
   ENDIF(WITH_SSE3)
 ENDIF(WITH_SSE2)
+
+IF(APPLE_CERTIFICATE)
+  # Find codesign_allocate
+
+  # Xcode 7.0 and later versions
+  SET(CODESIGN_ALLOCATE ${OSX_DEVELOPER_ROOT}/Toolchains/XcodeDefault.xctoolchain/usr/bin/codesign_allocate)
+
+  IF(NOT EXISTS "${CODESIGN_ALLOCATE}")
+    # Xcode 6.4 and previous versions
+    SET(CODESIGN_ALLOCATE ${CMAKE_OSX_SYSROOT}/usr/bin/codesign_allocate)
+  ENDIF()
+
+  IF(NOT EXISTS "${CODESIGN_ALLOCATE}")
+    # System path
+    SET(CODESIGN_ALLOCATE /usr/bin/codesign_allocate)
+  ENDIF()
+
+  IF(NOT EXISTS "${CODESIGN_ALLOCATE}")
+    MESSAGE(WARNING "Unable to find codesign_allocate in standard directories")
+    SET(CODESIGN_ALLOCATE)
+  ENDIF()
+ENDIF()
 
 MACRO(ADD_QT_LIBRARY _NAME)
   IF(WIN32)
@@ -216,41 +254,15 @@ IF(WITH_QT5)
     FIND_PACKAGE(Qt5LinguistTools)
     FIND_PACKAGE(Qt5Network)
 
-    SET(QT_LIBRARIES Qt5::Widgets Qt5::Core Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Xml)
-
     IF(QT_STATIC)
       ADD_DEFINITIONS(-DQT_STATICPLUGIN)
 
-      # Core
-      IF(APPLE)
-        FIND_LIBRARY(PCRE_LIBRARY pcre16 pcre)
-
-        FIND_LIBRARY(FOUNDATION_FRAMEWORK Foundation)
-        FIND_LIBRARY(CARBON_FRAMEWORK Carbon)
-        FIND_LIBRARY(SECURITY_FRAMEWORK Security)
-
-        SET(QT_LIBRARIES ${QT_LIBRARIES}
-          ${PCRE_LIBRARY}
-          ${FOUNDATION_FRAMEWORK}
-          ${CARBON_FRAMEWORK}
-          ${SECURITY_FRAMEWORK})
-      ENDIF()
-
-      # Network
-      FIND_PACKAGE(OpenSSL REQUIRED)
-      SET(QT_LIBRARIES ${QT_LIBRARIES} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
-
-      IF(WIN32)
-        SET(QT_LIBRARIES ${QT_LIBRARIES}
-          ${WINSDK_LIBRARY_DIR}/Crypt32.lib
-          ${WINSDK_LIBRARY_DIR}/WS2_32.Lib)
-      ENDIF()
-
-      SET(QT_LIBRARIES ${QT_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARY})
+      SET(QT_LIBRARIES Qt5::Widgets)
 
       # Gui
+      SET(QT_LIBRARIES ${QT_LIBRARIES} Qt5::Gui Qt5::OpenGL)
+
       ADD_QT_LIBRARY(PrintSupport)
-      ADD_QT_LIBRARY(PlatformSupport)
 
       IF(WIN32)
         SET(QT_LIBRARIES ${QT_LIBRARIES}
@@ -258,6 +270,7 @@ IF(WITH_QT5)
           ${WINSDK_LIBRARY_DIR}/OpenGL32.lib
           ${WINSDK_LIBRARY_DIR}/WinMM.Lib)
         ADD_QT_PLUGIN(platforms qwindows)
+        ADD_QT_LIBRARY(PlatformSupport)
       ELSEIF(APPLE)
         # Cups needs .dylib
         SET(OLD_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -270,7 +283,7 @@ IF(WITH_QT5)
         FIND_LIBRARY(SYSTEMCONFIGURATION_FRAMEWORK SystemConfiguration)
         FIND_LIBRARY(OPENGL_FRAMEWORK NAMES OpenGL)
 
-      SET(QT_LIBRARIES ${QT_LIBRARIES}
+        SET(QT_LIBRARIES ${QT_LIBRARIES}
           ${CUPS_LIBRARY}
           ${COCOA_FRAMEWORK}
           ${SYSTEMCONFIGURATION_FRAMEWORK}
@@ -279,17 +292,29 @@ IF(WITH_QT5)
 
         ADD_QT_PLUGIN(printsupport cocoaprintersupport)
         ADD_QT_PLUGIN(platforms qcocoa)
+        ADD_QT_LIBRARY(PlatformSupport)
+      ELSE()
+        # order is very important there
+        ADD_QT_PLUGIN(platforms qxcb)
+        ADD_QT_PLUGIN(xcbglintegrations qxcb-glx-integration)
+
+        ADD_QT_LIBRARY(XcbQpa)
+        ADD_QT_LIBRARY(PlatformSupport)
+        SET(QT_LIBRARIES ${QT_LIBRARIES} -lX11-xcb -lXi -lSM -lICE -lxcb -lGL)
+        IF(EXISTS "${QT_LIBRARY_DIR}/libxcb-static.a")
+          SET(QT_LIBRARIES ${QT_LIBRARIES} "${QT_LIBRARY_DIR}/libxcb-static.a")
+        ENDIF()
+        SET(QT_LIBRARIES ${QT_LIBRARIES} -lfontconfig)
+        ADD_QT_LIBRARY(DBus)
       ENDIF()
 
       ADD_QT_PLUGIN(imageformats qgif)
       ADD_QT_PLUGIN(imageformats qicns)
       ADD_QT_PLUGIN(imageformats qico)
       ADD_QT_PLUGIN(imageformats qjpeg)
-      ADD_QT_PLUGIN(imageformats qmng)
-      ADD_QT_PLUGIN(imageformats qwebp)
 
       # harfbuzz is needed since Qt 5.3
-      IF(APPLE)
+      IF(UNIX)
         SET(HB_LIB "${QT_LIBRARY_DIR}/libqtharfbuzzng.a")
       ELSEIF(WIN32)
         SET(HB_LIB "${QT_LIBRARY_DIR}/qtharfbuzzng.lib")
@@ -299,7 +324,7 @@ IF(WITH_QT5)
       ENDIF()
 
       # freetype is needed since Qt 5.5
-      IF(APPLE)
+      IF(UNIX)
         SET(FREETYPE_LIB "${QT_LIBRARY_DIR}/libqtfreetype.a")
       ELSEIF(WIN32)
         SET(FREETYPE_LIB "${QT_LIBRARY_DIR}/qtfreetype.lib")
@@ -308,8 +333,26 @@ IF(WITH_QT5)
         SET(QT_LIBRARIES ${QT_LIBRARIES} ${FREETYPE_LIB})
       ENDIF()
 
+      ADD_QT_PLUGIN(accessible qtaccessiblewidgets)
+
+      SET(QT_LIBRARIES ${QT_LIBRARIES} ${PNG_LIBRARIES} ${JPEG_LIBRARY})
+
+      # Network
+      SET(QT_LIBRARIES ${QT_LIBRARIES} Qt5::Network Qt5::Xml)
+      SET(QT_LIBRARIES ${QT_LIBRARIES} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
+
+      IF(WIN32)
+        SET(QT_LIBRARIES ${QT_LIBRARIES}
+          ${WINSDK_LIBRARY_DIR}/Crypt32.lib
+          ${WINSDK_LIBRARY_DIR}/WS2_32.Lib
+          ${WINSDK_LIBRARY_DIR}/IPHlpApi.Lib)
+      ENDIF()
+
+      # Core
+      SET(QT_LIBRARIES ${QT_LIBRARIES} Qt5::Core)
+
       # pcre is needed since Qt 5.5
-      IF(APPLE)
+      IF(UNIX)
         SET(PCRE_LIB "${QT_LIBRARY_DIR}/libqtpcre.a")
       ELSEIF(WIN32)
         SET(PCRE_LIB "${QT_LIBRARY_DIR}/qtpcre.lib")
@@ -318,7 +361,23 @@ IF(WITH_QT5)
         SET(QT_LIBRARIES ${QT_LIBRARIES} ${PCRE_LIB})
       ENDIF()
 
-      ADD_QT_PLUGIN(accessible qtaccessiblewidgets)
+      IF(APPLE)
+        FIND_LIBRARY(PCRE_LIBRARY pcre16 pcre)
+
+        FIND_LIBRARY(FOUNDATION_FRAMEWORK Foundation)
+        FIND_LIBRARY(CARBON_FRAMEWORK Carbon)
+        FIND_LIBRARY(SECURITY_FRAMEWORK Security)
+
+        SET(QT_LIBRARIES ${QT_LIBRARIES}
+          ${PCRE_LIBRARY}
+          ${FOUNDATION_FRAMEWORK}
+          ${CARBON_FRAMEWORK}
+          ${SECURITY_FRAMEWORK})
+      ELSEIF(UNIX)
+        SET(QT_LIBRARIES ${QT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -ldl -lrt)
+      ENDIF()
+    ELSE()
+      SET(QT_LIBRARIES Qt5::Widgets Qt5::Network Qt5::Xml Qt5::Gui Qt5::OpenGL Qt5::Core)
     ENDIF()
   ELSE()
     MESSAGE(WARNING "Unable to find Qt 5")
@@ -354,12 +413,8 @@ IF(WITH_NEL)
     IF(CURL_STATIC)
       SET(CURL_DEFINITIONS -DCURL_STATICLIB)
 
-      FIND_PACKAGE(OpenSSL QUIET)
-
-      IF(OPENSSL_FOUND)
-        SET(CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-        SET(CURL_LIBRARIES ${CURL_LIBRARIES} ${OPENSSL_LIBRARIES})
-      ENDIF(OPENSSL_FOUND)
+      SET(CURL_INCLUDE_DIRS ${CURL_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
+      SET(CURL_LIBRARIES ${CURL_LIBRARIES} ${OPENSSL_LIBRARIES})
 
       IF(UNIX)
         # CURL depends on libidn
@@ -379,8 +434,7 @@ IF(WITH_NEL)
     ENDIF()
   ENDIF()
 
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/nel/include ${LIBXML2_INCLUDE_DIR})
-  ADD_DEFINITIONS(${LIBXML2_DEFINITIONS})
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/nel/include)
   ADD_SUBDIRECTORY(nel)
 ENDIF(WITH_NEL)
 

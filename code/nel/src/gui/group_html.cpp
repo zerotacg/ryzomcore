@@ -26,6 +26,7 @@
 #include "nel/gui/libwww.h"
 #include "nel/gui/group_html.h"
 #include "nel/gui/group_list.h"
+#include "nel/gui/group_menu.h"
 #include "nel/gui/group_container.h"
 #include "nel/gui/view_link.h"
 #include "nel/gui/ctrl_scroll.h"
@@ -304,7 +305,7 @@ namespace NLGUI
 				return;
 			}
 
-			FILE *fp = fopen (tmpdest.c_str(), "wb");
+			FILE *fp = nlfopen(tmpdest, "wb");
 			if (fp == NULL)
 			{
 				curl_easy_cleanup(curl);
@@ -315,7 +316,8 @@ namespace NLGUI
 			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
 			curl_easy_setopt(curl, CURLOPT_URL, finalUrl.c_str());
 
-			curl_easy_setopt(curl, CURLOPT_FILE, fp);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
 
 			curl_multi_add_handle(MultiCurl, curl);
 			Curls.push_back(CDataDownload(curl, finalUrl, dest, fp, ImgType, img, "", "", style));
@@ -411,7 +413,7 @@ namespace NLGUI
 				return false;
 			}
 
-			FILE *fp = fopen (tmpdest.c_str(), "wb");
+			FILE *fp = nlfopen (tmpdest, "wb");
 			if (fp == NULL)
 			{
 				curl_easy_cleanup(curl);
@@ -422,7 +424,8 @@ namespace NLGUI
 			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, true);
 			curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-			curl_easy_setopt(curl, CURLOPT_FILE, fp);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
 
 			curl_multi_add_handle(MultiCurl, curl);
 			Curls.push_back(CDataDownload(curl, url, dest, fp, BnpType, NULL, script, md5sum));
@@ -579,9 +582,11 @@ namespace NLGUI
 								string finalUrl;
 								if (it->type == ImgType)
 								{
-									CFile::moveFile(it->dest, tmpfile);
-									//if (lookupLocalFile (finalUrl, file.c_str(), false))
+									// there is race condition if two browser instances are downloading same file
+									// second instance deletes first tmpfile and creates new file for itself.
+									if (CFile::getFileSize(tmpfile) > 0)
 									{
+										CFile::moveFile(it->dest, tmpfile);
 										for(uint i = 0; i < it->imgs.size(); i++)
 										{
 											setImage(it->imgs[i].Image, it->dest);
@@ -1117,6 +1122,58 @@ namespace NLGUI
 			// Paragraph ?
 			switch(element_number)
 			{
+			case HTML_HEAD:
+				_ReadingHeadTag = !_IgnoreHeadTag;
+				_IgnoreHeadTag = true;
+				break;
+			case HTML_BASE:
+				if (_ReadingHeadTag && !_IgnoreBaseUrlTag)
+				{
+					if (present[HTML_BASE_HREF] && value[HTML_BASE_HREF])
+					{
+						CUrlParser uri(value[HTML_BASE_HREF]);
+						if (uri.isAbsolute())
+						{
+							_URL = uri.toString();
+							_IgnoreBaseUrlTag = true;
+						}
+					}
+				}
+				break;
+			case HTML_META:
+				if (_ReadingHeadTag)
+				{
+					bool httpEquiv = present[HTML_META_HTTP_EQUIV] && value[HTML_META_HTTP_EQUIV];
+					bool httpContent = present[HTML_META_CONTENT] && value[HTML_META_CONTENT];
+					if (httpEquiv && httpContent)
+					{
+						// only first http-equiv="refresh" should be handled
+						if (_RefreshUrl.empty() && toLower(value[HTML_META_HTTP_EQUIV]) == "refresh")
+						{
+							const CWidgetManager::SInterfaceTimes &times = CWidgetManager::getInstance()->getInterfaceTimes();
+							double timeSec = times.thisFrameMs / 1000.0f;
+							string content(value[HTML_META_CONTENT]);
+
+							string::size_type pos = content.find_first_of(";");
+							if (pos == string::npos)
+							{
+								fromString(content, _NextRefreshTime);
+								_RefreshUrl = _URL;
+							}
+							else
+							{
+								fromString(content.substr(0, pos), _NextRefreshTime);
+
+								pos = toLower(content).find("url=");
+								if (pos != string::npos)
+									_RefreshUrl = content.substr(pos + 4);
+							}
+
+							_NextRefreshTime += timeSec;
+						}
+					}
+				}
+				break;
 			case HTML_A:
 			{
 				CStyleParams style;
@@ -1145,6 +1202,7 @@ namespace NLGUI
 
 			case HTML_DIV:
 			{
+				_BlockLevelElement.push_back(true);
 				registerAnchorName(MY_HTML_DIV);
 
 				if (present[MY_HTML_DIV_NAME] && value[MY_HTML_DIV_NAME])
@@ -1189,7 +1247,12 @@ namespace NLGUI
 						if (haveParentDiv)
 							parentId = getDiv()->getId();
 						else
+						{
+							if (!_Paragraph)
+								newParagraph (0);
+
 							parentId = _Paragraph->getId();
+						}
 
 						CInterfaceGroup *inst = CWidgetManager::getInstance()->getParser()->createGroupInstance(templateName, parentId+":"+id, tmplParams);
 						if (inst)
@@ -1204,21 +1267,22 @@ namespace NLGUI
 									inst->setPosRef(Hotspot_TL);
 									inst->setParentPosRef(Hotspot_TL);
 									getDiv()->addGroup(inst);
+
+									_BlockLevelElement.back() = false;
 							}
 							else
 							{
-								if (!_Paragraph)
-								{
-									newParagraph (0);
-									paragraphChange ();
-								}
-
 								getParagraph()->addChild(inst);
 								paragraphChange();
 							}
 							_Divs.push_back(inst);
 						}
 					}
+				}
+
+				if (isBlockLevelElement())
+				{
+					newParagraph(0);
 				}
 			}
 				break;
@@ -1664,15 +1728,50 @@ namespace NLGUI
 			case HTML_SELECT:
 				if (!(_Forms.empty()))
 				{
+					CStyleParams style;
+
 					// A select box
 					string name;
+					bool multiple = false;
+					sint32 size = 0;
+
 					if (present[HTML_SELECT_NAME] && value[HTML_SELECT_NAME])
 						name = value[HTML_SELECT_NAME];
+					if (present[HTML_SELECT_SIZE] && value[HTML_SELECT_SIZE])
+						fromString(value[HTML_SELECT_SIZE], size);
+					if (present[HTML_SELECT_MULTIPLE] && value[HTML_SELECT_MULTIPLE])
+						multiple = true;
+					if (present[HTML_SELECT_STYLE] && value[HTML_SELECT_STYLE])
+						getStyleParams(value[HTML_SELECT_STYLE], style);
 
-					CDBGroupComboBox *cb = addComboBox(DefaultFormSelectGroup, name.c_str());
 					CGroupHTML::CForm::CEntry entry;
 					entry.Name = name;
-					entry.ComboBox = cb;
+					entry.sbMultiple = multiple;
+					if (size > 1 || multiple)
+					{
+						entry.InitialSelection = -1;
+						CGroupMenu *sb = addSelectBox(DefaultFormSelectBoxMenuGroup, name.c_str());
+						if (sb)
+						{
+							if (size < 1)
+								size = 4;
+
+							if (style.Width > -1)
+								sb->setMinW(style.Width);
+
+							if (style.Height > -1)
+								sb->setMinH(style.Height);
+
+							sb->setMaxVisibleLine(size);
+						}
+
+						entry.SelectBox = sb;
+					}
+					else
+					{
+						CDBGroupComboBox *cb = addComboBox(DefaultFormSelectGroup, name.c_str());
+						entry.ComboBox = cb;
+					}
 					_Forms.back().Entries.push_back (entry);
 				}
 			break;
@@ -1686,25 +1785,22 @@ namespace NLGUI
 						_SelectOptionStr.clear();
 
 						std::string optionValue;
-						bool	 selected = false;
 						if (present[HTML_OPTION_VALUE] && value[HTML_OPTION_VALUE])
 							optionValue = value[HTML_OPTION_VALUE];
-						if (present[HTML_OPTION_SELECTED] && value[HTML_OPTION_SELECTED])
-							selected = nlstricmp(value[HTML_OPTION_SELECTED], "selected") == 0;
 						_Forms.back().Entries.back().SelectValues.push_back(optionValue);
-						if (selected)
-						{
-							_Forms.back().Entries.back().InitialSelection = (sint)_Forms.back().Entries.back().SelectValues.size() - 1;
-						}
 
+						if (present[HTML_OPTION_SELECTED])
+							_Forms.back().Entries.back().InitialSelection = (sint)_Forms.back().Entries.back().SelectValues.size() - 1;
+						if (present[HTML_OPTION_DISABLED])
+							_Forms.back().Entries.back().sbOptionDisabled = (sint)_Forms.back().Entries.back().SelectValues.size() - 1;
 					}
 				}
 				_SelectOption = true;
 			break;
 			case HTML_LI:
-				if (getUL())
+				if (!_UL.empty())
 				{
-					// First LI ?
+					// UL, OL top margin if this is the first LI
 					if (!_LI)
 					{
 						_LI = true;
@@ -1714,12 +1810,24 @@ namespace NLGUI
 					{
 						newParagraph(LIBeginSpace);
 					}
+
+					// OL list index can be overridden by <li value="1"> attribute
+					if (present[HTML_LI_VALUE] && value[HTML_LI_VALUE])
+						fromString(value[HTML_LI_VALUE], _UL.back().Value);
+
 					ucstring str;
-					str += (ucchar)0x2219;
-					str += (ucchar)' ';
+					str.fromUtf8(_UL.back().getListMarkerText());
 					addString (str);
+
+					sint32 indent = LIIndent;
+					// list-style-type: outside
+					if (_CurrentViewLink)
+						indent -= _CurrentViewLink->getMaxUsedW();
+					getParagraph()->setFirstViewIndent(indent);
+
 					flushString ();
-					getParagraph()->setFirstViewIndent(LIIndent);
+
+					_UL.back().Value++;
 				}
 				break;
 			case HTML_P:
@@ -1760,10 +1868,20 @@ namespace NLGUI
 					_TR.push_back(false);
 				}
 				break;
+			case HTML_TH:
+				// TH is similar to TD, just different font style
 			case HTML_TD:
 				{
 					// Get cells parameters
 					getCellsParameters (MY_HTML_TD, true);
+
+					if (element_number == HTML_TH)
+					{
+						_FontWeight.push_back(FONT_WEIGHT_BOLD);
+						// center if not specified otherwise. TD/TH present/value arrays have same indices
+						if (!(present[MY_HTML_TD_ALIGN] && value[MY_HTML_TD_ALIGN]))
+							_CellParams.back().Align = CGroupCell::Center;
+					}
 
 					CGroupTable *table = getTable();
 					if (table)
@@ -1894,10 +2012,16 @@ namespace NLGUI
 				}
 				break;
 			case HTML_UL:
+				if (_UL.empty())
+					_UL.push_back(HTMLOListElement(1, "disc"));
+				else if (_UL.size() == 1)
+					_UL.push_back(HTMLOListElement(1, "circle"));
+				else
+					_UL.push_back(HTMLOListElement(1, "square"));
+				// if LI is already present
+				_LI = _UL.size() > 1 || _DL.size() > 1;
 				_Indent += ULIndent;
-				_LI = false;
 				endParagraph();
-				_UL.push_back(true);
 				break;
 			case HTML_OBJECT:
 				_ObjectType = "";
@@ -1956,42 +2080,110 @@ namespace NLGUI
 				_IgnoreText = true;
 				break;
 			case HTML_DL:
-				_DL.push_back(true);
+				_DL.push_back(HTMLDListElement());
+				_LI = _DL.size() > 1 || !_UL.empty();
 				endParagraph();
 				break;
 			case HTML_DT:
-				if (getDL())
+				if (!_DL.empty())
 				{
-					newParagraph(0);
-
 					// see if this is the first <dt>, closing tag not required
-					if (!_DT)
+					if (!_DL.back().DT)
 					{
-						_DT = true;
+						_DL.back().DT = true;
 						_FontWeight.push_back(FONT_WEIGHT_BOLD);
 					}
 
-					if (_DL.size() > 1)
+					if (!_LI)
 					{
-						uint indent = (_DL.size()-1) * ULIndent;
-						getParagraph()->setFirstViewIndent(indent);
+						_LI = true;
+						newParagraph(ULBeginSpace);
+					}
+					else
+					{
+						newParagraph(LIBeginSpace);
 					}
 				}
 				break;
 			case HTML_DD:
-				if (getDL())
+				if (!_DL.empty())
 				{
-					newParagraph(0);
-
 					// if there was no closing tag for <dt>, then remove <dt> style
-					if (_DT)
+					if (_DL.back().DT)
 					{
-						_DT = false;
+						_DL.back().DT = false;
 						popIfNotEmpty (_FontWeight);
 					}
 
-					uint indent = _DL.size()*ULIndent;
-					getParagraph()->setFirstViewIndent(indent);
+					if (!_DL.back().DD)
+					{
+						_Indent += ULIndent;
+						_DL.back().DD = true;
+					}
+
+					if (!_LI)
+					{
+						_LI = true;
+						newParagraph(ULBeginSpace);
+					}
+					else
+					{
+						newParagraph(LIBeginSpace);
+					}
+				}
+				break;
+			case HTML_OL:
+				{
+					sint32 start = 1;
+					std::string type("1");
+
+					if (present[HTML_OL_START] && value[HTML_OL_START])
+						fromString(value[HTML_OL_START], start);
+					if (present[HTML_OL_TYPE] && value[HTML_OL_TYPE])
+						type = value[HTML_OL_TYPE];
+
+					_UL.push_back(HTMLOListElement(start, type));
+					// if LI is already present
+					_LI = _UL.size() > 1 || _DL.size() > 1;
+					_Indent += ULIndent;
+					endParagraph();
+				}
+				break;
+			case HTML_HR:
+				{
+					newParagraph(0);
+
+					CInterfaceGroup *sep = CWidgetManager::getInstance()->getParser()->createGroupInstance("html_hr", "", NULL, 0);
+					if (sep)
+					{
+						CStyleParams style;
+						style.TextColor = CRGBA(120, 120, 120, 255);
+						style.Height = 0;
+						style.Width = 0;
+
+						if (present[HTML_HR_STYLE] && value[HTML_HR_STYLE])
+							getStyleParams(value[HTML_HR_STYLE], style);
+
+						CViewBitmap *bitmap = dynamic_cast<CViewBitmap*>(sep->getView("hr"));
+						if (bitmap)
+						{
+							bitmap->setColor(style.TextColor);
+							if (style.Width > 0)
+							{
+								clamp(style.Width, 1, 32000);
+								bitmap->setW(style.Width);
+								bitmap->setSizeRef(CInterfaceElement::none);
+							}
+							if (style.Height > 0)
+							{
+								clamp(style.Height, 1, 1000);
+								bitmap->setH(style.Height);
+							}
+						}
+
+						getParagraph()->addChild(sep);
+						endParagraph();
+					}
 				}
 				break;
 			}
@@ -2007,6 +2199,9 @@ namespace NLGUI
 			// Paragraph ?
 			switch(element_number)
 			{
+			case HTML_HEAD:
+				_ReadingHeadTag = false;
+				break;
 			case HTML_FONT:
 				popIfNotEmpty (_TextColor);
 				popIfNotEmpty (_FontSize);
@@ -2033,12 +2228,20 @@ namespace NLGUI
 				popIfNotEmpty (_GlobalColor);
 				endParagraph();
 				break;
+			case HTML_P:
+				endParagraph();
+				break;
 			case HTML_PRE:
 				popIfNotEmpty (_PRE);
 				break;
 			case HTML_DIV:
+				if (isBlockLevelElement())
+				{
+					endParagraph();
+				}
 				_DivName = "";
 				popIfNotEmpty (_Divs);
+				popIfNotEmpty (_BlockLevelElement);
 				break;
 
 			case HTML_TABLE:
@@ -2049,6 +2252,9 @@ namespace NLGUI
 				endParagraph();
 				// Add a cell
 				break;
+			case HTML_TH:
+				popIfNotEmpty (_FontWeight);
+				// no break;
 			case HTML_TD:
 				popIfNotEmpty (_CellParams);
 				if (!_Cells.empty())
@@ -2105,7 +2311,65 @@ namespace NLGUI
 					CDBGroupComboBox *cb = _Forms.back().Entries.back().ComboBox;
 					if (cb)
 					{
+						uint lineIndex = cb->getNumTexts();
 						cb->addText(_SelectOptionStr);
+						if (_Forms.back().Entries.back().sbOptionDisabled == lineIndex)
+						{
+							cb->setGrayed(lineIndex, true);
+						}
+					}
+					else
+					{
+						CGroupMenu *sb = _Forms.back().Entries.back().SelectBox;
+						if (sb)
+						{
+							uint lineIndex = sb->getNumLine();
+							sb->addLine(_SelectOptionStr, "", "");
+
+							if (_Forms.back().Entries.back().sbOptionDisabled == lineIndex)
+							{
+								sb->setGrayedLine(lineIndex, true);
+							}
+							else
+							{
+								// create option line checkbox, CGroupMenu is taking ownership of the checbox
+								CInterfaceGroup *ig = CWidgetManager::getInstance()->getParser()->createGroupInstance("menu_checkbox", "", NULL, 0);
+								if (ig)
+								{
+									CCtrlButton *cb = dynamic_cast<CCtrlButton *>(ig->getCtrl("b"));
+									if (cb)
+									{
+										if (_Forms.back().Entries.back().sbMultiple)
+										{
+											cb->setType(CCtrlButton::ToggleButton);
+											cb->setTexture(DefaultCheckBoxBitmapNormal);
+											cb->setTexturePushed(DefaultCheckBoxBitmapPushed);
+											cb->setTextureOver(DefaultCheckBoxBitmapOver);
+										}
+										else
+										{
+											cb->setType(CCtrlButton::RadioButton);
+											cb->setTexture(DefaultRadioButtonBitmapNormal);
+											cb->setTexturePushed(DefaultRadioButtonBitmapPushed);
+											cb->setTextureOver(DefaultRadioButtonBitmapOver);
+
+											if (_Forms.back().Entries.back().sbRBRef == NULL)
+												_Forms.back().Entries.back().sbRBRef = cb;
+
+											cb->initRBRefFromRadioButton(_Forms.back().Entries.back().sbRBRef);
+										}
+
+										cb->setPushed(_Forms.back().Entries.back().InitialSelection == lineIndex);
+										sb->setUserGroupLeft(lineIndex, ig);
+									}
+									else
+									{
+										nlwarning("Failed to get 'b' element from 'menu_checkbox' template");
+										delete ig;
+									}
+								}
+							}
+						}
 					}
 				}
 				break;
@@ -2114,38 +2378,63 @@ namespace NLGUI
 					_Localize = false;
 				}
 				break;
+			case HTML_OL:
 			case HTML_UL:
-				if (getUL())
+				if (!_UL.empty())
 				{
-					_Indent -= ULIndent;
-					_Indent = std::max(_Indent, (uint)0);
+					if (_Indent > ULIndent)
+						_Indent = _Indent - ULIndent;
+					else
+						_Indent = 0;
+
 					endParagraph();
-					popIfNotEmpty (_UL);
+					popIfNotEmpty(_UL);
 				}
 				break;
 			case HTML_DL:
-				if (getDL())
+				if (!_DL.empty())
 				{
 					endParagraph();
-					popIfNotEmpty (_DL);
-					if (_DT) {
-						_DT = false;
+
+					// unclosed DT
+					if (_DL.back().DT)
+					{
 						popIfNotEmpty (_FontWeight);
 					}
+
+					// unclosed DD
+					if (_DL.back().DD)
+					{
+						if (_Indent > ULIndent)
+							_Indent = _Indent - ULIndent;
+						else
+							_Indent = 0;
+					}
+
+					popIfNotEmpty (_DL);
 				}
 				break;
 			case HTML_DT:
-				if (getDL())
+				if (!_DL.empty())
 				{
-					if (_DT)
-					{
-						_DT = false;
-						popIfNotEmpty (_FontWeight);
-					}
+					_DL.back().DT = false;
+					popIfNotEmpty (_FontWeight);
 				}
 				break;
 			case HTML_DD:
-				// style not changed
+				if (!_DL.empty())
+				{
+					// parser will process two DD in a row as nested when first DD is not closed
+					if (_DL.back().DD)
+					{
+						if (_Indent > ULIndent)
+							_Indent = _Indent - ULIndent;
+						else
+							_Indent = 0;
+
+						_DL.back().DD = false;
+					}
+				}
 				break;
 			case HTML_SPAN:
 				popIfNotEmpty (_FontSize);
@@ -2256,10 +2545,13 @@ namespace NLGUI
 		_CurrentViewImage = NULL;
 		_Indent = 0;
 		_LI = false;
-		_DT = false;
 		_SelectOption = false;
 		_GroupListAdaptor = NULL;
+		_DocumentUrl = "";
 		_UrlFragment.clear();
+		_RefreshUrl.clear();
+		_NextRefreshTime = 0.0;
+		_LastRefreshTime = 0.0;
 
 		// Register
 		CWidgetManager::getInstance()->registerClockMsgTarget(this);
@@ -2302,6 +2594,7 @@ namespace NLGUI
 		DefaultFormTextGroup =			"edit_box_widget";
 		DefaultFormTextAreaGroup =		"edit_box_widget_multiline";
 		DefaultFormSelectGroup =		"html_form_select_widget";
+		DefaultFormSelectBoxMenuGroup =	"html_form_select_box_menu_widget";
 		DefaultCheckBoxBitmapNormal =	"checkbox_normal.tga";
 		DefaultCheckBoxBitmapPushed =	"checkbox_pushed.tga";
 		DefaultCheckBoxBitmapOver =		"checkbox_over.tga";
@@ -3241,7 +3534,34 @@ namespace NLGUI
 
 	bool CGroupHTML::handleEvent (const NLGUI::CEventDescriptor& eventDesc)
 	{
-		bool traited = CGroupScrollText::handleEvent (eventDesc);
+		bool traited = false;
+
+		if (eventDesc.getType() == NLGUI::CEventDescriptor::mouse)
+		{
+			const NLGUI::CEventDescriptorMouse &mouseEvent = (const NLGUI::CEventDescriptorMouse &)eventDesc;
+			if (mouseEvent.getEventTypeExtended() == NLGUI::CEventDescriptorMouse::mousewheel)
+			{
+				// Check if mouse wheel event was on any of multiline select box widgets
+				// Must do this before CGroupScrollText
+				for (uint i=0; i<_Forms.size() && !traited; i++)
+				{
+					for (uint j=0; j<_Forms[i].Entries.size() && !traited; j++)
+					{
+						if (_Forms[i].Entries[j].SelectBox)
+						{
+							if (_Forms[i].Entries[j].SelectBox->handleEvent(eventDesc))
+							{
+								traited = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (!traited)
+			traited = CGroupScrollText::handleEvent (eventDesc);
 
 		if (eventDesc.getType() == NLGUI::CEventDescriptor::system)
 		{
@@ -3251,8 +3571,15 @@ namespace NLGUI
 				// Handle now
 				handle ();
 			}
+			if (systemEvent.getEventTypeExtended() == NLGUI::CEventDescriptorSystem::activecalledonparent)
+			{
+				if (!((NLGUI::CEventDescriptorActiveCalledOnParent &) systemEvent).getActive())
+				{
+					// stop refresh when window gets hidden
+					_NextRefreshTime = 0;
+				}
+			}
 		}
-
 		return traited;
 	}
 
@@ -3343,11 +3670,11 @@ namespace NLGUI
 			// Anchor to scroll after page has loaded
 			_UrlFragment = uri.hash;
 
-			uri.inherit(_URL);
+			uri.inherit(_DocumentUrl);
 			uri.hash.clear();
 
 			// compare urls and see if we only navigating to new anchor
-			if (!force && _URL == uri.toString())
+			if (!force && _DocumentUrl == uri.toString())
 			{
 				// scroll happens in updateCoords()
 				invalidateCoords();
@@ -3388,6 +3715,7 @@ namespace NLGUI
 		CViewText *viewText = new CViewText ("", (string("Error : ")+msg).c_str());
 		viewText->setColor (ErrorColor);
 		viewText->setModulateGlobalColor(ErrorColorGlobalColor);
+		viewText->setMultiLine (true);
 		getParagraph()->addChild (viewText);
 		if(!_TitlePrefix.empty())
 			setTitle (_TitlePrefix);
@@ -3709,13 +4037,16 @@ namespace NLGUI
 				uint32 w, h;
 				CBitmap::loadSize (image, w, h);
 				if (w == 0 || h == 0 || ((!NLMISC::isPowerOf2(w) || !NLMISC::isPowerOf2(h)) && !NL3D::CTextureFile::supportNonPowerOfTwoTextures()))
-					image.clear();
+					image = "web_del.tga";
 			}
 			else
 			{
 				//
 				// 3/ if it doesn't work, display a placeholder and ask to dl the image into the cache
 				//
+				if (reloadImg && CFile::fileExists(image))
+					CFile::deleteFile(image);
+
 				image = "web_del.tga";
 				addImageDownload(img, newImage, style);
 			}
@@ -3821,6 +4152,45 @@ namespace NLGUI
 	}
 
 	// ***************************************************************************
+	CGroupMenu *CGroupHTML::addSelectBox(const std::string &templateName, const char *name)
+	{
+		// In a paragraph ?
+		if (!_Paragraph)
+		{
+			newParagraph (0);
+			paragraphChange ();
+		}
+
+		// Not added ?
+		std::vector<std::pair<std::string,std::string> > templateParams;
+		templateParams.push_back(std::pair<std::string,std::string> ("id", name));
+		CInterfaceGroup *group = CWidgetManager::getInstance()->getParser()->createGroupInstance(templateName.c_str(),
+			getParagraph()->getId(), &(templateParams[0]), (uint)templateParams.size());
+
+		// Group created ?
+		if (group)
+		{
+			// Set the content
+			CGroupMenu *sb = dynamic_cast<CGroupMenu *>(group);
+			if (!sb)
+			{
+				nlwarning("'%s' template has bad type, CGroupMenu expected", templateName.c_str());
+				delete sb;
+				return NULL;
+			}
+			else
+			{
+				getParagraph()->addChild (sb);
+				paragraphChange ();
+				return sb;
+			}
+		}
+
+		// No group created
+		return NULL;
+	}
+
+	// ***************************************************************************
 
 	CCtrlButton *CGroupHTML::addButton(CCtrlButton::EType type, const std::string &/* name */, const std::string &normalBitmap, const std::string &pushedBitmap,
 									  const std::string &overBitmap, bool useGlobalColor, const char *actionHandler, const char *actionHandlerParams,
@@ -3853,6 +4223,13 @@ namespace NLGUI
 				{
 					normal = "web_del.tga";
 					addImageDownload(normalBitmap, ctrlButton, style);
+				}
+				else
+				{
+					uint32 w, h;
+					CBitmap::loadSize(normal, w, h);
+					if (w == 0 || h == 0)
+						normal = "web_del.tga";
 				}
 			}
 		}
@@ -3935,7 +4312,6 @@ namespace NLGUI
 		_FontStrikeThrough.clear();
 		_Indent = 0;
 		_LI = false;
-		_DT = false;
 		_UL.clear();
 		_DL.clear();
 		_A.clear();
@@ -3953,6 +4329,9 @@ namespace NLGUI
 		_TextArea = false;
 		_Object = false;
 		_Localize = false;
+		_ReadingHeadTag = false;
+		_IgnoreHeadTag = false;
+		_IgnoreBaseUrlTag = false;
 
 		// TR
 
@@ -4040,9 +4419,7 @@ namespace NLGUI
 		group->setSizeRef(CInterfaceElement::width);
 
 		// Compute begin space between paragraph and tables
-
 		// * If first in group, no begin space
-		// * If behind a paragraph, take the biggest begin space between the previous paragraph and current one.
 
 		// Pointer on the current paragraph (can be a table too)
 		CGroupParagraph *p = dynamic_cast<CGroupParagraph*>(group);
@@ -4064,11 +4441,6 @@ namespace NLGUI
 			group->setParentPos(groups.back());
 			group->setPosRef(Hotspot_TL);
 			group->setParentPosRef(Hotspot_BL);
-
-			// Begin space for previous paragraph
-			CGroupParagraph *previous = dynamic_cast<CGroupParagraph*>(groups.back());
-			if (previous)
-				beginSpace = std::max(beginSpace, previous->getTopSpace());
 		}
 
 		// Set the begin space
@@ -4242,6 +4614,21 @@ namespace NLGUI
 		// handle curl downloads
 		checkDownloads();
 
+		// handle refresh timer
+		if (_NextRefreshTime > 0 && _NextRefreshTime <= (times.thisFrameMs / 1000.0f) )
+		{
+			// there might be valid uses for 0sec refresh, but two in a row is probably a mistake
+			if (_NextRefreshTime - _LastRefreshTime >= 1.0)
+			{
+				_LastRefreshTime = _NextRefreshTime;
+				doBrowse(_RefreshUrl.c_str());
+			}
+			else
+				nlwarning("Ignore second 0sec http-equiv refresh in a row (url '%s')", _URL.c_str());
+
+			_NextRefreshTime = 0;
+		}
+
 		if (_Connecting)
 		{
 			// Check timeout if needed
@@ -4355,6 +4742,24 @@ namespace NLGUI
 				CDBGroupComboBox *cb = form.Entries[i].ComboBox;
 				entryData.fromUtf8(form.Entries[i].SelectValues[cb->getSelection()]);
 				addEntry = true;
+			}
+			else if (form.Entries[i].SelectBox)
+			{
+				CGroupMenu *sb = form.Entries[i].SelectBox;
+				CGroupSubMenu *rootMenu = sb->getRootMenu();
+				if (rootMenu)
+				{
+					for(uint j=0; j<rootMenu->getNumLine(); ++j)
+					{
+						CInterfaceGroup *ig = rootMenu->getUserGroupLeft(j);
+						if (ig)
+						{
+							CCtrlBaseButton *cb = dynamic_cast<CCtrlBaseButton *>(ig->getCtrl("b"));
+							if (cb && cb->getPushed())
+								formfields.add(form.Entries[i].Name, form.Entries[i].SelectValues[j]);
+						}
+					}
+				}
 			}
 			// This is a hidden value
 			else
@@ -4614,6 +5019,9 @@ namespace NLGUI
 
 		//
 		_Browsing = true;
+		_DocumentUrl = _URL;
+		_NextRefreshTime = 0;
+		_RefreshUrl.clear();
 
 		// clear content
 		beginBuild();
@@ -5040,7 +5448,7 @@ namespace NLGUI
 		{
 			if (!it.nextKey().isInteger())
 			{
-				nlwarning("%s : bad key encountered with type %s, number expected.", funcName, it.nextKey().getTypename());
+				nlwarning("%s : bad key encountered with type %s, integer expected.", funcName, it.nextKey().getTypename());
 				continue;
 			}
 			if (!it.nextValue().isString())
@@ -5255,8 +5663,8 @@ namespace NLGUI
 				if (it->second == "lighter")
 				{
 					const uint lighter[] = {100, 100, 100, 100, 100, 400, 400, 700, 700};
-					int index = getFontWeight() / 100 - 1;
-					clamp(index, 1, 9);
+					uint index = getFontWeight() / 100 - 1;
+					clamp(index, 1u, 9u);
 					weight = lighter[index-1];
 				}
 				else
@@ -5264,14 +5672,14 @@ namespace NLGUI
 				{
 					const uint bolder[] =  {400, 400, 400, 700, 700, 900, 900, 900, 900};
 					uint index = getFontWeight() / 100 + 1;
-					clamp(index, 1, 9);
+					clamp(index, 1u, 9u);
 					weight = bolder[index-1];
 				}
 				else
 				if (fromString(it->second, weight))
 				{
 					weight = (weight / 100);
-					clamp(weight, 1, 9);
+					clamp(weight, 1u, 9u);
 					weight *= 100;
 				}
 				style.FontWeight = weight;
@@ -5412,6 +5820,108 @@ namespace NLGUI
 
 		// return 1 to cancel download
 		return 0;
+	}
+
+	// ***************************************************************************
+	std::string CGroupHTML::HTMLOListElement::getListMarkerText() const
+	{
+		std::string ret;
+		sint32 number = Value;
+		bool upper = false;
+
+		if (Type == "disc")
+		{
+			// (ucchar)0x2219;
+			ret = "\xe2\x88\x99 ";
+		}
+		else if (Type == "circle")
+		{
+			// (uchar)0x26AA;
+			ret = "\xe2\x9a\xaa ";
+		}
+		else if (Type == "square")
+		{
+			// (ucchar)0x25AA;
+			ret = "\xe2\x96\xaa ";
+		}
+		else if (Type == "a" || Type == "A")
+		{
+			// @see toAlphabeticOrNumeric in WebKit
+			static const char lower[26] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+											'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+			static const char upper[26] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+											'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+			uint size = 26;
+			if (number < 1)
+			{
+				ret = toString(number);
+			}
+			else
+			{
+				const char* digits = (Type == "A" ? upper : lower);
+				while(number > 0)
+				{
+					--number;
+					ret.insert(ret.begin(), digits[number % size]);
+					number /= size;
+				}
+			}
+			ret += ". ";
+		}
+		else if (Type == "i" || Type == "I")
+		{
+			// @see toRoman in WebKit
+			static const char lower[7] = {'i', 'v', 'x', 'l', 'c', 'd', 'm'};
+			static const char upper[7] = {'I', 'V', 'X', 'L', 'C', 'D', 'M'};
+
+			if (number < 1 || number > 3999)
+			{
+				ret = toString(number);
+			}
+			else
+			{
+				const char* digits = (Type == "I" ? upper : lower);
+				uint8 i, d=0;
+				do
+				{
+					uint32 num = number % 10;
+					if (num % 5 < 4)
+					{
+						for (i = num % 5; i > 0; i--)
+						{
+							ret.insert(ret.begin(), digits[d]);
+						}
+					}
+					if (num >= 4 && num <= 8)
+					{
+						ret.insert(ret.begin(), digits[d + 1]);
+					}
+					if (num == 9)
+					{
+						ret.insert(ret.begin(), digits[d + 2]);
+					}
+					if (num % 5 == 4)
+					{
+						ret.insert(ret.begin(), digits[d]);
+					}
+					number /= 10;
+					d += 2;
+				}
+				while (number > 0);
+
+				if (Type == "I")
+				{
+					ret = toUpper(ret);
+				}
+			}
+			ret += ". ";
+		}
+		else
+		{
+			ret = toString(Value) + ". ";
+		}
+
+		return ret;
 	}
 
 }

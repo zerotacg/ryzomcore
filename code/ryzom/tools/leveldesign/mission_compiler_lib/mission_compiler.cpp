@@ -17,6 +17,7 @@
 #include "mission_compiler.h"
 #include "step.h"
 #include "nel/misc/i18n.h"
+#include "nel/misc/common.h"
 #include "nel/ligo/primitive_utils.h"
 
 using namespace std;
@@ -876,7 +877,7 @@ bool CMissionCompiler::publishFiles(const std::string &serverPathPrim, const std
 
 bool CMissionCompiler::includeText(const std::string filename, const std::string text)
 {
-	FILE *f = fopen(filename.c_str(), "r+");
+	FILE *f = nlfopen(filename, "r+");
 	if (f == NULL)
 		return false;
 
@@ -1580,6 +1581,14 @@ string CMissionData::genPreRequisites()
 			ret += NL;
 		}
 	}
+	if (!_ReqCharacterAge.empty())
+	{
+		ret += "req_character_age : "+_ReqCharacterAge+NL;
+	}
+	if (!_ReqMaxPlayerID.empty())
+	{
+		ret += "req_max_player_id : "+_ReqMaxPlayerID+NL;
+	}
 	if (!_ReqSeason.empty())
 	{
 		ret += "req_season : "+_ReqSeason+NL;
@@ -2019,6 +2028,10 @@ void CMissionData::parsePrerequisites(NLLIGO::IPrimitive *prim)
 	_ReqGrade = getProperty(prim, "require_guild_grade", true, false);
 	// team size
 	_ReqTeamSize = getProperty(prim, "require_team_size", true, false);
+	// character minimum age
+	_ReqCharacterAge = getProperty(prim, "require_character_age", true, false);
+	// maximum player ID
+	_ReqMaxPlayerID = getProperty(prim, "require_max_player_id", true, false);
 	// brick
 	vs = getPropertyArray(prim, "require_brick_knowledge", true, false);
 	for (uint i=0; i<vs.size(); ++i)

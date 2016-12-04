@@ -34,6 +34,7 @@
 #include "nel/misc/system_info.h"
 #include "nel/misc/block_memory.h"
 #include "nel/misc/system_utils.h"
+#include "nel/misc/cmd_args.h"
 // 3D Interface.
 #include "nel/3d/bloom_effect.h"
 #include "nel/3d/u_driver.h"
@@ -103,6 +104,12 @@
 extern HINSTANCE HInstance;
 extern HWND SlashScreen;
 #endif // NL_OS_WINDOWS
+
+#ifdef NL_OS_MAC
+#include <stdio.h>
+#include <sys/resource.h>
+#include "nel/misc/dynloadlib.h"
+#endif
 
 #include "app_bundle_utils.h"
 
@@ -270,7 +277,7 @@ static INT_PTR CALLBACK ExitClientErrorDialogProc(HWND hwndDlg, UINT uMsg, WPARA
 			GetWindowRect (GetDesktopWindow (), &rectDesktop);
 			SetWindowPos (hwndDlg, HWND_TOPMOST, (rectDesktop.right-rectDesktop.left-rect.right+rect.left)/2, (rectDesktop.bottom-rectDesktop.top-rect.bottom+rect.top)/2, 0, 0, SWP_NOSIZE);
 			HICON exitClientDlgIcon = LoadIcon(HInstance, MAKEINTRESOURCE(IDI_MAIN_ICON));
-			::SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) exitClientDlgIcon);
+			::SendMessageA(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) exitClientDlgIcon);
 		}
 		break;
 		case WM_COMMAND:
@@ -374,29 +381,40 @@ void outOfMemory()
 	nlstopex (("OUT OF MEMORY"));
 }
 
+uint64		Debug_OldCPUMask = 0;
+uint64		Debug_NewCPUMask = 0;
+
 // For multi cpu, active only one CPU for the main thread
-uint64		Debug_OldCPUMask= 0;
-uint64		Debug_NewCPUMask= 0;
-void setCPUMask ()
+void setCPUMask(uint64 userCPUMask)
 {
-	uint64 cpuMask = IProcess::getCurrentProcess ()->getCPUMask();
-	Debug_OldCPUMask= cpuMask;
+	uint64 cpuMask = IProcess::getCurrentProcess()->getCPUMask();
+	Debug_OldCPUMask = cpuMask;
 
-	// get the processor to allow process
-	uint i = 0;
-	while ((i<64) && ((cpuMask&(SINT64_CONSTANT(1)<<i)) == 0))
-		i++;
-
-	// Set the CPU mask
-	if (i<64)
+	// if user CPU mask is valid
+	if (cpuMask & userCPUMask)
 	{
-		IProcess::getCurrentProcess ()->setCPUMask(1<<i);
-		//IThread::getCurrentThread ()->setCPUMask (1<<i);
+		// use it
+		IProcess::getCurrentProcess ()->setCPUMask(cpuMask & userCPUMask);
+	}
+	else
+	{
+		// else get first available CPU
+
+		// get the processor to allow process
+		uint i = 0;
+		while ((i < 64) && ((cpuMask & (UINT64_CONSTANT(1) << i)) == 0))
+			i++;
+
+		// Set the CPU mask
+		if (i < 64)
+		{
+			IProcess::getCurrentProcess ()->setCPUMask(UINT64_CONSTANT(1) << i);
+		}
 	}
 
 	// check
 	cpuMask = IProcess::getCurrentProcess ()->getCPUMask();
-	Debug_NewCPUMask= cpuMask;
+	Debug_NewCPUMask = cpuMask;
 }
 
 void	displayCPUInfo()
@@ -638,6 +656,83 @@ void initStereoDisplayDevice()
 	IStereoDisplay::releaseUnusedLibraries();
 }
 
+// we want to get executable directory
+extern NLMISC::CCmdArgs Args;
+
+static void addPaths(IProgressCallback &progress, const std::vector<std::string> &paths, bool recurse)
+{
+	// all prefixes for paths
+	std::vector<std::string> directoryPrefixes;
+
+	// current directory has priority everywhere
+	directoryPrefixes.push_back(CPath::standardizePath(CPath::getCurrentPath()));
+
+	// startup directory
+	directoryPrefixes.push_back(Args.getStartupPath());
+
+#if defined(NL_OS_WINDOWS)
+	// check in same directory as executable
+	directoryPrefixes.push_back(Args.getProgramPath());
+#elif defined(NL_OS_MAC)
+	// check in bundle (Installer)
+	directoryPrefixes.push_back(getAppBundlePath() + "/Contents/Resources/");
+
+	// check in same directory as bundle (Steam)
+	directoryPrefixes.push_back(CPath::makePathAbsolute(getAppBundlePath() + "/..", ".", true));
+#elif defined(NL_OS_UNIX)
+	// check in same directory as executable
+	directoryPrefixes.push_back(Args.getProgramPath());
+
+	// check in installed directory
+	if (CFile::isDirectory(getRyzomSharePrefix())) directoryPrefixes.push_back(CPath::standardizePath(getRyzomSharePrefix()));
+#endif
+
+	std::map<std::string, sint> directoriesToProcess;
+
+	// first pass, build a map with all existing directories to process in second pass
+	for (uint j = 0; j < directoryPrefixes.size(); j++)
+	{
+		std::string directoryPrefix = directoryPrefixes[j];
+
+		for (uint i = 0; i < paths.size(); i++)
+		{
+			std::string directory = NLMISC::expandEnvironmentVariables(paths[i]);
+
+			// only prepend prefix if path is relative
+			if (!directory.empty() && !directoryPrefix.empty() && !CPath::isAbsolutePath(directory))
+					directory = directoryPrefix + directory;
+
+			// only process existing directories
+			if (CFile::isExists(directory))
+				directoriesToProcess[directory] = 1;
+		}
+	}
+
+	uint total = (uint)directoriesToProcess.size();
+	uint current = 0, next = 0;
+
+	std::map<std::string, sint>::const_iterator it = directoriesToProcess.begin(), iend = directoriesToProcess.end();
+
+	// second pass, add search paths
+	while (it != iend)
+	{
+		// update next progress value
+		++next;
+
+		progress.progress((float)current/(float)total);
+		progress.pushCropedValues((float)current/(float)total, (float)next/(float)total);
+
+		// next is current value
+		current = next;
+
+		CPath::addSearchPath(it->first, recurse, false, &progress);
+
+		progress.popCropedValues();
+
+		++it;
+	}
+}
+
 void addSearchPaths(IProgressCallback &progress)
 {
 	// Add search path of UI addon. Allow only a subset of files.
@@ -647,54 +742,13 @@ void addSearchPaths(IProgressCallback &progress)
 	// Add Standard search paths
 	{
 		H_AUTO(InitRZAddSearchPath2)
-		for (uint i = 0; i < ClientCfg.DataPath.size(); i++)
-		{
-			progress.progress ((float)i/(float)ClientCfg.DataPath.size());
-			progress.pushCropedValues ((float)i/(float)ClientCfg.DataPath.size(), (float)(i+1)/(float)ClientCfg.DataPath.size());
 
-			CPath::addSearchPath(ClientCfg.DataPath[i], true, false, &progress);
-
-			progress.popCropedValues ();
-		}
+		addPaths(progress, ClientCfg.DataPath, true);
 
 		CPath::loadRemappedFiles("remap_files.csv");
 	}
 
-	for (uint i = 0; i < ClientCfg.DataPathNoRecurse.size(); i++)
-	{
-		progress.progress ((float)i/(float)ClientCfg.DataPathNoRecurse.size());
-		progress.pushCropedValues ((float)i/(float)ClientCfg.DataPathNoRecurse.size(), (float)(i+1)/(float)ClientCfg.DataPathNoRecurse.size());
-
-		CPath::addSearchPath(ClientCfg.DataPathNoRecurse[i], false, false, &progress);
-
-		progress.popCropedValues ();
-	}
-
-	std::string defaultDirectory;
-
-#ifdef NL_OS_MAC
-	defaultDirectory = CPath::standardizePath(getAppBundlePath() + "/Contents/Resources");
-#elif defined(NL_OS_UNIX)
-	if (CFile::isDirectory(getRyzomSharePrefix())) defaultDirectory = CPath::standardizePath(getRyzomSharePrefix());
-#endif
-
-	// add in last position, a specific possibly read only directory
-	if (!defaultDirectory.empty())
-	{
-		for (uint i = 0; i < ClientCfg.DataPath.size(); i++)
-		{
-			// don't prepend default directory if path is absolute
-			if (!ClientCfg.DataPath[i].empty() && ClientCfg.DataPath[i][0] != '/')
-			{
-				progress.progress ((float)i/(float)ClientCfg.DataPath.size());
-				progress.pushCropedValues ((float)i/(float)ClientCfg.DataPath.size(), (float)(i+1)/(float)ClientCfg.DataPath.size());
-
-				CPath::addSearchPath(defaultDirectory + ClientCfg.DataPath[i], true, false, &progress);
-
-				progress.popCropedValues ();
-			}
-		}
-	}
+	addPaths(progress, ClientCfg.DataPathNoRecurse, false);
 }
 
 void addPreDataPaths(NLMISC::IProgressCallback &progress)
@@ -703,43 +757,9 @@ void addPreDataPaths(NLMISC::IProgressCallback &progress)
 
 	H_AUTO(InitRZAddSearchPaths);
 
-	for (uint i = 0; i < ClientCfg.PreDataPath.size(); i++)
-	{
-		progress.progress ((float)i/(float)ClientCfg.PreDataPath.size());
-		progress.pushCropedValues ((float)i/(float)ClientCfg.PreDataPath.size(), (float)(i+1)/(float)ClientCfg.PreDataPath.size());
-
-		CPath::addSearchPath(ClientCfg.PreDataPath[i], true, false, &progress);
-
-		progress.popCropedValues ();
-	}
+	addPaths(progress, ClientCfg.PreDataPath, true);
 
 	//nlinfo ("PROFILE: %d seconds for Add search paths Predata", (uint32)(ryzomGetLocalTime ()-initPaths)/1000);
-
-	std::string defaultDirectory;
-
-#ifdef NL_OS_MAC
-	defaultDirectory = CPath::standardizePath(getAppBundlePath() + "/Contents/Resources");
-#elif defined(NL_OS_UNIX)
-	if (CFile::isDirectory(getRyzomSharePrefix())) defaultDirectory = CPath::standardizePath(getRyzomSharePrefix());
-#endif
-
-	// add in last position, a specific possibly read only directory
-	if (!defaultDirectory.empty())
-	{
-		for (uint i = 0; i < ClientCfg.PreDataPath.size(); i++)
-		{
-			// don't prepend default directory if path is absolute
-			if (!ClientCfg.PreDataPath[i].empty() && ClientCfg.PreDataPath[i][0] != '/')
-			{
-				progress.progress ((float)i/(float)ClientCfg.PreDataPath.size());
-				progress.pushCropedValues ((float)i/(float)ClientCfg.PreDataPath.size(), (float)(i+1)/(float)ClientCfg.PreDataPath.size());
-
-				CPath::addSearchPath(defaultDirectory + ClientCfg.PreDataPath[i], true, false, &progress);
-
-				progress.popCropedValues ();
-			}
-		}
-	}
 }
 
 static void addPackedSheetUpdatePaths(NLMISC::IProgressCallback &progress)
@@ -748,7 +768,7 @@ static void addPackedSheetUpdatePaths(NLMISC::IProgressCallback &progress)
 	{
 		progress.progress((float)i/(float)ClientCfg.UpdatePackedSheetPath.size());
 		progress.pushCropedValues ((float)i/(float)ClientCfg.UpdatePackedSheetPath.size(), (float)(i+1)/(float)ClientCfg.UpdatePackedSheetPath.size());
-		CPath::addSearchPath(ClientCfg.UpdatePackedSheetPath[i], true, false, &progress);
+		CPath::addSearchPath(NLMISC::expandEnvironmentVariables(ClientCfg.UpdatePackedSheetPath[i]), true, false, &progress);
 		progress.popCropedValues();
 	}
 }
@@ -783,6 +803,65 @@ static bool addRyzomIconBitmap(const std::string &directory, vector<CBitmap> &bi
 #endif
 
 //---------------------------------------------------
+// initLog :
+// Initialize the client.log file
+//---------------------------------------------------
+void initLog()
+{
+	// Add a displayer for Debug Infos.
+	createDebug();
+
+	// Client.Log displayer
+	nlassert( !ErrorLog->getDisplayer("CLIENT.LOG") );
+	CFileDisplayer *ClientLogDisplayer = new CFileDisplayer(getLogDirectory() + "client.log", true, "CLIENT.LOG");
+	DebugLog->addDisplayer (ClientLogDisplayer);
+	InfoLog->addDisplayer (ClientLogDisplayer);
+	WarningLog->addDisplayer (ClientLogDisplayer);
+	ErrorLog->addDisplayer (ClientLogDisplayer);
+	AssertLog->addDisplayer (ClientLogDisplayer);
+
+	// Display the client version.
+	nlinfo("RYZOM VERSION : %s", getDebugVersion().c_str());
+
+#ifdef NL_OS_MAC
+	struct rlimit rlp, rlp2, rlp3;
+
+	getrlimit(RLIMIT_NOFILE, &rlp);
+
+	rlim_t value = 1024;
+
+	rlp2.rlim_cur = std::min(value, rlp.rlim_max);
+	rlp2.rlim_max = rlp.rlim_max;
+	
+	if (setrlimit(RLIMIT_NOFILE, &rlp2))
+	{
+		if (errno == EINVAL)
+		{
+			nlwarning("Unable to set rlimit with error: the specified limit is invalid");
+		}
+		else if (errno == EPERM)
+		{
+			nlwarning("Unable to set rlimit with error: the limit specified would have raised the maximum limit value and the caller is not the super-user");
+		}
+		else
+		{
+			nlwarning("Unable to set rlimit with error: unknown error");
+		}
+	}
+
+	getrlimit(RLIMIT_NOFILE, &rlp3);
+	nlinfo("rlimit before %llu %llu", (uint64)rlp.rlim_cur, (uint64)rlp.rlim_max);
+	nlinfo("rlimit after %llu %llu", (uint64)rlp3.rlim_cur, (uint64)rlp3.rlim_max);
+
+	// add the bundle's plugins path as library search path (for nel drivers)
+	if (CFile::isExists(getAppBundlePath() + "/Contents/PlugIns/nel"))
+	{
+		CLibrary::addLibPath(getAppBundlePath() + "/Contents/PlugIns/nel/");
+	}
+#endif
+}
+
+//---------------------------------------------------
 // prelogInit :
 // Initialize the application before login
 // if the init fails, call nlerror
@@ -791,13 +870,24 @@ void prelogInit()
 {
 	try
 	{
+		H_AUTO ( RZ_Client_Init );
+
 		// Assert if no more memory
-		//	NLMEMORY::SetOutOfMemoryHook(outOfMemory);
+		set_new_handler(outOfMemory);
+
+		NLMISC_REGISTER_CLASS(CStage);
+		NLMISC_REGISTER_CLASS(CStageSet);
+		NLMISC_REGISTER_CLASS(CEntityManager);
+		NLMISC_REGISTER_CLASS(CCharacterCL);
+		NLMISC_REGISTER_CLASS(CPlayerCL);
+		NLMISC_REGISTER_CLASS(CUserEntity);
+		NLMISC_REGISTER_CLASS(CFxCL);
+		NLMISC_REGISTER_CLASS(CItemCL);
+		NLMISC_REGISTER_CLASS(CNamedEntityPositionState);
+		NLMISC_REGISTER_CLASS(CAnimalPositionState);
 
 		// Progress bar for init() and connection()
 		ProgressBar.reset (BAR_STEP_INIT_CONNECTION);
-
-		set_new_handler(outOfMemory);
 
 		// save screen saver state and disable it
 		LastScreenSaverEnabled = CSystemUtils::isScreensaverEnabled();
@@ -813,27 +903,9 @@ void prelogInit()
 		_control87 (_EM_INVALID|_EM_DENORMAL/*|_EM_ZERODIVIDE|_EM_OVERFLOW*/|_EM_UNDERFLOW|_EM_INEXACT, _MCW_EM);
 #endif // NL_OS_WINDOWS
 
-		CTime::CTimerInfo timerInfo;
-		NLMISC::CTime::probeTimerInfo(timerInfo);
-		if (timerInfo.RequiresSingleCore) // TODO: Also have a FV configuration value to force single core.
-			setCPUMask();
-
 		FPU_CHECKER_ONCE
 
 		NLMISC::TTime initStart = ryzomGetLocalTime ();
-
-		H_AUTO ( RZ_Client_Init );
-
-		NLMISC_REGISTER_CLASS(CStage);
-		NLMISC_REGISTER_CLASS(CStageSet);
-		NLMISC_REGISTER_CLASS(CEntityManager);
-		NLMISC_REGISTER_CLASS(CCharacterCL);
-		NLMISC_REGISTER_CLASS(CPlayerCL);
-		NLMISC_REGISTER_CLASS(CUserEntity);
-		NLMISC_REGISTER_CLASS(CFxCL);
-		NLMISC_REGISTER_CLASS(CItemCL);
-		NLMISC_REGISTER_CLASS(CNamedEntityPositionState);
-		NLMISC_REGISTER_CLASS(CAnimalPositionState);
 
 	//	_CrtSetDbgFlag( _CRTDBG_CHECK_CRT_DF );
 
@@ -844,31 +916,35 @@ void prelogInit()
 		// Init the debug memory
 		initDebugMemory();
 
-		// Add a displayer for Debug Infos.
-		createDebug();
+		// Load the application configuration.
+		ucstring nmsg("Loading config file...");
+		ProgressBar.newMessage (nmsg);
 
-		// Client.Log displayer
-		nlassert( !ErrorLog->getDisplayer("CLIENT.LOG") );
-		CFileDisplayer *ClientLogDisplayer = new CFileDisplayer(getLogDirectory() + "client.log", true, "CLIENT.LOG");
-		DebugLog->addDisplayer (ClientLogDisplayer);
-		InfoLog->addDisplayer (ClientLogDisplayer);
-		WarningLog->addDisplayer (ClientLogDisplayer);
-		ErrorLog->addDisplayer (ClientLogDisplayer);
-		AssertLog->addDisplayer (ClientLogDisplayer);
+		ClientCfg.init(ConfigFileName);
+		CLoginProgressPostThread::getInstance().init(ClientCfg.ConfigFile);
+
+		sint cpuMask;
+
+		if (ClientCfg.CPUMask < 1)
+		{
+			CTime::CTimerInfo timerInfo;
+			NLMISC::CTime::probeTimerInfo(timerInfo);
+
+			cpuMask = timerInfo.RequiresSingleCore ? 1:0;
+		}
+		else
+		{
+			cpuMask = ClientCfg.CPUMask;
+		}
+
+		if (cpuMask) setCPUMask(cpuMask);
 
 		setCrashCallback(crashCallback);
 
 		// Display Some Info On CPU
 		displayCPUInfo();
 
-		// Display the client version.
-		nlinfo("RYZOM VERSION : %s", getDebugVersion().c_str());
-
 		FPU_CHECKER_ONCE
-
-		// Set default email value for reporting error
-		// setReportEmailFunction ((void*)sendEmail);
-		// setDefaultEmailParams ("smtp.nevrax.com", "", "ryzombug@nevrax.com");
 
 		// create the save dir.
 		if (!CFile::isExists("save")) CFile::createDirectory("save");
@@ -880,14 +956,6 @@ void prelogInit()
 		// if we're not in final version then start the file access logger to keep track of the files that we read as we play
 		//ICommand::execute("iFileAccessLogStart",*NLMISC::InfoLog);
 #endif
-
-		// Load the application configuration.
-		ucstring nmsg("Loading config file...");
-		ProgressBar.newMessage (nmsg);
-
-		ClientCfg.init(ConfigFileName);
-
-		CLoginProgressPostThread::getInstance().init(ClientCfg.ConfigFile);
 
 		// check "BuildName" in ClientCfg
 		//nlassert(!ClientCfg.BuildName.empty()); // TMP comment by nico do not commit
@@ -1020,11 +1088,26 @@ void prelogInit()
 		// Check the driver is not is 16 bits
 		checkDriverDepth ();
 
-		// For login phase, MUST be in windowed
 		UDriver::CMode mode;
-		mode.Width		= 1024;
-		mode.Height		= 768;
-		mode.Windowed	= true;
+
+		bool forceWindowed1024x768 = true;
+		
+		if (Driver->getCurrentScreenMode(mode))
+		{
+			// if screen mode lower than 1024x768, use same mode in fullscreen
+			if (mode.Width <= 1024 && mode.Height <= 768)
+			{
+				mode.Windowed = false;
+				forceWindowed1024x768 = false;
+			}
+		}
+
+		if (forceWindowed1024x768)
+		{
+			mode.Width		= 1024;
+			mode.Height		= 768;
+			mode.Windowed	= true;
+		}
 
 		// Disable Hardware Vertex Program.
 		if(ClientCfg.DisableVtxProgram)

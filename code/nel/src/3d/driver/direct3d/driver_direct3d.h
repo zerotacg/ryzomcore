@@ -313,7 +313,7 @@ public:
 	{ 
 		std::map<std::string, uint>::const_iterator it = ParamIndices.find(name);
 		if (it != ParamIndices.end()) return it->second; 
-		return ~0;
+		return std::numeric_limits<uint>::max();
 	};
 
 	std::map<std::string, uint> ParamIndices;
@@ -335,7 +335,7 @@ public:
 	{ 
 		std::map<std::string, uint>::const_iterator it = ParamIndices.find(name);
 		if (it != ParamIndices.end()) return it->second; 
-		return ~0;
+		return std::numeric_limits<uint>::max();
 	};
 
 	std::map<std::string, uint> ParamIndices;
@@ -900,6 +900,7 @@ public:
 	virtual uint32			getImplementationVersion () const;
 	virtual const char*		getDriverInformation ();
 	virtual const char*		getVideocardInformation ();
+	virtual sint			getTotalVideoMemory () const;
 	virtual CVertexBuffer::TVertexColorType getVertexColorFormat() const;
 
 	// Textures

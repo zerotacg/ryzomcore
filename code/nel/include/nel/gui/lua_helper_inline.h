@@ -253,7 +253,20 @@ inline lua_Integer CLuaState::toInteger(int index)
 {
 	//H_AUTO(Lua_CLuaState_toInteger)
 	checkIndex(index);
+#if LUA_VERSION_NUM >= 503
+	sint isnum = 0;
+	// lua_tointeger fails with decimal numbers under Lua 5.3
+	lua_Integer res = lua_tointegerx(_State, index, &isnum);
+	if (!isnum)
+	{
+		lua_Number d = lua_tonumber(_State, index);
+		nlwarning("Lua: Unable to convert Lua number %lf to integer", d);
+		res = (lua_Integer)d;
+	}
+	return res;
+#else
 	return lua_tointeger(_State, index);
+#endif
 }
 
 //================================================================================

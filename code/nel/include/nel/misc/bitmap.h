@@ -237,6 +237,34 @@ private :
 
 
 	/**
+	 * The grayscale resample function
+	 * \param pSrc grayscale 8-bits array
+	 * \param pDest grayscale 8-bits array for storing resampled texture
+	 * \param nSrcWidth original width
+	 * \param nSrcHeight original height
+	 * \param nDestWidth width after resample
+	 * \param nDestHeight height after resample
+	 */
+	void resamplePicture8 (const uint8 *pSrc, uint8 *pDest,
+							 sint32 nSrcWidth, sint32 nSrcHeight,
+							 sint32 nDestWidth, sint32 nDestHeight);
+
+	/**
+	 * The FAST resample function : works only when reducing the size by two
+	 * and when the image is square
+	 * \param pSrc grayscale 8-bits array
+	 * \param pDest grayscale 8-bits array for storing resampled texture
+	 * \param nSrcWidth original width
+	 * \param nSrcHeight original height
+	 * \param nDestWidth width after resample
+	 * \param nDestHeight height after resample
+	 */
+	void resamplePicture8Fast (const uint8 *pSrc, uint8 *pDest,
+								sint32 nSrcWidth, sint32 nSrcHeight,
+								sint32 nDestWidth, sint32 nDestHeight);
+
+
+	/**
 	 * Quadratic interpolator
 	 * \return the interpolation in (x,y) of the values (xy**)
 	 */
@@ -292,16 +320,8 @@ public:
 
 	// don't forget to update operator=() and swap() if adding a data member
 
-	CBitmap()
-	{
-		_MipMapCount = 1;
-		_Width = 0;
-		_Height = 0;
-		PixelFormat = RGBA;
-		_LoadGrayscaleAsAlpha = true;
-	}
-
-	virtual ~CBitmap() { }
+	CBitmap();
+	virtual ~CBitmap();
 
 	// swap 2 bitmaps contents
 	void	swap(CBitmap &other);
@@ -347,6 +367,27 @@ public:
 	 * Make a dummy "2" texture. Useful for file not power of 2. Mode is rgba.
 	 */
 	void	makeNonPowerOf2Dummy();
+
+
+	/**
+	 * Make a bitmap fully opaque (set alpha to 255).
+	 */
+	void	makeOpaque();
+
+
+	/**
+	 * Return if the bitmap has uniform alpha values for all pixels.
+	 * \param alpha return the uniform value if return is true
+	 * \return uniform or not
+	 */
+	bool	isAlphaUniform(uint8 *alpha = NULL) const;
+
+
+	/**
+	 * Return if the bitmap is a real grayscale.
+	 * \return grayscale or not
+	 */
+	bool	isGrayscale() const;
 
 	/**
 	 * Return the pixels buffer of the image, or of one of its mipmap.

@@ -145,6 +145,7 @@ void CSystem::GatherOpenGLInfo()
 	try
 	{
 		NL3D::IDriver *driver = NL3D::CDRU::createGlDriver();
+		driver->init(0);
 		GetVideoModes( openglInfo.modes, driver );
 		driver->release();
 	}
@@ -159,9 +160,19 @@ void CSystem::GetVideoModes( std::vector< CVideoMode > &dst, NL3D::IDriver *driv
 	std::vector< NL3D::GfxMode > modes;
 	driver->getModes( modes );
 
+	{
+		// auto mode
+		CVideoMode mode;
+		mode.depth = 0;
+		mode.width = 0;
+		mode.height = 0;
+		mode.frequency = 0;
+		dst.push_back( mode );
+	}
+
 	for( std::vector< NL3D::GfxMode >::iterator itr = modes.begin(); itr != modes.end(); ++itr )
 	{
-		if( ( itr->Width >= 800 ) && ( itr->Height >= 600 ) && ( itr->Depth == 32 ) && ( itr->Frequency >= 60 ) )
+		if( ( itr->Width >= 800 ) && ( itr->Height >= 600 ) && ( itr->Depth >= 16 ) )
 		{
 			CVideoMode mode;
 			mode.depth = itr->Depth;

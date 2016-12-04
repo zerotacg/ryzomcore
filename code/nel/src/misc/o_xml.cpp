@@ -43,21 +43,10 @@ const char SEPARATOR = ' ';
 
 // ***************************************************************************
 
-#ifdef USE_LOCALE_SPRINTF
-
-#define writenumber(src,format,digits) \
-	char number_as_cstring [digits+1]; \
-	_sprintf_l( number_as_cstring, format, (_locale_t)_Locale, src ); \
-	serialSeparatedBufferOut( number_as_cstring );
-
-#else
-
 #define writenumber(src,format,digits) \
 	char number_as_cstring [digits+1]; \
 	sprintf( number_as_cstring, format, src ); \
 	serialSeparatedBufferOut( number_as_cstring );
-
-#endif
 
 // ***************************************************************************
 // XML callbacks
@@ -149,13 +138,6 @@ COXml::COXml () : IStream (false /* Output mode */)
 
 	// Push begin
 	_PushBegin = false;
-
-#ifdef USE_LOCALE_SPRINTF
-	// create C numeric locale
-	_Locale = _create_locale(LC_NUMERIC, "C");
-#else
-	_Locale = NULL;
-#endif
 }
 
 // ***************************************************************************
@@ -215,10 +197,6 @@ COXml::~COXml ()
 {
 	// Flush document to the internal stream
 	flush ();
-
-#ifdef USE_LOCALE_SPRINTF
-	if (_Locale) _free_locale((_locale_t)_Locale);
-#endif
 }
 
 // ***************************************************************************
@@ -327,14 +305,14 @@ void COXml::serial(sint32 &b)
 
 void COXml::serial(uint64 &b)
 {
-	writenumber( b, "%"NL_I64"u", 20 );
+	writenumber( b, "%" NL_I64 "u", 20 );
 }
 
 // ***************************************************************************
 
 void COXml::serial(sint64 &b)
 {
-	writenumber( b, "%"NL_I64"d", 20 );
+	writenumber( b, "%" NL_I64 "d", 20 );
 }
 
 // ***************************************************************************

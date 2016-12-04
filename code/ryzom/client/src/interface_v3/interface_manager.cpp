@@ -495,8 +495,8 @@ CInterfaceManager::CInterfaceManager()
 	CViewRenderer::getInstance()->checkNewScreenSize();
 	{
 		uint32 w,h;
-		CViewRenderer::getInstance()->getScreenSize( w, h );
-		CWidgetManager::getInstance()->setScreenWH( w, h );
+		CViewRenderer::getInstance()->getScreenSize(w, h);
+		CWidgetManager::getInstance()->setScreenWH(w, h);
 	}
 	CViewRenderer::getInstance()->init();
 
@@ -2704,7 +2704,7 @@ void CInterfaceManager::log(const ucstring &str, const std::string &cat)
 	{
 		// Open file with the name of the player
 		const string fileName= "save/log_" + PlayerSelectedFileName + ".txt";
-		FILE *f = fopen(fileName.c_str(), "at");
+		FILE *f = nlfopen(fileName, "at");
 		if (f != NULL)
 		{
 			const string finalString = string(NLMISC::IDisplayer::dateToHumanString()) + " (" + NLMISC::toUpper(cat) + ") * " + str.toUtf8();
@@ -2904,6 +2904,32 @@ struct CEmoteEntry
 	}
 };
 
+static bool translateEmote(const std::string &id, ucstring &translatedName, std::string &commandName, std::string &commandNameAlt)
+{
+	if (CI18N::hasTranslation(id))
+	{
+		translatedName = CI18N::get(id);
+
+		// convert command to utf8 since emote translation can have strange chars
+		commandName = toLower(translatedName).toUtf8();
+
+		// replace all spaces by _
+		while (strFindReplace(commandName, " ", "_"));
+
+		// TODO: remove accents
+		commandNameAlt = commandName;
+
+		if (commandNameAlt == commandName) commandNameAlt.clear();
+
+		return true;
+	}
+
+	translatedName = id;
+	commandName = id;
+
+	return false;
+}
+
 // ***************************************************************************
 void CInterfaceManager::initEmotes()
 {
@@ -2984,6 +3010,10 @@ void CInterfaceManager::initEmotes()
 		CGroupSubMenu *pMenu = pRootMenu->getRootMenu();
 		nlassert(pMenu);
 
+		ucstring sTranslatedName;
+		std::string sCommandName;
+		std::string sCommandNameAlt;
+
 		// Add to the game context menu
 		// ----------------------------
 		for (i = 0; i < nbToken; ++i)
@@ -3021,8 +3051,10 @@ void CInterfaceManager::initEmotes()
 				}
 				else
 				{
+					translateEmote(sTmp, sTranslatedName, sCommandName, sCommandNameAlt);
+
 					// Create a line
-					pMenu->addLine ("/" + CI18N::get(sTmp), "emote",
+					pMenu->addLine (sTranslatedName + " (/" + ucstring::makeFromUtf8(sCommandName) + ")", "emote",
 						"nb="+toString(nEmoteNb)+"|behav="+toString(nBehav), sTmp);
 				}
 			}
@@ -3035,24 +3067,41 @@ void CInterfaceManager::initEmotes()
 			}
 		}
 
+		if (sTranslatedName.empty())
+			translateEmote(sName, sTranslatedName, sCommandName, sCommandNameAlt);
+
 		// Create new command
 		// ------------------
-		if (CI18N::hasTranslation(sName))
+		if (!sTranslatedName.empty())
 		{
-			CGroupSubMenu *pMenu = pRootMenu->getRootMenu();
-
-			// convert command to utf8 since emote translation can have strange chars
-			string cmdName = (toLower(CI18N::get(sName))).toUtf8();
-			if(ICommand::exists(cmdName))
+			if(ICommand::exists(sCommandName))
 			{
-				nlwarning("Translation for emote %s already exist: '%s' exist twice", sName.c_str(), cmdName.c_str());
+				nlwarning("Translation for emote %s already exist: '%s' exist twice", sName.c_str(), sCommandName.c_str());
 			}
 			else
 			{
-				CEmoteCmd *pNewCmd = new CEmoteCmd(cmdName.c_str(), "", "");
+				CEmoteCmd *pNewCmd = new CEmoteCmd(sCommandName.c_str(), "", "");
 				pNewCmd->EmoteNb = nEmoteNb;
 				pNewCmd->Behaviour = nBehav;
 				_EmoteCmds.push_back(pNewCmd);
+
+				// add alternative command if defined
+				if (!sCommandNameAlt.empty())
+				{
+					if(ICommand::exists(sCommandNameAlt))
+					{
+						nlwarning("Translation for emote %s already exist: '%s' exist twice", sName.c_str(), sCommandName.c_str());
+					}
+					else
+					{
+						CEmoteCmd *pNewCmd = new CEmoteCmd(sCommandNameAlt.c_str(), "", "");
+						pNewCmd->EmoteNb = nEmoteNb;
+						pNewCmd->Behaviour = nBehav;
+						_EmoteCmds.push_back(pNewCmd);
+					}
+				}
+
+				CGroupSubMenu *pMenu = pRootMenu->getRootMenu();
 
 				// Quick-Emote too ?
 				for (i = 0; i< pMenu->getNumLine (); i++)
@@ -3061,7 +3110,7 @@ void CInterfaceManager::initEmotes()
 					{
 						// Yeah that's a quick emote too; set command
 						pMenu->addLineAtIndex (i,
-								"@{FFFF}/" + toLower(CI18N::get(sName)),
+								"@{FFFF}/" + ucstring::makeFromUtf8(sCommandName),
 								"emote", "nb="+toString(nEmoteNb)+"|behav="+toString(nBehav),
 								"", "", "", false, false, true);
 

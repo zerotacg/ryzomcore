@@ -34,6 +34,7 @@ namespace NLGUI
 	class CCtrlButton;
 	class CCtrlScroll;
 	class CGroupList;
+	class CGroupMenu;
 	class CDBGroupComboBox;
 	class CGroupParagraph;
 
@@ -189,6 +190,7 @@ namespace NLGUI
 		std::string		DefaultFormTextGroup;
 		std::string		DefaultFormTextAreaGroup;
 		std::string		DefaultFormSelectGroup;
+		std::string		DefaultFormSelectBoxMenuGroup;
 		std::string		DefaultCheckBoxBitmapNormal;
 		std::string		DefaultCheckBoxBitmapPushed;
 		std::string		DefaultCheckBoxBitmapOver;
@@ -345,6 +347,7 @@ namespace NLGUI
 
 		// Add a combo box in the current paragraph
 		CDBGroupComboBox *addComboBox(const std::string &templateName, const char *name);
+		CGroupMenu *addSelectBox(const std::string &templateName, const char *name);
 
 		// Add a button in the current paragraph. actionHandler, actionHandlerParams and tooltip can be NULL.
 		CCtrlButton *addButton(CCtrlButton::EType type, const std::string &name, const std::string &normalBitmap, const std::string &pushedBitmap,
@@ -369,12 +372,20 @@ namespace NLGUI
 		// Delete page content and prepare next page
 		void removeContent ();
 
-		// Current URL
+		// Current URL for relative links in page
 		std::string		_URL;
+		// Current URL
+		std::string		_DocumentUrl;
+		// Valid base href was found
+		bool            _IgnoreBaseUrlTag;
 		// Fragment from loading url
 		std::string		_UrlFragment;
 		std::map<std::string,NLGUI::CInterfaceElement *> _Anchors;
 		std::vector<std::string> _AnchorName;
+
+		// Parser context
+		bool			_ReadingHeadTag;
+		bool			_IgnoreHeadTag;
 
 		// Current DOMAIN
 		bool			_TrustedDomain;
@@ -401,6 +412,10 @@ namespace NLGUI
 		double			_TimeoutValue;			// the timeout in seconds
 		double			_ConnectingTimeout;
 		sint			_RedirectsRemaining;
+		// Automatic page refresh
+		double			_LastRefreshTime;
+		double			_NextRefreshTime;
+		std::string		_RefreshUrl;
 
 		// minimal embeded lua script support
 		// Note : any embeded script is executed immediately after the closing
@@ -438,23 +453,33 @@ namespace NLGUI
 			return _PRE.back();
 		}
 
-		// UL mode
-		std::vector<bool>	_UL;
-		inline bool getUL() const
-		{
-			if (_UL.empty())
-				return false;
-			return _UL.back();
-		}
-
 		// DL list
-		std::vector<bool>	_DL;
-		inline bool getDL() const
-		{
-			if (_DL.empty())
-				return false;
-			return _DL.back();
-		}
+		class HTMLDListElement {
+		public:
+			HTMLDListElement()
+				: DT(false), DD(false)
+			{ }
+
+		public:
+			bool DT;
+			bool DD;
+		};
+		std::vector<HTMLDListElement>	_DL;
+
+		// OL and UL
+		class HTMLOListElement {
+		public:
+			HTMLOListElement(int start, std::string type)
+				: Value(start),Type(type), First(true)
+			{ }
+
+			std::string getListMarkerText() const;
+		public:
+			sint32 Value;
+			std::string Type;
+			bool First;
+		};
+		std::vector<HTMLOListElement> _UL;
 
 		// A mode
 		std::vector<bool>	_A;
@@ -467,7 +492,6 @@ namespace NLGUI
 
 		// IL mode
 		bool _LI;
-		bool _DT;
 
 		// Current text color
 		std::vector<NLMISC::CRGBA>	_TextColor;
@@ -557,7 +581,15 @@ namespace NLGUI
 				return "";
 			return _LinkClass.back().c_str();
 		}
-		
+
+		std::vector<bool>				_BlockLevelElement;
+		inline bool isBlockLevelElement() const
+		{
+			if (_BlockLevelElement.empty())
+				return false;
+			return _BlockLevelElement.back();
+		}
+
 		// Divs (i.e. interface group)
 		std::vector<class CInterfaceGroup*>	_Divs;
 		inline CInterfaceGroup *getDiv() const
@@ -601,6 +633,10 @@ namespace NLGUI
 					TextArea = NULL;
 					Checkbox = NULL;
 					ComboBox = NULL;
+					SelectBox = NULL;
+					sbRBRef = NULL;
+					sbMultiple = false;
+					sbOptionDisabled = -1;
 					InitialSelection = 0;
 				}
 
@@ -618,6 +654,19 @@ namespace NLGUI
 
 				// Combobox group
 				CDBGroupComboBox *ComboBox;
+
+				// Combobox with multiple selection or display size >= 2
+				CGroupMenu *SelectBox;
+
+				// Single or multiple selections for SelectBox
+				bool sbMultiple;
+
+				// Marks OPTION element as disabled
+				// Only valid when parsing html
+				sint sbOptionDisabled;
+
+				// First radio button in SelectBox if single selection
+				CCtrlBaseButton *sbRBRef;
 
 				// select values (for the <select> tag)
 				std::vector<std::string> SelectValues;

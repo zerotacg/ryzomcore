@@ -152,6 +152,7 @@ FILE(GLOB NLMISC_BITMAP
 FILE(GLOB NLMISC_CRYPT
 	md5.cpp ../../include/nel/misc/md5.h
 	sha1.cpp ../../include/nel/misc/sha1.h
+	../../include/nel/misc/wang_hash.h
 )
 
 SOURCE_GROUP("" FILES ${SRC} ${HEADERS})
@@ -199,12 +200,6 @@ ELSE(WITH_STATIC OR WIN32)
   # Link only with libpng shared library
   TARGET_LINK_LIBRARIES(nelmisc ${PNG_LIBRARY})
 ENDIF(WITH_STATIC OR WIN32)
-
-# For DirectInput (di_event_emitter)
-IF(WIN32)
-  INCLUDE_DIRECTORIES(BEFORE ${DXSDK_INCLUDE_DIR})
-  TARGET_LINK_LIBRARIES(nelmisc ${DXSDK_DINPUT_LIBRARY} ${DXSDK_GUID_LIBRARY} winmm dbghelp)
-ENDIF(WIN32)
 
 IF(UNIX)
   TARGET_LINK_LIBRARIES(nelmisc -lc -ldl)

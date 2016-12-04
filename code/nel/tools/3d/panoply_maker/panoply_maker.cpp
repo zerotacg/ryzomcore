@@ -55,16 +55,17 @@ string	DivideBy2Dir= "/d4/";
 /// describes the building infos
 struct CBuildInfo
 {
-	std::string					 InputPath;
-	std::string					 OutputPath;
-	std::string					 HlsInfoPath;
-	std::string					 CachePath;
-	std::vector<std::string>     BitmapExtensions; // the supported extension for bitmaps
-	std::string					 OutputFormat; // png or tga
-	std::string					 DefaultSeparator;
-	TColorMaskVect				 ColorMasks;
+	std::string					InputPath;
+	std::string					OutputPath;
+	std::string					HlsInfoPath;
+	std::string					CachePath;
+	std::vector<std::string>    BitmapExtensions; // the supported extension for bitmaps
+	std::string					OutputFormat; // png or tga
+	std::string					DefaultSeparator;
+	TColorMaskVect				ColorMasks;
 	// how to shift right the size of the src Bitmap for the .hlsinfo
-	uint						 LowDefShift;
+	uint						LowDefShift;
+	uint						OptimizeTextures; // 0 = don't check, 1 = check
 };
 
 
@@ -321,8 +322,7 @@ int main(int argc, char* argv[])
 					NLMISC::CConfigFile::CVar &bitmap_extensions = cf.getVar ("bitmap_extensions");
 					for (uint k = 0; k < (uint) bitmap_extensions.size(); ++k)
 					{
-						std::string ext = "." + bitmap_extensions.asString(k);
-						ext = NLMISC::strupr(ext);
+						std::string ext = "." + NLMISC::toLower(bitmap_extensions.asString(k));
 						if (std::find(bi.BitmapExtensions.begin(), bi.BitmapExtensions.end(), ext) == bi.BitmapExtensions.end())
 						{
 							bi.BitmapExtensions.push_back(ext);
@@ -345,6 +345,15 @@ int main(int argc, char* argv[])
 					bi.LowDefShift= 3;
 				}
 
+				try
+				{
+					bi.OptimizeTextures = cf.getVar ("optimize_textures").asInt();
+				}
+				catch (const NLMISC::EUnknownVar &)
+				{
+					// don't check files by default
+					bi.OptimizeTextures = 0;
+				}
 			}
 			catch (const std::exception &e)
 			{
@@ -471,7 +480,7 @@ static void BuildColoredVersions(const CBuildInfo &bi)
 		{
 			for (uint l = 0; l < bi.BitmapExtensions.size(); ++l)
 			{
-				std::string fileExt = "." + NLMISC::strupr(NLMISC::CFile::getExtension(files[k]));
+				std::string fileExt = "." + NLMISC::toLower(NLMISC::CFile::getExtension(files[k]));
 				if (fileExt == bi.BitmapExtensions[l])
 				{
 					//nlwarning("Processing : %s ", files[k].c_str());
@@ -520,7 +529,7 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 	masks.clear();
 
 	std::string fileName = NLMISC::CFile::getFilenameWithoutExtension(fileNameWithExtension);
-	std::string fileExt  = NLMISC::strupr(NLMISC::CFile::getExtension(fileNameWithExtension));
+	std::string fileExt  = NLMISC::toLower(NLMISC::CFile::getExtension(fileNameWithExtension));
 
 	for (uint k = 0; k < bi.ColorMasks.size(); ++k)
 	{
@@ -647,10 +656,23 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		{
 			if (is.open(fullInputBitmapPath))
 			{
+				// 8 bits textures are grayscale
+				srcBitmap.loadGrayscaleAsAlpha(false);
+
 				depth = srcBitmap.load(is);
+				is.close();
+
 				if (depth == 0 || srcBitmap.getPixels().empty())
 				{
 					throw NLMISC::Exception("Failed to load bitmap");
+				}
+
+				// if bitmap is RGBA but has an alpha channel fully opaque (255),
+				// we can save it as RGB to optimize it
+				uint8 value = 0;
+				if (bi.OptimizeTextures > 0 && depth == 32 && srcBitmap.isAlphaUniform(&value) && value == 255)
+				{
+					nlwarning("Texture %s can be optimized, run textures_optimizer", fullInputBitmapPath.c_str());
 				}
 
 				if (srcBitmap.PixelFormat != NLMISC::CBitmap::RGBA)
@@ -696,14 +718,14 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 	masks.clear();
 
 	std::string fileName = NLMISC::CFile::getFilenameWithoutExtension(fileNameWithExtension);
-	std::string fileExt  = NLMISC::strupr(NLMISC::CFile::getExtension(fileNameWithExtension));
+	std::string fileExt  = NLMISC::toLower(NLMISC::CFile::getExtension(fileNameWithExtension));
 
 	uint	k;
 	for (k = 0; k < bi.ColorMasks.size(); ++k)
 	{
 		std::string maskName = fileName + "_" + bi.ColorMasks[k].MaskExt + "." + fileExt;
-		std::string maskFileName = NLMISC::CPath::lookup(maskName,
-														 false, false);
+		std::string maskFileName = NLMISC::CPath::lookup(maskName, false, false);
+
 		if (!maskFileName.empty()) // found the mask ?
 		{
 			CLoopInfo li;
@@ -717,14 +739,28 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 
 				if (is.open(maskFileName))
 				{
-					if (li.Mask.load(is) == 0 || li.Mask.getPixels().empty())
+					// masks are always opaque, if the mask is 8bits, it's in grayscale
+					li.Mask.loadGrayscaleAsAlpha(false);
+
+					uint8 maskDepth = li.Mask.load(is);
+
+					is.close();
+
+					if (maskDepth == 0 || li.Mask.getPixels().empty())
 					{
 						throw NLMISC::Exception("Failed to load mask");
 					}
 
-					if (li.Mask.PixelFormat != NLMISC::CBitmap::RGBA)
+					// display a warning if checks enabled
+					if (li.Mask.getPixelFormat() == CBitmap::RGBA && bi.OptimizeTextures > 0 && !li.Mask.isGrayscale())
 					{
-						li.Mask.convertToType(NLMISC::CBitmap::RGBA);
+						nlwarning("Mask %s is using colors, results may by incorrect! Run textures_optimizer to fix it.", maskFileName.c_str());
+					}
+
+					// convert image to real grayscale
+					if (li.Mask.PixelFormat != NLMISC::CBitmap::Luminance)
+					{
+						li.Mask.convertToType(NLMISC::CBitmap::Luminance);
 					}
 
 					/// make sure the mask has the same size
@@ -803,7 +839,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		nlinfo("Writing %s", outputFileName.c_str());
 		/// Save the result. We let propagate exceptions (if there's no more space disk it useless to continue...)
 		{
-			std::string fullOutputPath = bi.OutputPath + "/" + outputFileName + bi.OutputFormat;
+			std::string fullOutputPath = bi.OutputPath + outputFileName + bi.OutputFormat;
 
 			try
 			{
@@ -865,5 +901,4 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 	{
 		nlerror("Couldn't write %s", fullHlsInfoPath.c_str());
 	}
-
 }

@@ -43,17 +43,34 @@
 // This way we know about _HAS_TR1 and _STLPORT_VERSION
 #include <string>
 
+#if defined(HAVE_X86_64)
+#	define NL_CPU_INTEL
+#	define NL_CPU_X86_64
+// x86_64 CPU always have SSE2 instructions
+#	ifndef NL_HAS_SSE2
+#		define NL_HAS_SSE2
+#	endif
+#elif defined(HAVE_X86)
+#	define NL_CPU_INTEL
+#	define NL_CPU_X86
+#endif
+
 // Operating systems definition
 #ifdef _WIN32
 #	define NL_OS_WINDOWS
 #	define NL_LITTLE_ENDIAN
-#	define NL_CPU_INTEL
+#	ifndef NL_CPU_INTEL
+#		define NL_CPU_INTEL
+#	endif
 #	ifndef _WIN32_WINNT
 #		define _WIN32_WINNT 0x0500	// Minimal OS = Windows 2000 (NeL is not supported on Windows 95/98)
 #	endif
 #	ifdef _MSC_VER
 #		define NL_COMP_VC
-#		if _MSC_VER >= 1800
+#		if _MSC_VER >= 1900
+#			define NL_COMP_VC14
+#			define NL_COMP_VC_VERSION 140
+#		elif _MSC_VER >= 1800
 #			define NL_COMP_VC12
 #			define NL_COMP_VC_VERSION 120
 #		elif _MSC_VER >= 1700
@@ -178,6 +195,10 @@
 #			define NL_ISO_STDTR1_NAMESPACE std
 #		endif
 #	endif
+	// clang define GCC version for compatibility
+#	ifdef __clang__
+#		define CLANG_VERSION (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
+#	endif
 #endif
 
 // Remove stupid Visual C++ warnings
@@ -285,7 +306,7 @@
  * Used to display a int64 in a platform independent way with printf like functions.
  \code
  sint64 myint64 = SINT64_CONSTANT(0x123456781234);
- printf("This is a 64 bits int: %"NL_I64"u", myint64);
+ printf("This is a 64 bits int: %" NL_I64 "u", myint64);
  \endcode
  */
 
@@ -384,10 +405,13 @@ inline void aligned_free(void *ptr) { free(ptr); }
 #define NL_DEFAULT_MEMORY_ALIGNMENT 16
 #define NL_ALIGN_SSE2 NL_ALIGN(NL_DEFAULT_MEMORY_ALIGNMENT)
 
+#ifndef NL_CPU_X86_64
+// on x86_64, new and delete are already aligned on 16 bytes
 extern void *operator new(size_t size) throw(std::bad_alloc);
 extern void *operator new[](size_t size) throw(std::bad_alloc);
 extern void operator delete(void *p) throw();
 extern void operator delete[](void *p) throw();
+#endif
 
 #else /* NL_HAS_SSE2 */
 

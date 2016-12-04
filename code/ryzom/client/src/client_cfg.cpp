@@ -25,6 +25,7 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/bit_mem_stream.h"
 #include "nel/misc/i18n.h"
+#include "nel/misc/cmd_args.h"
 // Client.
 #include "client_cfg.h"
 #include "entities.h"
@@ -256,6 +257,8 @@ extern string	Cookie;
 extern string	FSAddr;
 #endif
 
+extern NLMISC::CCmdArgs Args;
+
 /////////////
 // METHODS //
 /////////////
@@ -382,6 +385,7 @@ CClientConfig::CClientConfig()
 	HDTextureInstalled	= false;
 	Fog					= true;						// Fog is on by default
 	WaitVBL				= false;
+	VideoMemory			= 0;
 
 	FXAA				= true;
 
@@ -420,7 +424,6 @@ CClientConfig::CClientConfig()
 	PatchUrl.clear();
 	PatchletUrl.clear();
 	PatchVersion.clear();
-	PatchServer.clear();
 
 	WebIgMainDomain = "shard.ryzomcore.org";
 	WebIgTrustedDomains.push_back(WebIgMainDomain);
@@ -507,6 +510,7 @@ CClientConfig::CClientConfig()
 
 	Sleep				= -1;						// Default : client does not sleep.
 	ProcessPriority		= 0;						// Default : NORMAL
+	CPUMask				= 0;						// Default : auto detection
 	ShowPath			= false;					// Default : do not display the path.
 	DrawBoxes			= false;					// Default : Do not draw the selection.
 
@@ -880,6 +884,7 @@ void CClientConfig::setValues()
 	READ_STRING_FV(CreateAccountURL)
 	READ_STRING_FV(EditAccountURL)
 	READ_STRING_FV(ConditionsTermsURL)
+	READ_STRING_FV(NamingPolicyURL)
 	READ_STRING_FV(BetaAccountURL)
 	READ_STRING_FV(ForgetPwdURL)
 	READ_STRING_FV(FreeTrialURL)
@@ -1014,6 +1019,8 @@ void CClientConfig::setValues()
 
 	// WaitVBL
 	READ_BOOL_FV(WaitVBL)
+	// VideoMemory
+	READ_INT_FV(VideoMemory);
 
 	READ_INT_DEV(TimerMode)
 
@@ -1049,19 +1056,19 @@ void CClientConfig::setValues()
 
 	/////////////////////////
 	// NEW PATCHING SYSTEM //
-	READ_BOOL_FV(PatchWanted)
-	READ_STRING_FV(PatchServer)
+	READ_BOOL_DEV(PatchWanted)
+
+#ifdef RZ_USE_CUSTOM_PATCH_SERVER
 	READ_STRING_FV(PatchUrl)
 	READ_STRING_FV(PatchVersion)
 	READ_STRING_FV(RingReleaseNotePath)
 	READ_STRING_FV(ReleaseNotePath)
-	READ_BOOL_DEV(PatchWanted)
-	READ_STRING_DEV(PatchServer)
+#else
 	READ_STRING_DEV(PatchUrl)
 	READ_STRING_DEV(PatchVersion)
 	READ_STRING_DEV(RingReleaseNotePath)
 	READ_STRING_DEV(ReleaseNotePath)
-
+#endif
 
 	/////////////////////////
 	// NEW PATCHLET SYSTEM //
@@ -1487,6 +1494,8 @@ void CClientConfig::setValues()
 	READ_INT_FV(Sleep)
 	// ProcessPriority
 	READ_INT_FV(ProcessPriority)
+	// CPUMask
+	READ_INT_FV(CPUMask)
 	// ShowPath : Get the ShowPath value.
 	READ_BOOL_DEV(ShowPath)
 	// UserSheet : Get the sheet to used for the use rin Local mode.
@@ -1758,8 +1767,8 @@ void CClientConfig::setValues()
 
 	READ_BOOL_DEV(DamageShieldEnabled)
 
-	READ_BOOL_DEV(AllowDebugLua)
-	READ_BOOL_DEV(DisplayLuaDebugInfo)
+	READ_BOOL_FV(AllowDebugLua)
+	READ_BOOL_FV(DisplayLuaDebugInfo)
 
 	READ_BOOL_DEV(LuaDebugInfoGotoButtonEnabled)
 	READ_STRING_DEV(LuaDebugInfoGotoButtonTemplate)
@@ -1923,7 +1932,7 @@ void CClientConfig::init(const string &configFileName)
 	if(!CFile::fileExists(configFileName))
 	{
 		// create the basic .cfg
-		FILE *fp = fopen(configFileName.c_str(), "w");
+		FILE *fp = nlfopen(configFileName, "w");
 
 		if (fp == NULL)
 			nlerror("CFG::init: Can't create config file '%s'", configFileName.c_str());
@@ -2207,25 +2216,31 @@ bool CClientConfig::getDefaultConfigLocation(std::string& p_name) const
 
 #ifdef NL_OS_MAC
 	// on mac, client_default.cfg should be searched in .app/Contents/Resources/
-	defaultConfigPath = CPath::standardizePath(getAppBundlePath() + "/Contents/Resources/");
-#elif defined(NL_OS_UNIX)
-	// if RYZOM_ETC_PREFIX is defined, client_default.cfg might be over there
-	defaultConfigPath = CPath::standardizePath(getRyzomEtcPrefix());
+	defaultConfigPath = getAppBundlePath() + "/Contents/Resources/";
 #else
-	// some other prefix here :)
-#endif // NL_OS_UNIX
+	// unders Windows or Linux, search client_default.cfg is same directory as executable
+	defaultConfigPath = Args.getProgramPath();
+#endif
+
+	std::string currentPath = CPath::standardizePath(CPath::getCurrentPath());
+	std::string etcPath = CPath::standardizePath(getRyzomEtcPrefix());
 
 	// look in the current working directory first
-	if (CFile::isExists(defaultConfigFileName))
-		p_name = defaultConfigFileName;
+	if (CFile::isExists(currentPath + defaultConfigFileName))
+		p_name = currentPath + defaultConfigFileName;
 
-	// if not in working directory, check using prefix path
+	// look in startup directory
+	else if (CFile::isExists(Args.getStartupPath() + defaultConfigFileName))
+		p_name = Args.getStartupPath() + defaultConfigFileName;
+
+	// look in application directory
 	else if (CFile::isExists(defaultConfigPath + defaultConfigFileName))
 		p_name = defaultConfigPath + defaultConfigFileName;
 
-	// if some client_default.cfg was found return true
-	if(p_name.size())
-		return true;
+	// look in etc prefix path
+	else if (!etcPath.empty() && CFile::isExists(etcPath + defaultConfigFileName))
+		p_name = etcPath + defaultConfigFileName;
 
-	return false;
+	// if some client_default.cfg was found return true
+	return !p_name.empty();
 }
