@@ -38,6 +38,7 @@ IF(WITH_NEL_TOOLS)
       shape2obj
       zone_check_bind
       zone_dump
+      zone_to_gltf
       zviewer)
   ENDIF()
   SUBDIRS(
