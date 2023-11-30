@@ -16,7 +16,7 @@ using namespace NLLIGO;
 using namespace std;
 
 
-void	buildFaces(CLandscape& landscape, sint zoneId, sint patch, std::vector<CTriangle> &faces)
+void	buildFaces(CLandscape& landscape, sint zoneId, sint patch, std::vector<CTriangle> &faces, std::vector<CUV> &textureCordinates)
 {
 	faces.clear();
 
@@ -30,8 +30,8 @@ void	buildFaces(CLandscape& landscape, sint zoneId, sint patch, std::vector<CTri
 
 	// Build the faces.
 	//=================
-	sint	ordS= 4*pa->getOrderS();
-	sint	ordT= 4*pa->getOrderT();
+	sint	ordS= pa->getOrderS();
+	sint	ordT= pa->getOrderT();
 	sint	x,y;
 	float	OOS= 1.0f/ordS;
 	float	OOT= 1.0f/ordT;
@@ -40,13 +40,16 @@ void	buildFaces(CLandscape& landscape, sint zoneId, sint patch, std::vector<CTri
 		for(x=0;x<ordS;x++)
 		{
 			CTriangle	f;
-			f.V0= pa->computeVertex(x*OOS, y*OOT);
-			f.V1= pa->computeVertex(x*OOS, (y+1)*OOT);
-			f.V2= pa->computeVertex((x+1)*OOS, (y+1)*OOT);
+			// CUV a(x*OOS, y*OOT), b(x*OOS, (y+1)*OOT), c((x+1)*OOS, (y+1)*OOT), d((x+1)*OOS, y*OOT);
+			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+
+			f.V0= pa->computeContinousVertex(x*OOS, y*OOT); textureCordinates.push_back(a);
+			f.V1= pa->computeContinousVertex(x*OOS, (y+1)*OOT); textureCordinates.push_back(b);
+			f.V2= pa->computeContinousVertex((x+1)*OOS, (y+1)*OOT); textureCordinates.push_back(c);
 			faces.push_back(f);
-			f.V0= pa->computeVertex(x*OOS, y*OOT);
-			f.V1= pa->computeVertex((x+1)*OOS, (y+1)*OOT);
-			f.V2= pa->computeVertex((x+1)*OOS, y*OOT);
+			f.V0= pa->computeContinousVertex(x*OOS, y*OOT); textureCordinates.push_back(a);
+			f.V1= pa->computeContinousVertex((x+1)*OOS, (y+1)*OOT); textureCordinates.push_back(c);
+			f.V2= pa->computeContinousVertex((x+1)*OOS, y*OOT); textureCordinates.push_back(d);
 			faces.push_back(f);
 		}
 	}
@@ -61,6 +64,7 @@ int main(int argc, char **argv)
 		NLMISC::CCmdArgs args;
 
 		args.addAdditionalArg("input", "Input zone file");
+		args.addAdditionalArg("tile-bank", "[name.smallbank] TileBank to load");
 		args.addAdditionalArg("output", "Output directory");
 
 		if (!args.parse(argc, argv))
@@ -69,24 +73,47 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		std::string inputFilePath = args.getAdditionalArg("input")[0];
-		std::string outputDirectory = args.getAdditionalArg("output")[0];
-		std::string fileName = CFile::getFilenameWithoutExtension(inputFilePath);
-		std::string binFileName = fileName + ".bin";
-		std::string outputBinPath = outputDirectory + "/" + binFileName;
-		std::string outputGltfPath = outputDirectory + "/" + fileName + ".gltf";
+		std::string inputFilePath = args.getAdditionalArg("input").front();
+		std::string bankFilePath = args.getAdditionalArg("tile-bank").front();
+		std::string outputFilePath = args.getAdditionalArg("output").front();
+		std::string outputDirectory = CFile::getPath(outputFilePath);
+		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
+		std::string positionFileName = fileName + ".position.bin";
+		std::string positionFilePath = outputDirectory + "/" + positionFileName;
+		std::string textureCordinateFileName = fileName + ".texcoord.bin";
+		std::string textureCordinateFilePath = outputDirectory + "/" + textureCordinateFileName;
 
 		CIFile zoneFile(inputFilePath);
 		CLandscape landscape;
+		CTileBank tile_bank;
+		bool firstVertex = true;
+		CAABBox bbox;
 		CZone zone;
 		zone.serial(zoneFile);
 		landscape.addZone(zone);
 		zoneFile.close();
-		uint32	triangles=0;
-		COFile output;
-		if (!output.open(outputBinPath, false, false, false))
+		uint32	triangleCount=0;
+		uint32	textrueCordinateCount=0;
+		COFile outputPosition;
+		try
 		{
-			nlwarning("Can't open the file for writing: %s", outputBinPath.c_str());
+			// CIFile bankFile(bankFilePath);
+			// landscape.TileBank.serial(bankFile);
+		}
+		catch(const Exception &)
+		{
+			nlerror("Can't load bankfile: %s", bankFilePath.c_str());
+			return EXIT_FAILURE;
+		}
+		if (!outputPosition.open(positionFilePath, false, false, false))
+		{
+			nlwarning("Can't open the file for writing: %s", positionFilePath.c_str());
+			return EXIT_FAILURE;
+		}
+		COFile outputTextureCordinate;
+		if (!outputTextureCordinate.open(textureCordinateFilePath, false, false, false))
+		{
+			nlwarning("Can't open the file for writing: %s", textureCordinateFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 
@@ -94,27 +121,43 @@ int main(int argc, char **argv)
 		{
 			// vector of triangle
 			std::vector<CTriangle> faces;
+			std::vector<CUV> textureCordinates;
 
-			// Build a list of triangles at 50 cm
-			buildFaces (landscape, zone.getZoneId(), patch, faces);
+			buildFaces (landscape, zone.getZoneId(), patch, faces, textureCordinates);
 
 			// Add to the file
 			for (auto & face : faces)
 			{
 				// Serial the triangle
-				face.V0.serial (output);
-				face.V1.serial (output);
-				face.V2.serial (output);
+				face.V0.serial (outputPosition);
+				face.V1.serial (outputPosition);
+				face.V2.serial (outputPosition);
+				if ( firstVertex)
+				{
+					firstVertex = false;
+					bbox.setCenter(face.V0);
+				} else
+				{
+					bbox.extend(face.V0);
+				}
+				bbox.extend(face.V1);
+				bbox.extend(face.V2);
 			}
 
-			// Triangle count
-			triangles += faces.size();
+			for (auto & uv : textureCordinates)
+			{
+				// Serial the triangle
+				uv.serial (outputTextureCordinate);
+			}
+
+			triangleCount += faces.size();
+			textrueCordinateCount += textureCordinates.size();
 		}
 
-		FILE *fp = nlfopen (outputGltfPath, "w");
+		FILE *fp = nlfopen (outputFilePath, "w");
 		if (fp == NULL)
 		{
-			nlwarning("Can't open the file for writing: %s", outputGltfPath.c_str());
+			nlwarning("Can't open the file for writing: %s", outputFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 		fprintf(fp, "{\n");
@@ -123,7 +166,7 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"primitives\": [\n");
 		fprintf(fp, "				{\n");
-		fprintf(fp, "					\"attributes\": { \"POSITION\": 0 }\n");
+		fprintf(fp, "					\"attributes\": { \"POSITION\": 0, \"TEXCOORD_0\": 1 }\n");
 		fprintf(fp, "				}\n");
 		fprintf(fp, "			]\n");
 		fprintf(fp, "        }\n");
@@ -132,27 +175,43 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"bufferView\": 0,\n");
 		fprintf(fp, "			\"componentType\": 5126,\n");
-		fprintf(fp, "			\"count\": %i,\n", triangles * 3);
-		fprintf(fp, "			\"max\": [1.0, 1.0, 1.0],\n");
-		fprintf(fp, "			\"min\": [1.0, 1.0, 1.0],\n");
+		fprintf(fp, "			\"count\": %i,\n", triangleCount * 3);
+		fprintf(fp, "			\"max\": [%f, %f, %f],\n", bbox.getMax().x, bbox.getMax().y, bbox.getMax().z);
+		fprintf(fp, "			\"min\": [%f, %f, %f],\n", bbox.getMin().x, bbox.getMin().y, bbox.getMin().z);
 		fprintf(fp, "			\"type\": \"VEC3\"\n");
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"bufferView\": 1,\n");
+		fprintf(fp, "			\"componentType\": 5126,\n");
+		fprintf(fp, "			\"count\": %i,\n", textrueCordinateCount);
+		fprintf(fp, "			\"max\": [1.0, 1.0],\n");
+		fprintf(fp, "			\"min\": [1.0, 1.0],\n");
+		fprintf(fp, "			\"type\": \"VEC2\"\n");
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"bufferViews\": [\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"buffer\": 0,\n");
-		fprintf(fp, "			\"byteLength\": %i\n", output.getPos());
+		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"buffer\": 1,\n");
+		fprintf(fp, "			\"byteLength\": %i\n", outputTextureCordinate.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"buffers\": [\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"uri\": \"%s\",\n", binFileName.c_str());
-		fprintf(fp, "			\"byteLength\": %i\n", output.getPos());
+		fprintf(fp, "			\"uri\": \"%s\",\n", positionFileName.c_str());
+		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"uri\": \"%s\",\n", textureCordinateFileName.c_str());
+		fprintf(fp, "			\"byteLength\": %i\n", outputTextureCordinate.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ]\n");
 		fprintf(fp, "}\n");
 		fclose (fp);
-		output.close();
+		outputPosition.close();
 
 		return EXIT_SUCCESS;
 	}
