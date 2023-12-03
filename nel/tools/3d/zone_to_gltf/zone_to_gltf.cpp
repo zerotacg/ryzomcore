@@ -98,6 +98,7 @@ int main(int argc, char **argv)
 		try
 		{
 			// CIFile bankFile(bankFilePath);
+			// FIXME paths in bankfile are using forward slashes and are in wrong caseing causing textures fail to load which causes the fallback (arrows) used for displacement
 			// landscape.TileBank.serial(bankFile);
 		}
 		catch(const Exception &)
