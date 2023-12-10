@@ -36,6 +36,7 @@ IF(WITH_NEL_TOOLS)
       zone_elevation
       shapes_exporter
       shape2obj
+      shape_to_gltf
       zone_check_bind
       zone_dump
       zone_to_gltf
