@@ -24,7 +24,6 @@ using namespace NLMISC;
 using namespace std;
 
 bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<uint32> &indices);
-const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshGeom *mesh, uint lodId, uint renderPass);
 
 int main(int argc, char **argv)
 {
@@ -220,6 +219,20 @@ int main(int argc, char **argv)
 	}
 }
 
+uint32 getIndexAt(const CIndexBufferRead &buffer, const int index)
+{
+	if (buffer.getFormat() == CIndexBuffer::Indices32)
+	{
+		const auto *indexPointer = static_cast<const uint32 *>(buffer.getPtr());
+		return *(indexPointer + index);
+	}
+	else
+	{
+		const auto *indexPointer = static_cast<const uint16 *>(buffer.getPtr());
+		return *(indexPointer + index);
+	}
+}
+
 bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<uint32> &indices)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
@@ -240,7 +253,7 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 	{
 		auto indexBuffer = mesh->getRdrPassPrimitiveBlock(lodId, renderPass);
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
-		nlinfo("RenderPasss %i Material %i", renderPass, materialIndex);
+		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
 		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
 		{
@@ -259,44 +272,22 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		}
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
-		if (iba.getFormat() == CIndexBuffer::Indices32)
+		uint32 min = 0xffffffff, max = 0;
+		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
 		{
-			const auto *triPtr = static_cast<const uint32 *>(iba.getPtr());
-			for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
+			uint32 idx = getIndexAt(iba, i);
+			if (idx != -1)
 			{
-				uint32 idx = *triPtr;
-				if (idx != -1)
-				{
-					indices.push_back(idx);
-				}
-				triPtr++;
+				min = std::min(min, idx);
+				max = std::max(max, idx);
+				indices.push_back(idx);
 			}
+			vertices.push_back(*vba.getVertexCoordPointer(i));
+			normals.push_back(*vba.getNormalCoordPointer(i));
+			textureCoordinates.push_back(*vba.getTexCoordPointer(i));
 		}
-		else
-		{
-			const auto *triPtr = static_cast<const uint16 *>(iba.getPtr());
-			for (auto j = 0; j < indexBuffer.getNumIndexes(); ++j)
-			{
-				uint32 idx = *triPtr;
-				if (idx != -1)
-				{
-					indices.push_back(idx);
-				}
-				triPtr++;
-			}
-		}
-		for (auto j = 0; j < indexBuffer.getNumIndexes(); ++j)
-		{
-			vertices.push_back(*vba.getVertexCoordPointer(j));
-			normals.push_back(*vba.getNormalCoordPointer(j));
-			textureCoordinates.push_back(*vba.getTexCoordPointer(j));
-		}
+		nlinfo("Index Min / Max %i / %i", min, max);
 	}
 
 	return true;
-}
-
-const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshGeom *mesh, uint lodId, uint renderPass)
-{
-	return &(mesh->getRdrPassPrimitiveBlock(lodId, renderPass));
 }
