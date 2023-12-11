@@ -22,7 +22,8 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-bool processMesh(IShape *shape);
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<uint32> &indices);
+const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshGeom *mesh, uint lodId, uint renderPass);
 
 int main(int argc, char **argv)
 {
@@ -57,7 +58,10 @@ int main(int argc, char **argv)
 		shapeStream.serial(inputFile);
 		inputFile.close();
 		IShape *shape = shapeStream.getShapePointer();
-		if (!processMesh(shape))
+		std::vector<CVector> vertices;
+		std::vector<uint32> indices;
+
+		if (!processMesh(shape, vertices, indices))
 		{
 			nlwarning("File not a CMesh");
 			return EXIT_FAILURE;
@@ -68,23 +72,21 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", positionFilePath.c_str());
 			return EXIT_FAILURE;
 		}
-		COFile outputIndicesCordinate;
-		if (!outputIndicesCordinate.open(indicesCordinateFilePath, false, false, false))
+		COFile outputIndices;
+		if (!outputIndices.open(indicesCordinateFilePath, false, false, false))
 		{
 			nlwarning("Can't open the file for writing: %s", indicesCordinateFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 
-		// vector of triangle
-		std::vector<CTriangle> faces;
-
-		// Add to the file
-		for (auto &face : faces)
+		for (auto &index : indices)
 		{
-			// Serial the triangle
-			face.V0.serial(outputPosition);
-			face.V1.serial(outputPosition);
-			face.V2.serial(outputPosition);
+			outputIndices.serial(index);
+		}
+
+		for (auto &vertex : vertices)
+		{
+			vertex.serial(outputPosition);
 		}
 
 		FILE *fp = nlfopen(outputFilePath, "w");
@@ -100,25 +102,25 @@ int main(int argc, char **argv)
 		fprintf(fp, "			\"primitives\": [\n");
 		fprintf(fp, "				{\n");
 		fprintf(fp, "					\"attributes\": { \"POSITION\": 0 }\n");
-		fprintf(fp, "				},\n");
-		fprintf(fp, "				\"indices\": 1\n");
-		fprintf(fp, "			]\n");
+		fprintf(fp, "				}\n");
+		fprintf(fp, "			],\n");
+		fprintf(fp, "			\"indices\": 1\n");
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"accessors\": [\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"bufferView\": 0,\n");
 		fprintf(fp, "			\"componentType\": 5126,\n");
-		fprintf(fp, "			\"count\": %i,\n", triangleCount * 3);
+		fprintf(fp, "			\"count\": %lu,\n", vertices.size());
+		fprintf(fp, "			\"max\": [1.0, 1.0],\n");
+		fprintf(fp, "			\"min\": [1.0, 1.0],\n");
 		fprintf(fp, "			\"type\": \"VEC3\"\n");
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"bufferView\": 1,\n");
-		fprintf(fp, "			\"componentType\": 5126,\n");
-		fprintf(fp, "			\"count\": %i,\n", textrueCordinateCount);
-		fprintf(fp, "			\"max\": [1.0, 1.0],\n");
-		fprintf(fp, "			\"min\": [1.0, 1.0],\n");
-		fprintf(fp, "			\"type\": \"VEC2\"\n");
+		fprintf(fp, "			\"componentType\": 5125,\n");
+		fprintf(fp, "			\"count\": %lu,\n", indices.size());
+		fprintf(fp, "			\"type\": \"SCALAR\"\n");
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"bufferViews\": [\n");
@@ -128,7 +130,7 @@ int main(int argc, char **argv)
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"buffer\": 1,\n");
-		fprintf(fp, "			\"byteLength\": %i\n", outputIndicesCordinate.getPos());
+		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"buffers\": [\n");
@@ -138,7 +140,7 @@ int main(int argc, char **argv)
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"uri\": \"%s\",\n", indicesCordinateFileName.c_str());
-		fprintf(fp, "			\"byteLength\": %i\n", outputIndicesCordinate.getPos());
+		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ]\n");
 		fprintf(fp, "}\n");
@@ -154,14 +156,57 @@ int main(int argc, char **argv)
 	}
 }
 
-bool processMesh(IShape *shape)
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<uint32> &indices)
 {
-	CMesh *mesh = dynamic_cast<CMesh *>(shape);
+	auto *mesh = dynamic_cast<CMesh *>(shape);
 
 	if (!mesh)
 		return false;
 
 	nlinfo("File is a CMesh");
 
-	return false;
+	const CMeshGeom *geometry = &mesh->getMeshGeom();
+
+	CVertexBuffer vertexBuffer = mesh->getVertexBuffer();
+	CVertexBufferRead vba;
+	vertexBuffer.lock(vba);
+
+	for (auto renderPass = 0; renderPass < geometry->getNbRdrPass(0); ++renderPass)
+	{
+		const CIndexBuffer *pb = getRdrPassPrimitiveBlock(geometry, 0, renderPass);
+		CIndexBufferRead iba;
+		pb->lock(iba);
+		if (iba.getFormat() == CIndexBuffer::Indices32)
+		{
+			const auto *triPtr = static_cast<const uint32 *>(iba.getPtr());
+			for (auto j = 0; j < pb->getNumIndexes(); ++j)
+			{
+				uint32 idx = *triPtr;
+				indices.push_back(idx);
+				triPtr++;
+			}
+		}
+		else
+		{
+			const auto *triPtr = static_cast<const uint16 *>(iba.getPtr());
+			for (auto j = 0; j < pb->getNumIndexes(); ++j)
+			{
+				uint32 idx = *triPtr;
+				indices.push_back(idx);
+				triPtr++;
+			}
+		}
+		for (auto j = 0; j < pb->getNumIndexes(); ++j)
+		{
+			const auto vertex = *vba.getVertexCoordPointer(j);
+			vertices.push_back(vertex);
+		}
+	}
+
+	return true;
+}
+
+const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshGeom *mesh, uint lodId, uint renderPass)
+{
+	return &(mesh->getRdrPassPrimitiveBlock(lodId, renderPass));
 }
