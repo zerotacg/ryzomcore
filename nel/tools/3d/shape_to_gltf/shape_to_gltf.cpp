@@ -7,6 +7,7 @@
 #include <nel/misc/bitmap.h>
 #include <nel/3d/zone.h>
 #include <nel/3d/landscape.h>
+#include <nel/3d/texture_file.h>
 #include <nel/ligo/zone_region.h>
 #include <vector>
 #include <nel/3d/mesh.h>
@@ -22,7 +23,7 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<uint32> &indices);
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<uint32> &indices);
 const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshGeom *mesh, uint lodId, uint renderPass);
 
 int main(int argc, char **argv)
@@ -49,8 +50,10 @@ int main(int argc, char **argv)
 		std::string positionFilePath = outputDirectory + "/" + positionFileName;
 		std::string indicesFileName = fileName + ".indices.bin";
 		std::string indicesFilePath = outputDirectory + "/" + indicesFileName;
-		std::string normalsFileName = fileName + ".normals.bin";
+		std::string normalsFileName = fileName + ".normal.bin";
 		std::string normalsFilePath = outputDirectory + "/" + normalsFileName;
+		std::string textureCoordinatesFileName = fileName + ".texcoord_0.bin";
+		std::string textureCoordinatesFilePath = outputDirectory + "/" + textureCoordinatesFileName;
 
 		registerSerial3d();
 		CScene::registerBasics();
@@ -62,9 +65,10 @@ int main(int argc, char **argv)
 		IShape *shape = shapeStream.getShapePointer();
 		std::vector<CVector> vertices;
 		std::vector<CVector> normals;
+		std::vector<CUV> textureCoordinates;
 		std::vector<uint32> indices;
 
-		if (!processMesh(shape, vertices, normals, indices))
+		if (!processMesh(shape, vertices, normals, textureCoordinates, indices))
 		{
 			nlwarning("File not a CMesh");
 			return EXIT_FAILURE;
@@ -88,6 +92,12 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", normalsFilePath.c_str());
 			return EXIT_FAILURE;
 		}
+		COFile outputTextureCoordinates;
+		if (!outputTextureCoordinates.open(textureCoordinatesFilePath, false, false, false))
+		{
+			nlwarning("Can't open the file for writing: %s", textureCoordinatesFilePath.c_str());
+			return EXIT_FAILURE;
+		}
 
 		for (auto &element : indices)
 		{
@@ -104,6 +114,11 @@ int main(int argc, char **argv)
 			element.serial(outputNormals);
 		}
 
+		for (auto &element : textureCoordinates)
+		{
+			element.serial(outputTextureCoordinates);
+		}
+
 		FILE *fp = nlfopen(outputFilePath, "w");
 		if (fp == NULL)
 		{
@@ -116,8 +131,8 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"primitives\": [\n");
 		fprintf(fp, "				{\n");
-		fprintf(fp, "					\"attributes\": { \"POSITION\": 0, \"NORMAL\": 1 },\n");
-		fprintf(fp, "					\"indices\": 2\n");
+		fprintf(fp, "					\"attributes\": { \"POSITION\": 0, \"NORMAL\": 1, \"TEXCOORD_0\": 2 },\n");
+		fprintf(fp, "					\"indices\": 3\n");
 		fprintf(fp, "				}\n");
 		fprintf(fp, "			]\n");
 		fprintf(fp, "        }\n");
@@ -141,6 +156,14 @@ int main(int argc, char **argv)
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"bufferView\": 2,\n");
+		fprintf(fp, "			\"componentType\": 5126,\n");
+		fprintf(fp, "			\"count\": %lu,\n", textureCoordinates.size());
+		fprintf(fp, "			\"max\": [1.0, 1.0],\n");
+		fprintf(fp, "			\"min\": [0.0, 0.0],\n");
+		fprintf(fp, "			\"type\": \"VEC2\"\n");
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"bufferView\": 3,\n");
 		fprintf(fp, "			\"componentType\": 5125,\n");
 		fprintf(fp, "			\"count\": %lu,\n", indices.size());
 		fprintf(fp, "			\"max\": %i,\n", *max_element(indices.begin(), indices.end()));
@@ -154,11 +177,15 @@ int main(int argc, char **argv)
 		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"buffer\": 0,\n");
+		fprintf(fp, "			\"buffer\": 1,\n");
 		fprintf(fp, "			\"byteLength\": %i\n", outputNormals.getPos());
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"buffer\": 2,\n");
+		fprintf(fp, "			\"byteLength\": %i\n", outputTextureCoordinates.getPos());
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"buffer\": 3,\n");
 		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
@@ -170,6 +197,10 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"uri\": \"%s\",\n", normalsFileName.c_str());
 		fprintf(fp, "			\"byteLength\": %i\n", outputNormals.getPos());
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"uri\": \"%s\",\n", textureCoordinatesFileName.c_str());
+		fprintf(fp, "			\"byteLength\": %i\n", outputTextureCoordinates.getPos());
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"uri\": \"%s\",\n", indicesFileName.c_str());
@@ -189,7 +220,7 @@ int main(int argc, char **argv)
 	}
 }
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<uint32> &indices)
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<uint32> &indices)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
 
@@ -208,7 +239,24 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
 		auto indexBuffer = mesh->getRdrPassPrimitiveBlock(lodId, renderPass);
-		nlinfo("RenderPasss Material %i", mesh->getRdrPassMaterial(lodId, renderPass));
+		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
+		nlinfo("RenderPasss %i Material %i", renderPass, materialIndex);
+		auto material = mesh->getMaterial(materialIndex);
+		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
+		{
+			if (material.texturePresent(textureIndex))
+			{
+				auto textureFile = dynamic_cast<CTextureFile *>(material.getTexture(textureIndex));
+				if (textureFile)
+				{
+					nlinfo("CTextureFile %s", textureFile->getFileName().c_str());
+				}
+				else
+				{
+					nlwarning("Texture at index %i is not a CTextureFile", textureIndex);
+				}
+			}
+		}
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
 		if (iba.getFormat() == CIndexBuffer::Indices32)
@@ -241,6 +289,7 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		{
 			vertices.push_back(*vba.getVertexCoordPointer(j));
 			normals.push_back(*vba.getNormalCoordPointer(j));
+			textureCoordinates.push_back(*vba.getTexCoordPointer(j));
 		}
 	}
 
