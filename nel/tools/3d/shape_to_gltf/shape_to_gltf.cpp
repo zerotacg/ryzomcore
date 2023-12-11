@@ -23,7 +23,62 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<uint32> &indices);
+enum ComponentType : uint32
+{
+	SIGNED_BYTE = 5120,
+	UNSIGNED_BYTE = 5121,
+	SIGNED_SHORT = 5122,
+	UNSIGNED_SHORT = 5123,
+	UNSIGNED_INT = 5125,
+	FLOAT = 5126
+};
+enum AccessorType
+{
+	SCALAR = 0,
+	VEC2,
+	VEC3,
+	VEC4,
+	MAT2,
+	MAT3,
+	MAT4
+};
+const char *AccessorTypeNames[] = { "SCALAR", "VEC2", "VEC3", "VEC4", "MAT2", "MAT3", "MAT4" };
+
+struct Accessor
+{
+	uint32 bufferView;
+	sint32 byteOffset;
+	ComponentType componentType;
+	size_t count;
+	AccessorType type;
+};
+
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<vector<uint32>> &allIndices);
+template <class T, class Allocator>
+void write(FILE *file, std::vector<T, Allocator> &cont)
+{
+	typedef typename T::value_type __value_type;
+	typedef typename T::iterator __iterator;
+
+	fprintf(file, "[");
+	auto len = (sint32)cont.size();
+
+	__iterator it = cont.begin();
+	for (sint i = 0; i < len; i++, it++)
+	{
+		if (i > 0)
+		{
+			fprintf(file, ",");
+		}
+		write(const_cast<__value_type &>(*it));
+	}
+	fprintf(file, "]");
+}
+
+void write(FILE *file, const Accessor &object)
+{
+	fprintf(file, R"({ "bufferView": %i, "byteOffset": %i, "componentType": %i, "count": %lu, "type": "%s" })", object.bufferView, object.byteOffset, object.componentType, object.count, AccessorTypeNames[object.type]);
+}
 
 int main(int argc, char **argv)
 {
@@ -65,9 +120,9 @@ int main(int argc, char **argv)
 		std::vector<CVector> vertices;
 		std::vector<CVector> normals;
 		std::vector<CUV> textureCoordinates;
-		std::vector<uint32> indices;
+		std::vector<std::vector<uint32>> allIndices;
 
-		if (!processMesh(shape, vertices, normals, textureCoordinates, indices))
+		if (!processMesh(shape, vertices, normals, textureCoordinates, allIndices))
 		{
 			nlwarning("File not a CMesh");
 			return EXIT_FAILURE;
@@ -98,11 +153,6 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		for (auto &element : indices)
-		{
-			outputIndices.serial(element);
-		}
-
 		for (auto &element : vertices)
 		{
 			element.serial(outputPosition);
@@ -128,47 +178,62 @@ int main(int argc, char **argv)
 		fprintf(fp, "    \"asset\": { \"version\": \"2.0\" },\n");
 		fprintf(fp, "    \"meshes\": [\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"primitives\": [\n");
-		fprintf(fp, "				{\n");
-		fprintf(fp, "					\"attributes\": { \"POSITION\": 0, \"NORMAL\": 1, \"TEXCOORD_0\": 2 },\n");
-		fprintf(fp, "					\"indices\": 3\n");
-		fprintf(fp, "				}\n");
-		fprintf(fp, "			]\n");
+		fprintf(fp, "            \"primitives\": [\n");
+		const uint32 firstIndicesAccessor = 3;
+		for (auto i = 0; i < allIndices.size(); ++i)
+		{
+			if (i > 0)
+			{
+				fprintf(fp, "                ,{\n");
+			}
+			else
+			{
+				fprintf(fp, "                {\n");
+			}
+			fprintf(fp, "                    \"attributes\": { \"POSITION\": 0, \"NORMAL\": 1, \"TEXCOORD_0\": 2 },\n");
+			fprintf(fp, "                    \"indices\": %i\n", firstIndicesAccessor + i);
+			fprintf(fp, "                }\n");
+		}
+		fprintf(fp, "            ]\n");
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"accessors\": [\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"bufferView\": 0,\n");
-		fprintf(fp, "			\"componentType\": 5126,\n");
-		fprintf(fp, "			\"count\": %lu,\n", vertices.size());
-		fprintf(fp, "			\"max\": [1.0, 1.0, 1.0],\n");
-		fprintf(fp, "			\"min\": [-1.0, -1.0, -1.0],\n");
-		fprintf(fp, "			\"type\": \"VEC3\"\n");
+		fprintf(fp, "            \"bufferView\": 0,\n");
+		fprintf(fp, "            \"componentType\": 5126,\n");
+		fprintf(fp, "            \"count\": %lu,\n", vertices.size());
+		fprintf(fp, "            \"max\": [1.0, 1.0, 1.0],\n");
+		fprintf(fp, "            \"min\": [-1.0, -1.0, -1.0],\n");
+		fprintf(fp, "            \"type\": \"VEC3\"\n");
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"bufferView\": 1,\n");
-		fprintf(fp, "			\"componentType\": 5126,\n");
-		fprintf(fp, "			\"count\": %lu,\n", normals.size());
-		fprintf(fp, "			\"max\": [1.0, 1.0, 1.0],\n");
-		fprintf(fp, "			\"min\": [-1.0, -1.0, -1.0],\n");
-		fprintf(fp, "			\"type\": \"VEC3\"\n");
+		fprintf(fp, "            \"bufferView\": 1,\n");
+		fprintf(fp, "            \"componentType\": 5126,\n");
+		fprintf(fp, "            \"count\": %lu,\n", normals.size());
+		fprintf(fp, "            \"max\": [1.0, 1.0, 1.0],\n");
+		fprintf(fp, "            \"min\": [-1.0, -1.0, -1.0],\n");
+		fprintf(fp, "            \"type\": \"VEC3\"\n");
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"bufferView\": 2,\n");
-		fprintf(fp, "			\"componentType\": 5126,\n");
-		fprintf(fp, "			\"count\": %lu,\n", textureCoordinates.size());
-		fprintf(fp, "			\"max\": [1.0, 1.0],\n");
-		fprintf(fp, "			\"min\": [0.0, 0.0],\n");
-		fprintf(fp, "			\"type\": \"VEC2\"\n");
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"bufferView\": 3,\n");
-		fprintf(fp, "			\"componentType\": 5125,\n");
-		fprintf(fp, "			\"count\": %lu,\n", indices.size());
-		fprintf(fp, "			\"max\": %i,\n", *max_element(indices.begin(), indices.end()));
-		fprintf(fp, "			\"min\": %i,\n", *min_element(indices.begin(), indices.end()));
-		fprintf(fp, "			\"type\": \"SCALAR\"\n");
+		fprintf(fp, "            \"bufferView\": 2,\n");
+		fprintf(fp, "            \"componentType\": 5126,\n");
+		fprintf(fp, "            \"count\": %lu,\n", textureCoordinates.size());
+		fprintf(fp, "            \"max\": [1.0, 1.0],\n");
+		fprintf(fp, "            \"min\": [0.0, 0.0],\n");
+		fprintf(fp, "            \"type\": \"VEC2\"\n");
 		fprintf(fp, "        }\n");
+		for (auto &indices : allIndices)
+		{
+			fprintf(fp, ",");
+			Accessor accessor = { 3, outputIndices.getPos(), FLOAT, indices.size(), SCALAR };
+			write(fp, accessor);
+			fprintf(fp, "\n");
+			for (auto &element : indices)
+			{
+				outputIndices.serial(element);
+			}
+		}
+
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"bufferViews\": [\n");
 		fprintf(fp, "        {\n");
@@ -233,7 +298,7 @@ uint32 getIndexAt(const CIndexBufferRead &buffer, const int index)
 	}
 }
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<uint32> &indices)
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<vector<uint32>> &allIndices)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
 
@@ -272,21 +337,19 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		}
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
-		uint32 min = 0xffffffff, max = 0;
+		vector<uint32> indices;
 		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
 		{
 			uint32 idx = getIndexAt(iba, i);
 			if (idx != -1)
 			{
-				min = std::min(min, idx);
-				max = std::max(max, idx);
 				indices.push_back(idx);
 			}
 			vertices.push_back(*vba.getVertexCoordPointer(i));
 			normals.push_back(*vba.getNormalCoordPointer(i));
 			textureCoordinates.push_back(*vba.getTexCoordPointer(i));
 		}
-		nlinfo("Index Min / Max %i / %i", min, max);
+		allIndices.push_back(indices);
 	}
 
 	return true;
