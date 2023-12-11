@@ -198,24 +198,26 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 
 	nlinfo("File is a CMesh");
 
-	const CMeshGeom *geometry = &mesh->getMeshGeom();
-
 	CVertexBuffer vertexBuffer = mesh->getVertexBuffer();
 	CVertexBufferRead vba;
 	vertexBuffer.lock(vba);
+	const uint lodId = 0;
+	const auto lodCount = mesh->getNbMatrixBlock();
+	nlinfo("LodCount %i", lodCount);
 
-	for (auto renderPass = 0; renderPass < geometry->getNbRdrPass(0); ++renderPass)
+	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
-		const CIndexBuffer *pb = getRdrPassPrimitiveBlock(geometry, 0, renderPass);
+		auto indexBuffer = mesh->getRdrPassPrimitiveBlock(lodId, renderPass);
+		nlinfo("RenderPasss Material %i", mesh->getRdrPassMaterial(lodId, renderPass));
 		CIndexBufferRead iba;
-		pb->lock(iba);
+		indexBuffer.lock(iba);
 		if (iba.getFormat() == CIndexBuffer::Indices32)
 		{
 			const auto *triPtr = static_cast<const uint32 *>(iba.getPtr());
-			for (auto j = 0; j < pb->getNumIndexes(); ++j)
+			for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
 			{
 				uint32 idx = *triPtr;
-				if ( idx != -1)
+				if (idx != -1)
 				{
 					indices.push_back(idx);
 				}
@@ -225,17 +227,17 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		else
 		{
 			const auto *triPtr = static_cast<const uint16 *>(iba.getPtr());
-			for (auto j = 0; j < pb->getNumIndexes(); ++j)
+			for (auto j = 0; j < indexBuffer.getNumIndexes(); ++j)
 			{
 				uint32 idx = *triPtr;
-				if ( idx != -1)
+				if (idx != -1)
 				{
 					indices.push_back(idx);
 				}
 				triPtr++;
 			}
 		}
-		for (auto j = 0; j < pb->getNumIndexes(); ++j)
+		for (auto j = 0; j < indexBuffer.getNumIndexes(); ++j)
 		{
 			vertices.push_back(*vba.getVertexCoordPointer(j));
 			normals.push_back(*vba.getNormalCoordPointer(j));
