@@ -22,7 +22,7 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<uint32> &indices);
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<uint32> &indices);
 const CIndexBuffer *getRdrPassPrimitiveBlock(const CMeshGeom *mesh, uint lodId, uint renderPass);
 
 int main(int argc, char **argv)
@@ -47,8 +47,10 @@ int main(int argc, char **argv)
 		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
 		std::string positionFileName = fileName + ".position.bin";
 		std::string positionFilePath = outputDirectory + "/" + positionFileName;
-		std::string indicesCordinateFileName = fileName + ".indices.bin";
-		std::string indicesCordinateFilePath = outputDirectory + "/" + indicesCordinateFileName;
+		std::string indicesFileName = fileName + ".indices.bin";
+		std::string indicesFilePath = outputDirectory + "/" + indicesFileName;
+		std::string normalsFileName = fileName + ".normals.bin";
+		std::string normalsFilePath = outputDirectory + "/" + normalsFileName;
 
 		registerSerial3d();
 		CScene::registerBasics();
@@ -59,9 +61,10 @@ int main(int argc, char **argv)
 		inputFile.close();
 		IShape *shape = shapeStream.getShapePointer();
 		std::vector<CVector> vertices;
+		std::vector<CVector> normals;
 		std::vector<uint32> indices;
 
-		if (!processMesh(shape, vertices, indices))
+		if (!processMesh(shape, vertices, normals, indices))
 		{
 			nlwarning("File not a CMesh");
 			return EXIT_FAILURE;
@@ -73,20 +76,32 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		COFile outputIndices;
-		if (!outputIndices.open(indicesCordinateFilePath, false, false, false))
+		if (!outputIndices.open(indicesFilePath, false, false, false))
 		{
-			nlwarning("Can't open the file for writing: %s", indicesCordinateFilePath.c_str());
+			nlwarning("Can't open the file for writing: %s", indicesFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 
-		for (auto &index : indices)
+		COFile outputNormals;
+		if (!outputNormals.open(normalsFilePath, false, false, false))
 		{
-			outputIndices.serial(index);
+			nlwarning("Can't open the file for writing: %s", normalsFilePath.c_str());
+			return EXIT_FAILURE;
 		}
 
-		for (auto &vertex : vertices)
+		for (auto &element : indices)
 		{
-			vertex.serial(outputPosition);
+			outputIndices.serial(element);
+		}
+
+		for (auto &element : vertices)
+		{
+			element.serial(outputPosition);
+		}
+
+		for (auto &element : normals)
+		{
+			element.serial(outputNormals);
 		}
 
 		FILE *fp = nlfopen(outputFilePath, "w");
@@ -101,10 +116,10 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"primitives\": [\n");
 		fprintf(fp, "				{\n");
-		fprintf(fp, "					\"attributes\": { \"POSITION\": 0 }\n");
+		fprintf(fp, "					\"attributes\": { \"POSITION\": 0, \"NORMAL\": 1 },\n");
+		fprintf(fp, "					\"indices\": 2\n");
 		fprintf(fp, "				}\n");
-		fprintf(fp, "			],\n");
-		fprintf(fp, "			\"indices\": 1\n");
+		fprintf(fp, "			]\n");
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
 		fprintf(fp, "    \"accessors\": [\n");
@@ -112,14 +127,24 @@ int main(int argc, char **argv)
 		fprintf(fp, "			\"bufferView\": 0,\n");
 		fprintf(fp, "			\"componentType\": 5126,\n");
 		fprintf(fp, "			\"count\": %lu,\n", vertices.size());
-		fprintf(fp, "			\"max\": [1.0, 1.0],\n");
-		fprintf(fp, "			\"min\": [1.0, 1.0],\n");
+		fprintf(fp, "			\"max\": [1.0, 1.0, 1.0],\n");
+		fprintf(fp, "			\"min\": [-1.0, -1.0, -1.0],\n");
 		fprintf(fp, "			\"type\": \"VEC3\"\n");
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "			\"bufferView\": 1,\n");
+		fprintf(fp, "			\"componentType\": 5126,\n");
+		fprintf(fp, "			\"count\": %lu,\n", normals.size());
+		fprintf(fp, "			\"max\": [1.0, 1.0, 1.0],\n");
+		fprintf(fp, "			\"min\": [-1.0, -1.0, -1.0],\n");
+		fprintf(fp, "			\"type\": \"VEC3\"\n");
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"bufferView\": 2,\n");
 		fprintf(fp, "			\"componentType\": 5125,\n");
 		fprintf(fp, "			\"count\": %lu,\n", indices.size());
+		fprintf(fp, "			\"max\": %i,\n", *max_element(indices.begin(), indices.end()));
+		fprintf(fp, "			\"min\": %i,\n", *min_element(indices.begin(), indices.end()));
 		fprintf(fp, "			\"type\": \"SCALAR\"\n");
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
@@ -129,7 +154,11 @@ int main(int argc, char **argv)
 		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"buffer\": 1,\n");
+		fprintf(fp, "			\"buffer\": 0,\n");
+		fprintf(fp, "			\"byteLength\": %i\n", outputNormals.getPos());
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"buffer\": 2,\n");
 		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ],\n");
@@ -139,7 +168,11 @@ int main(int argc, char **argv)
 		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
 		fprintf(fp, "        },\n");
 		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"uri\": \"%s\",\n", indicesCordinateFileName.c_str());
+		fprintf(fp, "			\"uri\": \"%s\",\n", normalsFileName.c_str());
+		fprintf(fp, "			\"byteLength\": %i\n", outputNormals.getPos());
+		fprintf(fp, "        },\n");
+		fprintf(fp, "        {\n");
+		fprintf(fp, "			\"uri\": \"%s\",\n", indicesFileName.c_str());
 		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
 		fprintf(fp, "        }\n");
 		fprintf(fp, "    ]\n");
@@ -156,7 +189,7 @@ int main(int argc, char **argv)
 	}
 }
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<uint32> &indices)
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<uint32> &indices)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
 
@@ -182,7 +215,10 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<uint32> &indic
 			for (auto j = 0; j < pb->getNumIndexes(); ++j)
 			{
 				uint32 idx = *triPtr;
-				indices.push_back(idx);
+				if ( idx != -1)
+				{
+					indices.push_back(idx);
+				}
 				triPtr++;
 			}
 		}
@@ -192,14 +228,17 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<uint32> &indic
 			for (auto j = 0; j < pb->getNumIndexes(); ++j)
 			{
 				uint32 idx = *triPtr;
-				indices.push_back(idx);
+				if ( idx != -1)
+				{
+					indices.push_back(idx);
+				}
 				triPtr++;
 			}
 		}
 		for (auto j = 0; j < pb->getNumIndexes(); ++j)
 		{
-			const auto vertex = *vba.getVertexCoordPointer(j);
-			vertices.push_back(vertex);
+			vertices.push_back(*vba.getVertexCoordPointer(j));
+			normals.push_back(*vba.getNormalCoordPointer(j));
 		}
 	}
 
