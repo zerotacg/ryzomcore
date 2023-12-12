@@ -22,7 +22,7 @@
 using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
-
+namespace gltf {
 enum ComponentType : uint32
 {
 	SIGNED_BYTE = 5120,
@@ -53,7 +53,42 @@ struct Accessor
 	AccessorType type;
 };
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<vector<uint32>> &allIndices);
+struct TextureInfo
+{
+	uint32 index;
+};
+struct NormalTextureInfo
+{
+	uint32 index;
+	float scale;
+};
+struct OcclusionTextureInfo
+{
+	uint32 index;
+	float strength;
+};
+
+struct MetallicRoughness
+{
+	float baseColorFactor[4];
+	TextureInfo baseColorTexture;
+	float metallicFactor;
+	float roughnessFactor;
+	TextureInfo metallicRoughnessTexture;
+};
+
+struct Material
+{
+	MetallicRoughness pbrMetallicRoughness;
+	NormalTextureInfo normalTexture;
+	OcclusionTextureInfo occlusionTexture;
+	TextureInfo emissiveTexture;
+	float emissiveFactor[3];
+	string alphaMode;
+	float alphaCutoff;
+	bool doubleSided;
+};
+
 template <class T, class Allocator>
 void write(FILE *file, std::vector<T, Allocator> &cont)
 {
@@ -61,10 +96,10 @@ void write(FILE *file, std::vector<T, Allocator> &cont)
 	typedef typename T::iterator __iterator;
 
 	fprintf(file, "[");
-	auto len = (sint32)cont.size();
+	auto len = cont.size();
 
 	__iterator it = cont.begin();
-	for (sint i = 0; i < len; i++, it++)
+	for (auto i = 0; i < len; i++, it++)
 	{
 		if (i > 0)
 		{
@@ -79,6 +114,9 @@ void write(FILE *file, const Accessor &object)
 {
 	fprintf(file, R"({ "bufferView": %i, "byteOffset": %i, "componentType": %i, "count": %lu, "type": "%s" })", object.bufferView, object.byteOffset, object.componentType, object.count, AccessorTypeNames[object.type]);
 }
+}
+
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<vector<uint32>> &allIndices);
 
 int main(int argc, char **argv)
 {
@@ -225,8 +263,8 @@ int main(int argc, char **argv)
 		for (auto &indices : allIndices)
 		{
 			fprintf(fp, ",");
-			Accessor accessor = { 3, outputIndices.getPos(), FLOAT, indices.size(), SCALAR };
-			write(fp, accessor);
+			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::FLOAT, indices.size(), gltf::SCALAR };
+			gltf::write(fp, accessor);
 			fprintf(fp, "\n");
 			for (auto &element : indices)
 			{
