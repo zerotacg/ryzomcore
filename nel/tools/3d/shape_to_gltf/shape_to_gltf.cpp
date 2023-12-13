@@ -85,6 +85,13 @@ struct MetallicRoughness
 	// float roughnessFactor;
 	// TextureInfo metallicRoughnessTexture;
 };
+enum AlphaMode
+{
+	OPAQUE,
+	MASK,
+	BLEND
+};
+const char *AlphaModeNames[] = { "OPAQUE", "MASK", "BLEND" };
 
 struct Material
 {
@@ -93,7 +100,7 @@ struct Material
 	// OcclusionTextureInfo occlusionTexture;
 	// TextureInfo emissiveTexture;
 	// float emissiveFactor[3];
-	// string alphaMode;
+	AlphaMode alphaMode;
 	// float alphaCutoff;
 	// bool doubleSided;
 };
@@ -136,7 +143,7 @@ void write(FILE *file, const MetallicRoughness &object)
 
 void write(FILE *file, const Material &object)
 {
-	fprintf(file, R"({ "pbrMetallicRoughness": )");
+	fprintf(file, R"({ "alphaMode": "%s", "pbrMetallicRoughness": )", AlphaModeNames[object.alphaMode]);
 	write(file, object.pbrMetallicRoughness);
 	fprintf(file, R"(})");
 }
@@ -481,6 +488,10 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
+		if ( material.getBlend())
+		{
+			nlinfo("Material Blend");
+		}
 		vector<string> textures;
 		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
 		{
