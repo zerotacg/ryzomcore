@@ -116,7 +116,13 @@ void write(FILE *file, const Accessor &object)
 }
 }
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<vector<uint32>> &allIndices);
+struct MeshPart
+{
+	vector<uint32> indices;
+	vector<string> textures;
+};
+
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts);
 
 int main(int argc, char **argv)
 {
@@ -158,9 +164,10 @@ int main(int argc, char **argv)
 		std::vector<CVector> vertices;
 		std::vector<CVector> normals;
 		std::vector<CUV> textureCoordinates;
-		std::vector<std::vector<uint32>> allIndices;
+		std::vector<MeshPart> parts;
+		nlinfo("File is a %s", shape->getClassName().c_str());
 
-		if (!processMesh(shape, vertices, normals, textureCoordinates, allIndices))
+		if (!processMesh(shape, vertices, normals, textureCoordinates, parts))
 		{
 			nlwarning("File not a CMesh");
 			return EXIT_FAILURE;
@@ -218,7 +225,7 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "            \"primitives\": [\n");
 		const uint32 firstIndicesAccessor = 3;
-		for (auto i = 0; i < allIndices.size(); ++i)
+		for (auto i = 0; i < parts.size(); ++i)
 		{
 			if (i > 0)
 			{
@@ -260,10 +267,11 @@ int main(int argc, char **argv)
 		fprintf(fp, "            \"min\": [0.0, 0.0],\n");
 		fprintf(fp, "            \"type\": \"VEC2\"\n");
 		fprintf(fp, "        }\n");
-		for (auto &indices : allIndices)
+		for (auto &part : parts)
 		{
+			auto indices = part.indices;
 			fprintf(fp, ",");
-			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::FLOAT, indices.size(), gltf::SCALAR };
+			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::UNSIGNED_INT, indices.size(), gltf::SCALAR };
 			gltf::write(fp, accessor);
 			fprintf(fp, "\n");
 			for (auto &element : indices)
@@ -336,7 +344,7 @@ uint32 getIndexAt(const CIndexBufferRead &buffer, const int index)
 	}
 }
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<vector<uint32>> &allIndices)
+bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
 
@@ -352,20 +360,30 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 	const auto lodCount = mesh->getNbMatrixBlock();
 	nlinfo("LodCount %i", lodCount);
 
+	for (auto i = 0; i < vertexBuffer.getNumVertices(); ++i)
+	{
+		vertices.push_back(*vba.getVertexCoordPointer(i));
+		normals.push_back(*vba.getNormalCoordPointer(i));
+		textureCoordinates.push_back(*vba.getTexCoordPointer(i));
+	}
+
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
 		auto indexBuffer = mesh->getRdrPassPrimitiveBlock(lodId, renderPass);
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
+		vector<string> textures;
 		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
 		{
 			if (material.texturePresent(textureIndex))
 			{
+				nlinfo("Texture at index %i is %s", textureIndex, material.getTexture(textureIndex)->getClassName().c_str());
 				auto textureFile = dynamic_cast<CTextureFile *>(material.getTexture(textureIndex));
 				if (textureFile)
 				{
 					nlinfo("CTextureFile %s", textureFile->getFileName().c_str());
+					textures.push_back(textureFile->getFileName());
 				}
 				else
 				{
@@ -376,6 +394,19 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
 		vector<uint32> indices;
+		switch (indexBuffer.getFormat())
+		{
+		case CIndexBuffer::Indices16:
+			nlinfo("IndexBuffer Format: Indices16");
+			break;
+		case CIndexBuffer::Indices32:
+			nlinfo("IndexBuffer Format: Indices32");
+			break;
+		case CIndexBuffer::IndicesUnknownFormat:
+			nlinfo("IndexBuffer Format: IndicesUnknownFormat");
+			break;
+		}
+
 		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
 		{
 			uint32 idx = getIndexAt(iba, i);
@@ -383,11 +414,10 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 			{
 				indices.push_back(idx);
 			}
-			vertices.push_back(*vba.getVertexCoordPointer(i));
-			normals.push_back(*vba.getNormalCoordPointer(i));
-			textureCoordinates.push_back(*vba.getTexCoordPointer(i));
 		}
-		allIndices.push_back(indices);
+		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
+		MeshPart part = { indices, textures };
+		parts.push_back(part);
 	}
 
 	return true;
