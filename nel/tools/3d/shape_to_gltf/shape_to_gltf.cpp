@@ -53,9 +53,18 @@ struct Accessor
 	AccessorType type;
 };
 
+struct Image
+{
+	string uri;
+};
+
 struct TextureInfo
 {
-	uint32 index;
+	size_t index;
+};
+struct Texture
+{
+	size_t source;
 };
 struct NormalTextureInfo
 {
@@ -70,42 +79,40 @@ struct OcclusionTextureInfo
 
 struct MetallicRoughness
 {
-	float baseColorFactor[4];
+	// float baseColorFactor[4];
 	TextureInfo baseColorTexture;
-	float metallicFactor;
-	float roughnessFactor;
-	TextureInfo metallicRoughnessTexture;
+	// float metallicFactor;
+	// float roughnessFactor;
+	// TextureInfo metallicRoughnessTexture;
 };
 
 struct Material
 {
 	MetallicRoughness pbrMetallicRoughness;
-	NormalTextureInfo normalTexture;
-	OcclusionTextureInfo occlusionTexture;
-	TextureInfo emissiveTexture;
-	float emissiveFactor[3];
-	string alphaMode;
-	float alphaCutoff;
-	bool doubleSided;
+	// NormalTextureInfo normalTexture;
+	// OcclusionTextureInfo occlusionTexture;
+	// TextureInfo emissiveTexture;
+	// float emissiveFactor[3];
+	// string alphaMode;
+	// float alphaCutoff;
+	// bool doubleSided;
 };
 
 template <class T, class Allocator>
 void write(FILE *file, std::vector<T, Allocator> &cont)
 {
-	typedef typename T::value_type __value_type;
-	typedef typename T::iterator __iterator;
 
 	fprintf(file, "[");
 	auto len = cont.size();
 
-	__iterator it = cont.begin();
-	for (auto i = 0; i < len; i++, it++)
+	auto it = cont.begin();
+	for (auto i = 0; i < len; i++, ++it)
 	{
 		if (i > 0)
 		{
 			fprintf(file, ",");
 		}
-		write(const_cast<__value_type &>(*it));
+		write(file, *it);
 	}
 	fprintf(file, "]");
 }
@@ -114,6 +121,36 @@ void write(FILE *file, const Accessor &object)
 {
 	fprintf(file, R"({ "bufferView": %i, "byteOffset": %i, "componentType": %i, "count": %lu, "type": "%s" })", object.bufferView, object.byteOffset, object.componentType, object.count, AccessorTypeNames[object.type]);
 }
+
+void write(FILE *file, const TextureInfo &object)
+{
+	fprintf(file, R"({ "index": %lu })", object.index);
+}
+
+void write(FILE *file, const MetallicRoughness &object)
+{
+	fprintf(file, R"({ "baseColorTexture": )");
+	write(file, object.baseColorTexture);
+	fprintf(file, R"(})");
+}
+
+void write(FILE *file, const Material &object)
+{
+	fprintf(file, R"({ "pbrMetallicRoughness": )");
+	write(file, object.pbrMetallicRoughness);
+	fprintf(file, R"(})");
+}
+
+void write(FILE *file, const Texture &object)
+{
+	fprintf(file, R"({ "source": %lu })", object.source);
+}
+
+void write(FILE *file, const Image &object)
+{
+	fprintf(file, R"({ "uri": "%s" })", object.uri.c_str());
+}
+
 }
 
 struct MeshPart
@@ -124,6 +161,17 @@ struct MeshPart
 
 bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts);
 
+std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
+{
+	std::string firstValue;
+	const auto values = args.getLongArg(argName);
+	if (!values.empty())
+	{
+		firstValue = values.front();
+	}
+	return firstValue;
+}
+
 int main(int argc, char **argv)
 {
 	try
@@ -133,7 +181,8 @@ int main(int argc, char **argv)
 
 		args.addAdditionalArg("input", "Input shape file");
 		args.addAdditionalArg("output", "Output gltf file");
-
+		args.addArg("", "imageUriPrefix", "path", "prefix to add for image uris");
+		args.addArg("", "imageFileExtension", "ext", "file extension to use for images");
 		if (!args.parse(argc, argv))
 		{
 			args.displayHelp();
@@ -152,6 +201,8 @@ int main(int argc, char **argv)
 		std::string normalsFilePath = outputDirectory + "/" + normalsFileName;
 		std::string textureCoordinatesFileName = fileName + ".texcoord_0.bin";
 		std::string textureCoordinatesFilePath = outputDirectory + "/" + textureCoordinatesFileName;
+		std::string imageUriPrefix = getLongArgFirstValue(args, "imageUriPrefix");
+		std::string imageFileExtension = getLongArgFirstValue(args, "imageFileExtension");
 
 		registerSerial3d();
 		CScene::registerBasics();
@@ -225,8 +276,12 @@ int main(int argc, char **argv)
 		fprintf(fp, "        {\n");
 		fprintf(fp, "            \"primitives\": [\n");
 		const uint32 firstIndicesAccessor = 3;
+		std::vector<gltf::Material> materials;
+		std::vector<gltf::Texture> textures;
+		std::vector<gltf::Image> images;
 		for (auto i = 0; i < parts.size(); ++i)
 		{
+			auto part = parts[i];
 			if (i > 0)
 			{
 				fprintf(fp, "                ,{\n");
@@ -235,14 +290,51 @@ int main(int argc, char **argv)
 			{
 				fprintf(fp, "                {\n");
 			}
-			fprintf(fp, "                    \"attributes\": { \"POSITION\": 0, \"NORMAL\": 1, \"TEXCOORD_0\": 2 },\n");
-			fprintf(fp, "                    \"indices\": %i\n", firstIndicesAccessor + i);
+			fprintf(fp, "                    \"attributes\": { \"POSITION\": 0, \"NORMAL\": 1, \"TEXCOORD_0\": 2 }\n");
+			fprintf(fp, "                   ,\"indices\": %i\n", firstIndicesAccessor + i);
+			if (!part.textures.empty())
+			{
+				gltf::Texture texture = { images.size() };
+				auto textureFile = part.textures.front();
+				if (!imageFileExtension.empty())
+				{
+					textureFile = CFile::getFilenameWithoutExtension(textureFile);
+					textureFile +=  ".";
+					textureFile += imageFileExtension;
+				}
+				std::string imageUri = imageUriPrefix + textureFile;
+				gltf::Image image = { imageUri };
+				gltf::Material material = {
+					{ textures.size() }
+				};
+				materials.push_back(material);
+				textures.push_back(texture);
+				images.push_back(image);
+			}
 			fprintf(fp, "                }\n");
 		}
 		fprintf(fp, "            ]\n");
 		fprintf(fp, "        }\n");
-		fprintf(fp, "    ],\n");
-		fprintf(fp, "    \"accessors\": [\n");
+		fprintf(fp, "    ]\n");
+		if (!materials.empty())
+		{
+			fprintf(fp, "   ,\"materials\": ");
+			gltf::write(fp, materials);
+			fprintf(fp, "\n");
+		}
+		if (!textures.empty())
+		{
+			fprintf(fp, "   ,\"textures\": ");
+			gltf::write(fp, textures);
+			fprintf(fp, "\n");
+		}
+		if (!images.empty())
+		{
+			fprintf(fp, "   ,\"images\": ");
+			gltf::write(fp, images);
+			fprintf(fp, "\n");
+		}
+		fprintf(fp, "   ,\"accessors\": [\n");
 		fprintf(fp, "        {\n");
 		fprintf(fp, "            \"bufferView\": 0,\n");
 		fprintf(fp, "            \"componentType\": 5126,\n");
