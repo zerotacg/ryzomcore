@@ -183,6 +183,7 @@ int main(int argc, char **argv)
 		args.addAdditionalArg("output", "Output gltf file");
 		args.addArg("", "imageUriPrefix", "path", "prefix to add for image uris");
 		args.addArg("", "imageFileExtension", "ext", "file extension to use for images");
+		args.addArg("", "imageFileLowerCase", "", "convert filename to lower case");
 		if (!args.parse(argc, argv))
 		{
 			args.displayHelp();
@@ -203,6 +204,7 @@ int main(int argc, char **argv)
 		std::string textureCoordinatesFilePath = outputDirectory + "/" + textureCoordinatesFileName;
 		std::string imageUriPrefix = getLongArgFirstValue(args, "imageUriPrefix");
 		std::string imageFileExtension = getLongArgFirstValue(args, "imageFileExtension");
+		bool imageFileLowerCase = args.haveLongArg("imageFileLowerCase");
 
 		registerSerial3d();
 		CScene::registerBasics();
@@ -294,22 +296,36 @@ int main(int argc, char **argv)
 			fprintf(fp, "                   ,\"indices\": %i\n", firstIndicesAccessor + i);
 			if (!part.textures.empty())
 			{
-				gltf::Texture texture = { images.size() };
+				fprintf(fp, "                   ,\"material\": %lu\n", materials.size());
 				auto textureFile = part.textures.front();
+				if(imageFileLowerCase)
+				{
+					textureFile = toLower(textureFile);
+				}
 				if (!imageFileExtension.empty())
 				{
 					textureFile = CFile::getFilenameWithoutExtension(textureFile);
-					textureFile +=  ".";
+					textureFile += ".";
 					textureFile += imageFileExtension;
 				}
 				std::string imageUri = imageUriPrefix + textureFile;
-				gltf::Image image = { imageUri };
-				gltf::Material material = {
-					{ textures.size() }
-				};
+
+				gltf::Texture texture = { images.size() };
+				gltf::Material material = { { textures.size() } };
+				for (auto j = 0; j < images.size(); ++j)
+				{
+					if (images[j].uri == imageUri)
+					{
+						texture.source = j;
+						material.pbrMetallicRoughness.baseColorTexture.index = j;
+					}
+				}
+				if (texture.source == images.size())
+				{
+					images.push_back(gltf::Image { imageUri });
+					textures.push_back(texture);
+				}
 				materials.push_back(material);
-				textures.push_back(texture);
-				images.push_back(image);
 			}
 			fprintf(fp, "                }\n");
 		}
