@@ -29,6 +29,7 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CTri
 	nlassert(patch < N);
 	const CPatch *pa = const_cast<const CZone *>(pZone)->getPatch(patch);
 
+	auto textures = pZone->getPatchTexture(patch);
 	// Build the faces.
 	//=================
 	sint ordS = pa->getOrderS();
@@ -106,6 +107,7 @@ int main(int argc, char **argv)
 		CAABBox bbox;
 		CZone zone;
 		zone.serial(zoneFile);
+		landscape.setNoiseMode(false);
 		landscape.addZone(zone);
 		zoneFile.close();
 		uint32 triangleCount = 0;
@@ -113,9 +115,24 @@ int main(int argc, char **argv)
 		COFile outputPosition;
 		try
 		{
-			// CIFile bankFile(bankFilePath);
-			// FIXME paths in bankfile are using forward slashes and are in wrong caseing causing textures fail to load which causes the fallback (arrows) used for displacement
-			// landscape.TileBank.serial(bankFile);
+			CIFile bankFile(bankFilePath);
+			auto tileBank = landscape.TileBank;
+			tileBank.serial(bankFile);
+			nldebug("TileBank land count %i", tileBank.getLandCount());
+			nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
+			nldebug("TileBank tile count %i", tileBank.getTileCount());
+			for( auto i = 0; i < tileBank.getLandCount(); ++i)
+			{
+				nldebug("TileBank land %i '%s'", i, tileBank.getLand(i)->getName().c_str());
+			}
+			for( auto i = 0; i < tileBank.getTileSetCount(); ++i)
+			{
+				nldebug("TileBank tileSet %i '%s'", i, tileBank.getTileSet(i)->getName().c_str());
+			}
+			for( auto i = 0; i < tileBank.getTileCount(); ++i)
+			{
+				nldebug("TileBank tile %i '%s'", i, tileBank.getTile(i)->getFileName(CTile::diffuse).c_str());
+			}
 		}
 		catch (const Exception &)
 		{
