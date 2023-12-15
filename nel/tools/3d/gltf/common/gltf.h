@@ -16,7 +16,7 @@ struct JsonWriter
 	std::vector<std::string> propertyPrefix;
 
 	template <class T, class Allocator>
-	void write(std::vector<T, Allocator> &container)
+	void write(const std::vector<T, Allocator> &container)
 	{
 		fprintf(file, "[");
 		for (auto it = container.begin(); it != container.end(); ++it)
@@ -33,11 +33,11 @@ struct JsonWriter
 	template <class T>
 	void write(const T &object)
 	{
-		fprintf(file, "{");
+		fprintf(file, "{ ");
 		propertyPrefix.push_back("");
 		object.write(*this);
 		propertyPrefix.pop_back();
-		fprintf(file, "}");
+		fprintf(file, " }");
 	}
 
 	void write(const std::string &value)
@@ -56,7 +56,7 @@ struct JsonWriter
 
 	void write(const size_t &value)
 	{
-		fprintf(file, R"(%lu)", value);
+		fprintf(file, "%lu", value);
 	}
 
 	template <class T>
@@ -64,7 +64,7 @@ struct JsonWriter
 	{
 		fprintf(file, "%s", propertyPrefix.back().c_str());
 		write(key);
-		fprintf(file, " : ");
+		fprintf(file, ": ");
 		write(value);
 		propertyPrefix.back() = ", ";
 	}
@@ -80,7 +80,7 @@ struct Info
 	}
 } info;
 
-enum ComponentType : uint32
+enum class ComponentType : uint32
 {
 	SIGNED_BYTE = 5120,
 	UNSIGNED_BYTE = 5121,
@@ -90,7 +90,7 @@ enum ComponentType : uint32
 	FLOAT = 5126
 };
 
-enum AccessorType
+enum class AccessorType
 {
 	SCALAR = 0,
 	VEC2,
@@ -113,10 +113,13 @@ struct Accessor
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("bufferView", bufferView);
-		writer.writeProperty("byteOffset", byteOffset);
+		if ( byteOffset > 0)
+		{
+			writer.writeProperty("byteOffset", byteOffset);
+		}
 		writer.writeProperty("componentType", static_cast<uint32>(componentType));
 		writer.writeProperty("count", count);
-		writer.writeProperty("type", AccessorTypeNames[type]);
+		writer.writeProperty("type", AccessorTypeNames[static_cast<int>(type)]);
 	}
 };
 
@@ -175,7 +178,7 @@ struct MetallicRoughness
 		writer.writeProperty("baseColorTexture", baseColorTexture);
 	}
 };
-enum AlphaMode
+enum class AlphaMode
 {
 	OPAQUE,
 	MASK,
@@ -196,21 +199,90 @@ struct Material
 
 	void write(JsonWriter &writer) const
 	{
-		writer.writeProperty("alphaMode", AlphaModeNames[alphaMode]);
+		writer.writeProperty("alphaMode", AlphaModeNames[static_cast<int>(alphaMode)]);
 		writer.writeProperty("pbrMetallicRoughness", pbrMetallicRoughness);
+	}
+};
+
+struct Attributes
+{
+	uint32 position;
+	uint32 normal;
+	uint32 texcoord0;
+	bool hasPosition;
+	bool hasNormal;
+	bool hasTexcoord0;
+
+	void write(JsonWriter &writer) const
+	{
+		if (hasPosition)
+		{
+			writer.writeProperty("POSITION", position);
+		}
+		if (hasNormal)
+		{
+			writer.writeProperty("NORMAL", normal);
+		}
+		if (hasTexcoord0)
+		{
+			writer.writeProperty("TEXCOORD_0", texcoord0);
+		}
+	}
+};
+
+struct Primitive
+{
+	Attributes attributes;
+	size_t indices;
+	size_t material;
+	bool hasIndices;
+	bool hasMaterial;
+
+	void write(JsonWriter &writer) const
+	{
+		writer.writeProperty("attributes", attributes);
+		if (hasIndices)
+		{
+			writer.writeProperty("indices", indices);
+		}
+		if (hasMaterial)
+		{
+			writer.writeProperty("material", material);
+		}
 	}
 };
 
 struct Mesh
 {
+	std::vector<Primitive> primitives;
+	void write(JsonWriter &writer) const
+	{
+		writer.writeProperty("primitives", primitives);
+	}
 };
 
 struct BufferView
 {
+	size_t buffer;
+	sint32 byteLength;
+
+	void write(JsonWriter &writer) const
+	{
+		writer.writeProperty("buffer", buffer);
+		writer.writeProperty("byteLength", byteLength);
+	}
 };
 
 struct Buffer
 {
+	std::string uri;
+	sint32 byteLength;
+
+	void write(JsonWriter &writer) const
+	{
+		writer.writeProperty("uri", uri);
+		writer.writeProperty("byteLength", byteLength);
+	}
 };
 
 struct Asset
@@ -223,6 +295,10 @@ struct Asset
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("asset", info);
+		writer.writeProperty("meshes", meshes);
+		writer.writeProperty("accessors", accessors);
+		writer.writeProperty("bufferViews", bufferViews);
+		writer.writeProperty("buffers", buffers);
 	}
 };
 
