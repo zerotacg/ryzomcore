@@ -19,7 +19,7 @@
 #include <nel/misc/o_xml.h>
 #include <nel/misc/i_xml.h>
 
-#include "../gltf_lib/gltf.h"
+#include "../common/gltf.h"
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -144,6 +144,7 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", outputFilePath.c_str());
 			return EXIT_FAILURE;
 		}
+		gltf::JsonWriter gltfFile = { .file = fp };
 		fprintf(fp, "{\n");
 		fprintf(fp, "    \"asset\": { \"version\": \"2.0\" },\n");
 		fprintf(fp, "    \"meshes\": [\n");
@@ -170,7 +171,7 @@ int main(int argc, char **argv)
 			{
 				fprintf(fp, "                   ,\"material\": %lu\n", materials.size());
 				auto textureFile = part.textures.front();
-				if(imageFileLowerCase)
+				if (imageFileLowerCase)
 				{
 					textureFile = toLower(textureFile);
 				}
@@ -207,19 +208,19 @@ int main(int argc, char **argv)
 		if (!materials.empty())
 		{
 			fprintf(fp, "   ,\"materials\": ");
-			gltf::write(fp, materials);
+			gltfFile.write(materials);
 			fprintf(fp, "\n");
 		}
 		if (!textures.empty())
 		{
 			fprintf(fp, "   ,\"textures\": ");
-			gltf::write(fp, textures);
+			gltfFile.write(textures);
 			fprintf(fp, "\n");
 		}
 		if (!images.empty())
 		{
 			fprintf(fp, "   ,\"images\": ");
-			gltf::write(fp, images);
+			gltfFile.write(images);
 			fprintf(fp, "\n");
 		}
 		fprintf(fp, "   ,\"accessors\": [\n");
@@ -252,7 +253,7 @@ int main(int argc, char **argv)
 			auto indices = part.indices;
 			fprintf(fp, ",");
 			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::UNSIGNED_INT, indices.size(), gltf::SCALAR };
-			gltf::write(fp, accessor);
+			gltfFile.write(accessor);
 			fprintf(fp, "\n");
 			for (auto &element : indices)
 			{
@@ -353,7 +354,7 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
-		if ( material.getBlend())
+		if (material.getBlend())
 		{
 			nlinfo("Material Blend");
 		}

@@ -10,6 +10,8 @@
 #include <nel/ligo/zone_region.h>
 #include <vector>
 
+#include "../common/gltf.h"
+
 using namespace NL3D;
 using namespace NLMISC;
 using namespace NLLIGO;
