@@ -23,6 +23,7 @@ IF(WITH_NEL_TOOLS)
       build_smallbank
       cluster_viewer
       file_info
+      gltf
       ig_add
       ig_elevation
       ig_info
@@ -36,10 +37,8 @@ IF(WITH_NEL_TOOLS)
       zone_elevation
       shapes_exporter
       shape2obj
-      shape_to_gltf
       zone_check_bind
       zone_dump
-      zone_to_gltf
       zviewer)
   ENDIF()
   SUBDIRS(

@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY(shape_to_gltf)
+ADD_SUBDIRECTORY(zone_to_gltf)
