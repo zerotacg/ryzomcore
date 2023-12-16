@@ -288,6 +288,8 @@ struct Buffer
 struct Asset
 {
 	std::vector<Mesh> meshes;
+	std::vector<Texture> textures;
+	std::vector<Image> images;
 	std::vector<Accessor> accessors;
 	std::vector<BufferView> bufferViews;
 	std::vector<Buffer> buffers;
@@ -296,6 +298,14 @@ struct Asset
 	{
 		writer.writeProperty("asset", info);
 		writer.writeProperty("meshes", meshes);
+		if (!textures.empty())
+		{
+			writer.writeProperty("textures", textures);
+		}
+		if (!images.empty())
+		{
+			writer.writeProperty("images", images);
+		}
 		writer.writeProperty("accessors", accessors);
 		writer.writeProperty("bufferViews", bufferViews);
 		writer.writeProperty("buffers", buffers);

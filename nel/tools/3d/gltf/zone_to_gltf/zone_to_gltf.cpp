@@ -29,7 +29,6 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CTri
 	nlassert(patch < N);
 	const CPatch *pa = const_cast<const CZone *>(pZone)->getPatch(patch);
 
-	auto textures = pZone->getPatchTexture(patch);
 	// Build the faces.
 	//=================
 	sint ordS = pa->getOrderS();
@@ -63,6 +62,17 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CTri
 	}
 }
 
+std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
+{
+	std::string firstValue;
+	const auto values = args.getLongArg(argName);
+	if (!values.empty())
+	{
+		firstValue = values.front();
+	}
+	return firstValue;
+}
+
 int main(int argc, char **argv)
 {
 	try
@@ -73,6 +83,9 @@ int main(int argc, char **argv)
 		args.addAdditionalArg("input", ".zonel Input zone file");
 		args.addAdditionalArg("output", "Output gltf file");
 		args.addArg("", "tile-bank", "[name.smallbank]", "TileBank to load");
+		args.addArg("", "use-relative-position", "", "Use position relative to zone, not global world position");
+		args.addArg("", "image-prefix", "path", "prefix to add for image uris");
+		args.addArg("", "image-extension", "ext", "file extension to use for images");
 
 		if (!args.parse(argc, argv))
 		{
@@ -81,12 +94,7 @@ int main(int argc, char **argv)
 		}
 
 		std::string inputFilePath = args.getAdditionalArg("input").front();
-		std::vector<std::string> tileBanks = args.getLongArg("tile-bank");
-		std::string bankFilePath;
-		if (!tileBanks.empty())
-		{
-			bankFilePath = tileBanks.front();
-		}
+		std::string bankFilePath = getLongArgFirstValue(args, "tile-bank");
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
 		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
@@ -94,6 +102,9 @@ int main(int argc, char **argv)
 		std::string positionFilePath = outputDirectory + "/" + positionFileName;
 		std::string textureCordinateFileName = fileName + ".texcoord.bin";
 		std::string textureCordinateFilePath = outputDirectory + "/" + textureCordinateFileName;
+		std::string imageUriPrefix = getLongArgFirstValue(args, "image-prefix");
+		std::string imageFileExtension = getLongArgFirstValue(args, "image-extension");
+		bool useRelativePosion = args.haveLongArg("use-relative-position");
 
 		CIFile zoneFile;
 		if (!zoneFile.open(inputFilePath))
@@ -102,7 +113,6 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		CLandscape landscape;
-		CTileBank tile_bank;
 		bool firstVertex = true;
 		CAABBox bbox;
 		CZone zone;
@@ -113,10 +123,11 @@ int main(int argc, char **argv)
 		uint32 triangleCount = 0;
 		uint32 textrueCordinateCount = 0;
 		COFile outputPosition;
+		std::vector<gltf::Image> images;
 		try
 		{
 			CIFile bankFile(bankFilePath);
-			auto tileBank = landscape.TileBank;
+			auto &tileBank = landscape.TileBank;
 			tileBank.serial(bankFile);
 			nldebug("TileBank land count %i", tileBank.getLandCount());
 			nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
@@ -132,6 +143,17 @@ int main(int argc, char **argv)
 			for( auto i = 0; i < tileBank.getTileCount(); ++i)
 			{
 				nldebug("TileBank tile %i '%s'", i, tileBank.getTile(i)->getFileName(CTile::diffuse).c_str());
+				std::string imageUri = tileBank.getTile(i)->getFileName(CTile::diffuse);
+				if (!imageFileExtension.empty())
+				{
+					auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
+					imageFileName += ".";
+					imageFileName += imageFileExtension;
+					imageUri = CFile::getPath(imageUri);
+					imageUri += imageFileName;
+				}
+				std::replace( imageUri.begin(), imageUri.end(), '\\', '/');
+				images.push_back({.uri = imageUriPrefix + imageUri });
 			}
 		}
 		catch (const Exception &)
@@ -151,6 +173,19 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
+		CVector positionOffset = CVector::Null;
+		if (useRelativePosion)
+		{
+			positionOffset = -zone.getPatchBias();
+		}
+		gltf::Mesh mesh;
+		gltf::Asset asset = {
+			.images = images
+		};
+		for( size_t i= 0; i < asset.images.size(); ++i)
+		{
+			asset.textures.push_back({.source = i });
+		}
 		for (sint patch = 0; patch < zone.getNumPatchs(); patch++)
 		{
 			// vector of triangle
@@ -159,9 +194,39 @@ int main(int argc, char **argv)
 
 			buildFaces(landscape, zone.getZoneId(), patch, faces, textureCordinates);
 
+			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1, .hasPosition = true, .hasTexcoord0 = true } };
+			// fprintf(fp, "			\"max\": [%f, %f, %f],\n", bbox.getMax().x, bbox.getMax().y, bbox.getMax().z);
+			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3};
+			// fprintf(fp, "			\"min\": [%f, %f, %f],\n", bbox.getMin().x, bbox.getMin().y, bbox.getMin().z);
+			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2};
+			primitive.attributes.position = asset.accessors.size();
+			asset.accessors.push_back(position);
+			primitive.attributes.texcoord0 = asset.accessors.size();
+			asset.accessors.push_back(textcoord0);
+			mesh.primitives.push_back(primitive);
+			auto &textures = landscape.getZone(zone.getZoneId())->getPatchTexture(patch);
+			auto &tileBank = landscape.TileBank;
+			for( auto &texture: textures)
+			{
+				auto tileId = texture.Tile[0];
+				if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+				{
+					if (tileBank.getTileCount() > tileId)
+					{
+						nldebug("PatchTexture %i '%s'", patch, tileBank.getTile(texture.Tile[0])->getFileName(CTile::diffuse).c_str());
+					} else
+					{
+						nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, landscape.TileBank.getTileCount());
+					}
+				}
+			}
+
 			// Add to the file
 			for (auto &face : faces)
 			{
+				face.V0 += positionOffset;
+				face.V1 += positionOffset;
+				face.V2 += positionOffset;
 				// Serial the triangle
 				face.V0.serial(outputPosition);
 				face.V1.serial(outputPosition);
@@ -188,6 +253,7 @@ int main(int argc, char **argv)
 			triangleCount += faces.size();
 			textrueCordinateCount += textureCordinates.size();
 		}
+		asset.meshes.push_back(mesh);
 
 		FILE *fp = nlfopen(outputFilePath, "w");
 		if (fp == NULL)
@@ -196,28 +262,10 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		gltf::JsonWriter gltfWriter = { .file = fp };
-		gltf::Mesh mesh = {
-			.primitives = {
-				{ .attributes = { .position = 0, .texcoord0 = 1, .hasPosition = true, .hasTexcoord0 = true } }
-			},
-		};
-		gltf::Asset asset = {
-			.meshes = { mesh },
-			.accessors = {
-				// fprintf(fp, "			\"max\": [%f, %f, %f],\n", bbox.getMax().x, bbox.getMax().y, bbox.getMax().z);
-				// fprintf(fp, "			\"min\": [%f, %f, %f],\n", bbox.getMin().x, bbox.getMin().y, bbox.getMin().z);
-				{ .bufferView = 0, .componentType = gltf::ComponentType::FLOAT, .count = triangleCount * 3, .type = gltf::AccessorType::VEC3},
-				{ .bufferView = 1, .componentType = gltf::ComponentType::FLOAT, .count = textrueCordinateCount, .type = gltf::AccessorType::VEC2}
-			},
-			.bufferViews = {
-				{ .buffer = 0, .byteLength = outputPosition.getPos() },
-				{ .buffer = 1, .byteLength = outputTextureCordinate.getPos() }
-			},
-			.buffers = {
-				{ .uri = positionFileName, .byteLength = outputPosition.getPos() },
-				{ .uri = textureCordinateFileName, .byteLength = outputTextureCordinate.getPos() }
-			}
-		};
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
+		asset.buffers.push_back({ .uri = positionFileName, .byteLength = outputPosition.getPos() });
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCordinate.getPos() });
+		asset.buffers.push_back({ .uri = textureCordinateFileName, .byteLength = outputTextureCordinate.getPos() });
 		gltfWriter.write(asset);
 		fclose(fp);
 		outputPosition.close();
