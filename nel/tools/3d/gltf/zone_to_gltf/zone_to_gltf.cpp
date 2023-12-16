@@ -187,24 +187,23 @@ int main(int argc, char **argv)
 		{
 			asset.textures.push_back({ .source = i });
 		}
-		for (sint patch = 0; patch < zone.getNumPatchs(); patch++)
+		for (sint patchIndex = 0; patchIndex < zone.getNumPatchs(); patchIndex++)
 		{
+			const CPatch *patch = static_cast<const CZone &>(zone).getPatch(patchIndex);
 			// vector of triangle
 			std::vector<CTriangle> faces;
 			std::vector<CUV> textureCordinates;
 
-			buildFaces(landscape, zone.getZoneId(), patch, faces, textureCordinates);
+			buildFaces(landscape, zone.getZoneId(), patchIndex, faces, textureCordinates);
 
 			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1, .hasPosition = true, .hasTexcoord0 = true } };
-			// fprintf(fp, "			\"max\": [%f, %f, %f],\n", bbox.getMax().x, bbox.getMax().y, bbox.getMax().z);
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3 };
-			// fprintf(fp, "			\"min\": [%f, %f, %f],\n", bbox.getMin().x, bbox.getMin().y, bbox.getMin().z);
 			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2 };
 			primitive.attributes.position = asset.accessors.size();
 			asset.accessors.push_back(position);
 			primitive.attributes.texcoord0 = asset.accessors.size();
 			asset.accessors.push_back(textcoord0);
-			auto &textures = landscape.getZone(zone.getZoneId())->getPatchTexture(patch);
+			auto &textures = patch->Tiles;
 			auto &tileBank = landscape.TileBank;
 			for (auto &texture : textures)
 			{
@@ -216,7 +215,7 @@ int main(int argc, char **argv)
 						auto tile = tileBank.getTile(texture.Tile[0]);
 						std::string diffuseTexture = tile->getFileName(CTile::diffuse);
 						std::replace(diffuseTexture.begin(), diffuseTexture.end(), '\\', '/');
-						// nldebug("PatchTexture %i diffuse: '%s' additive: '%s' alpha: '%s'", patch, diffuseTexture.c_str(), tile->getFileName(CTile::additive).c_str(), tile->getFileName(CTile::alpha).c_str());
+						nldebug("PatchTexture %i diffuse: '%s' additive: '%s' alpha: '%s'", patchIndex, diffuseTexture.c_str(), tile->getFileName(CTile::additive).c_str(), tile->getFileName(CTile::alpha).c_str());
 						primitive.material = asset.materials.size();
 						primitive.hasMaterial = true;
 						for (auto i = 0; i < asset.materials.size(); ++i)
