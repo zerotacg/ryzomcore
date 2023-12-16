@@ -132,18 +132,19 @@ int main(int argc, char **argv)
 			nldebug("TileBank land count %i", tileBank.getLandCount());
 			nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
 			nldebug("TileBank tile count %i", tileBank.getTileCount());
-			for( auto i = 0; i < tileBank.getLandCount(); ++i)
+			for (auto i = 0; i < tileBank.getLandCount(); ++i)
 			{
 				nldebug("TileBank land %i '%s'", i, tileBank.getLand(i)->getName().c_str());
 			}
-			for( auto i = 0; i < tileBank.getTileSetCount(); ++i)
+			for (auto i = 0; i < tileBank.getTileSetCount(); ++i)
 			{
 				nldebug("TileBank tileSet %i '%s'", i, tileBank.getTileSet(i)->getName().c_str());
 			}
-			for( auto i = 0; i < tileBank.getTileCount(); ++i)
+			for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
 			{
-				nldebug("TileBank tile %i '%s'", i, tileBank.getTile(i)->getFileName(CTile::diffuse).c_str());
-				std::string imageUri = tileBank.getTile(i)->getFileName(CTile::diffuse);
+				auto tile = tileBank.getTile(tileId);
+				nldebug("TileBank tile %i diffuse: '%s' additive: '%s' alpha: '%s'", tileId, tile->getFileName(CTile::diffuse).c_str(), tile->getFileName(CTile::additive).c_str(), tile->getFileName(CTile::alpha).c_str());
+				std::string imageUri = tile->getFileName(CTile::diffuse);
 				if (!imageFileExtension.empty())
 				{
 					auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
@@ -152,8 +153,8 @@ int main(int argc, char **argv)
 					imageUri = CFile::getPath(imageUri);
 					imageUri += imageFileName;
 				}
-				std::replace( imageUri.begin(), imageUri.end(), '\\', '/');
-				images.push_back({.uri = imageUriPrefix + imageUri });
+				std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
+				images.push_back({ .uri = imageUriPrefix + imageUri });
 			}
 		}
 		catch (const Exception &)
@@ -182,9 +183,9 @@ int main(int argc, char **argv)
 		gltf::Asset asset = {
 			.images = images
 		};
-		for( size_t i= 0; i < asset.images.size(); ++i)
+		for (size_t i = 0; i < asset.images.size(); ++i)
 		{
-			asset.textures.push_back({.source = i });
+			asset.textures.push_back({ .source = i });
 		}
 		for (sint patch = 0; patch < zone.getNumPatchs(); patch++)
 		{
@@ -196,30 +197,48 @@ int main(int argc, char **argv)
 
 			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1, .hasPosition = true, .hasTexcoord0 = true } };
 			// fprintf(fp, "			\"max\": [%f, %f, %f],\n", bbox.getMax().x, bbox.getMax().y, bbox.getMax().z);
-			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3};
+			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3 };
 			// fprintf(fp, "			\"min\": [%f, %f, %f],\n", bbox.getMin().x, bbox.getMin().y, bbox.getMin().z);
-			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2};
+			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2 };
 			primitive.attributes.position = asset.accessors.size();
 			asset.accessors.push_back(position);
 			primitive.attributes.texcoord0 = asset.accessors.size();
 			asset.accessors.push_back(textcoord0);
-			mesh.primitives.push_back(primitive);
 			auto &textures = landscape.getZone(zone.getZoneId())->getPatchTexture(patch);
 			auto &tileBank = landscape.TileBank;
-			for( auto &texture: textures)
+			for (auto &texture : textures)
 			{
 				auto tileId = texture.Tile[0];
 				if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 				{
 					if (tileBank.getTileCount() > tileId)
 					{
-						nldebug("PatchTexture %i '%s'", patch, tileBank.getTile(texture.Tile[0])->getFileName(CTile::diffuse).c_str());
-					} else
+						auto tile = tileBank.getTile(texture.Tile[0]);
+						std::string diffuseTexture = tile->getFileName(CTile::diffuse);
+						std::replace(diffuseTexture.begin(), diffuseTexture.end(), '\\', '/');
+						// nldebug("PatchTexture %i diffuse: '%s' additive: '%s' alpha: '%s'", patch, diffuseTexture.c_str(), tile->getFileName(CTile::additive).c_str(), tile->getFileName(CTile::alpha).c_str());
+						primitive.material = asset.materials.size();
+						primitive.hasMaterial = true;
+						for (auto i = 0; i < asset.materials.size(); ++i)
+						{
+							if (asset.materials[i].name == diffuseTexture)
+							{
+								primitive.material = i;
+								break;
+							}
+						}
+						if (primitive.material == asset.materials.size())
+						{
+							asset.materials.push_back({ .name = diffuseTexture, .pbrMetallicRoughness = { tileId }, .hasPbrMetallicRoughness = true });
+						}
+					}
+					else
 					{
 						nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, landscape.TileBank.getTileCount());
 					}
 				}
 			}
+			mesh.primitives.push_back(primitive);
 
 			// Add to the file
 			for (auto &face : faces)

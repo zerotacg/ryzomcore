@@ -188,7 +188,9 @@ const std::string AlphaModeNames[] = { "OPAQUE", "MASK", "BLEND" };
 
 struct Material
 {
+	std::string name;
 	MetallicRoughness pbrMetallicRoughness;
+	bool hasPbrMetallicRoughness;
 	// NormalTextureInfo normalTexture;
 	// OcclusionTextureInfo occlusionTexture;
 	// TextureInfo emissiveTexture;
@@ -196,11 +198,24 @@ struct Material
 	AlphaMode alphaMode;
 	// float alphaCutoff;
 	// bool doubleSided;
+	std::map<std::string,std::string> extras;
+
+	bool hasDefaultAlphaMode() const { return alphaMode == AlphaMode::OPAQUE; }
 
 	void write(JsonWriter &writer) const
 	{
-		writer.writeProperty("alphaMode", AlphaModeNames[static_cast<int>(alphaMode)]);
-		writer.writeProperty("pbrMetallicRoughness", pbrMetallicRoughness);
+		if(!name.empty())
+		{
+			writer.writeProperty("name", name);
+		}
+		if (!hasDefaultAlphaMode())
+		{
+			writer.writeProperty("alphaMode", AlphaModeNames[static_cast<int>(alphaMode)]);
+		}
+		if(hasPbrMetallicRoughness)
+		{
+			writer.writeProperty("pbrMetallicRoughness", pbrMetallicRoughness);
+		}
 	}
 };
 
@@ -288,6 +303,7 @@ struct Buffer
 struct Asset
 {
 	std::vector<Mesh> meshes;
+	std::vector<Material> materials;
 	std::vector<Texture> textures;
 	std::vector<Image> images;
 	std::vector<Accessor> accessors;
@@ -298,6 +314,10 @@ struct Asset
 	{
 		writer.writeProperty("asset", info);
 		writer.writeProperty("meshes", meshes);
+		if (!materials.empty())
+		{
+			writer.writeProperty("materials", materials);
+		}
 		if (!textures.empty())
 		{
 			writer.writeProperty("textures", textures);
