@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // STL includes
 
 // Qt includes
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLWidget>
 #include <QTimer>
 
 // NeL includes

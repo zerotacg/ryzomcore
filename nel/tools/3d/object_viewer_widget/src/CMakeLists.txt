@@ -16,7 +16,7 @@ ELSE()
   SET(TYPE MODULE)
 ENDIF()
 
-ADD_LIBRARY(object_viewer_widget_qt ${TYPE}
+qt_add_library(object_viewer_widget_qt ${TYPE}
 		${OBJECT_VIEWER_WIDGET_SRC}
 		${OBJECT_VIEWER_WIDGET_MOC_SRCS})
 

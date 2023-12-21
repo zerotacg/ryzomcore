@@ -808,10 +808,203 @@ MACRO(FIND_QT6)
 
   SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QTDIR} $ENV{QTDIR})
 
-  FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Core Widgets Network Xml Gui OpenGL)
+  FIND_PACKAGE(Qt6 REQUIRED COMPONENTS Core Widgets Network Xml Gui OpenGL LinguistTools)
 
   IF(Qt6_FOUND)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(CMAKE_AUTOUIC ON)
+    # Check if we are using Qt static or shared libraries
+    GET_TARGET_PROPERTY(_FILE Qt6::Core IMPORTED_LOCATION_RELEASE)
+
+    SET(QT_VERSION "${Qt6_VERSION_STRING}")
+    SET(_VERSION "${QT_VERSION}")
+
+    IF(_FILE MATCHES "\\.(lib|a)$")
+      SET(QT_STATIC ON)
+      SET(_VERSION "${_VERSION} static version")
+    ELSE()
+      SET(QT_STATIC OFF)
+      SET(_VERSION "${_VERSION} shared version")
+    ENDIF()
+
+    MESSAGE(STATUS "Found Qt ${_VERSION}")
+
+    # These variables are not defined with Qt5 CMake modules
+    SET(QT_BINARY_DIR "${_qt6_install_prefix}/bin")
+    SET(QT_LIBRARY_DIR "${_qt6_install_prefix}/lib")
+    SET(QT_PLUGINS_DIR "${_qt6_install_prefix}/plugins")
+    SET(QT_TRANSLATIONS_DIR "${_qt6_install_prefix}/translations")
+
+    # Fix wrong include directories with Qt 5 under Mac OS X
+    INCLUDE_DIRECTORIES("${_qt6_install_prefix}/include")
+
+    FIND_PACKAGE(Qt6Gui)
+    FIND_PACKAGE(Qt6Widgets)
+    FIND_PACKAGE(Qt6OpenGL)
+    FIND_PACKAGE(Qt6Xml)
+    FIND_PACKAGE(Qt6LinguistTools)
+    FIND_PACKAGE(Qt6Network)
+
+    IF(QT_STATIC)
+      FIND_PACKAGE(PNG REQUIRED)
+      FIND_PACKAGE(Jpeg REQUIRED)
+
+      ADD_DEFINITIONS(-DQT_STATICPLUGIN)
+
+      SET(QT_LIBRARIES Qt6::Widgets)
+
+      # Gui
+      LIST(APPEND QT_LIBRARIES Qt6::Gui Qt6::OpenGL)
+
+      ADD_QT_LIBRARY(PrintSupport)
+
+      IF(WIN32)
+        LIST(APPEND QT_LIBRARIES
+                ${WINSDK_LIBRARY_DIR}/Imm32.lib
+                ${WINSDK_LIBRARY_DIR}/OpenGL32.lib
+                ${WINSDK_LIBRARY_DIR}/WinMM.Lib)
+        ADD_QT_PLUGIN(platforms qwindows)
+        ADD_QT_LIBRARY(PlatformSupport)
+      ELSEIF(APPLE)
+        # Cups needs .dylib
+        SET(OLD_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+        SET(CMAKE_FIND_LIBRARY_SUFFIXES .dylib)
+        FIND_LIBRARY(CUPS_LIBRARY cups)
+        SET(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_CMAKE_FIND_LIBRARY_SUFFIXES})
+
+        FIND_LIBRARY(IOKIT_FRAMEWORK IOKit)
+        FIND_LIBRARY(COCOA_FRAMEWORK Cocoa)
+        FIND_LIBRARY(SYSTEMCONFIGURATION_FRAMEWORK SystemConfiguration)
+        FIND_LIBRARY(OPENGL_FRAMEWORK NAMES OpenGL)
+
+        LIST(APPEND QT_LIBRARIES
+                ${CUPS_LIBRARY}
+                ${COCOA_FRAMEWORK}
+                ${SYSTEMCONFIGURATION_FRAMEWORK}
+                ${IOKIT_FRAMEWORK}
+                ${OPENGL_FRAMEWORK})
+
+        ADD_QT_PLUGIN(printsupport cocoaprintersupport)
+        ADD_QT_PLUGIN(platforms qcocoa)
+        ADD_QT_LIBRARY(PlatformSupport)
+      ELSE()
+        # order is very important there
+        ADD_QT_PLUGIN(platforms qxcb)
+        ADD_QT_PLUGIN(xcbglintegrations qxcb-glx-integration)
+
+        ADD_QT_LIBRARY(XcbQpa)
+        ADD_QT_LIBRARY(GlxSupport)
+        ADD_QT_LIBRARY(ServiceSupport)
+        ADD_QT_LIBRARY(EdidSupport)
+        ADD_QT_LIBRARY(FontDatabaseSupport)
+        ADD_QT_LIBRARY(ThemeSupport)
+        ADD_QT_LIBRARY(EventDispatcherSupport)
+        ADD_QT_LIBRARY(PlatformSupport)
+
+        ADD_QT_LIBRARY(DBus)
+
+        IF(EXISTS "${QT_LIBRARY_DIR}/libxcb-static.a")
+          LIST(APPEND QT_LIBRARIES "${QT_LIBRARY_DIR}/libxcb-static.a")
+        ENDIF()
+
+        # always link these in dynamic, API never changes
+        ADD_QT_SYSTEM_LIBRARY(X11)
+        ADD_QT_SYSTEM_LIBRARY(Xmu)
+        ADD_QT_SYSTEM_LIBRARY(X11-xcb)
+        ADD_QT_SYSTEM_LIBRARY(Xi)
+        ADD_QT_SYSTEM_LIBRARY(SM)
+        ADD_QT_SYSTEM_LIBRARY(ICE)
+        ADD_QT_SYSTEM_LIBRARY(xcb)
+        ADD_QT_SYSTEM_LIBRARY(GL)
+        ADD_QT_SYSTEM_LIBRARY(xcb-glx)
+        ADD_QT_SYSTEM_LIBRARY(fontconfig)
+        ADD_QT_SYSTEM_LIBRARY(Xrender)
+      ENDIF()
+
+      ADD_QT_PLUGIN(imageformats qgif)
+      ADD_QT_PLUGIN(imageformats qicns)
+      ADD_QT_PLUGIN(imageformats qico)
+      ADD_QT_PLUGIN(imageformats qjpeg)
+
+      # harfbuzz is needed since Qt 5.3
+      IF(UNIX)
+        SET(HB_LIB "${QT_LIBRARY_DIR}/libqtharfbuzzng.a")
+        IF(NOT EXISTS ${HB_LIB})
+          SET(HB_LIB "${QT_LIBRARY_DIR}/libqtharfbuzz.a")
+        ENDIF()
+      ELSEIF(WIN32)
+        SET(HB_LIB "${QT_LIBRARY_DIR}/qtharfbuzzng.lib")
+      ENDIF()
+      IF(EXISTS ${HB_LIB})
+        LIST(APPEND QT_LIBRARIES ${HB_LIB})
+      ENDIF()
+
+      # freetype is needed since Qt 5.5
+      FIND_PACKAGE(Freetype)
+
+      IF(FREETYPE_FOUND)
+        LIST(APPEND QT_LIBRARIES ${FREETYPE_LIBRARIES})
+      ELSE()
+        IF(UNIX)
+          SET(FREETYPE_LIB "${QT_LIBRARY_DIR}/libqtfreetype.a")
+        ELSEIF(WIN32)
+          SET(FREETYPE_LIB "${QT_LIBRARY_DIR}/qtfreetype.lib")
+        ENDIF()
+        IF(EXISTS ${FREETYPE_LIB})
+          LIST(APPEND QT_LIBRARIES ${FREETYPE_LIB})
+        ENDIF()
+      ENDIF()
+
+      ADD_QT_PLUGIN(accessible qtaccessiblewidgets)
+
+      LIST(APPEND QT_LIBRARIES ${PNG_LIBRARIES} ${JPEG_LIBRARY})
+
+      # Network
+      LIST(APPEND QT_LIBRARIES Qt5::Network Qt5::Xml)
+      LIST(APPEND QT_LIBRARIES ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
+
+      IF(WIN32)
+        LIST(APPEND QT_LIBRARIES
+                ${WINSDK_LIBRARY_DIR}/Crypt32.lib
+                ${WINSDK_LIBRARY_DIR}/WS2_32.Lib
+                ${WINSDK_LIBRARY_DIR}/IPHlpApi.Lib)
+      ENDIF()
+
+      # Core
+      LIST(APPEND QT_LIBRARIES Qt6::Core)
+
+      # pcre is needed since Qt 5.5
+      IF(UNIX)
+        SET(PCRE_LIB "${QT_LIBRARY_DIR}/libqtpcre.a")
+        IF(NOT EXISTS ${PCRE_LIB})
+          SET(PCRE_LIB "${QT_LIBRARY_DIR}/libqtpcre2.a")
+        ENDIF()
+      ELSEIF(WIN32)
+        SET(PCRE_LIB "${QT_LIBRARY_DIR}/qtpcre.lib")
+      ENDIF()
+      IF(EXISTS ${PCRE_LIB})
+        LIST(APPEND QT_LIBRARIES ${PCRE_LIB})
+      ENDIF()
+
+      IF(APPLE)
+        FIND_LIBRARY(PCRE_LIBRARY pcre16 pcre)
+
+        FIND_LIBRARY(SECURITY_FRAMEWORK Security)
+
+        LIST(APPEND QT_LIBRARIES
+                ${PCRE_LIBRARY}
+                ${FOUNDATION_FRAMEWORK}
+                ${CARBON_FRAMEWORK}
+                ${SECURITY_FRAMEWORK})
+      ELSEIF(UNIX)
+        FIND_PACKAGE(Threads)
+        LIST(APPEND QT_LIBRARIES ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS} -lrt)
+      ENDIF()
+    ELSE()
+      SET(QT_LIBRARIES Qt6::Widgets Qt6::Network Qt6::Xml Qt6::Gui Qt6::OpenGL Qt6::Core)
+    ENDIF()
   ELSE()
-    MESSAGE(WARNING "Unable to find Qt 5")
+    MESSAGE(WARNING "Unable to find Qt 6")
   ENDIF()
 ENDMACRO()
