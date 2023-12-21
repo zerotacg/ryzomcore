@@ -42,15 +42,8 @@
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 #include <QtNetwork/QtNetwork>
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-#define USE_QT5
-#endif
-
-#ifdef USE_QT5
 #include <QtWidgets/QtWidgets>
 #include <QtConcurrent/QtConcurrent>
-#endif
 
 #include <string>
 

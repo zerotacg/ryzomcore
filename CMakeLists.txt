@@ -296,8 +296,8 @@ ENDIF()
 INCLUDE(FindHelpers)
 
 #TODO: hunter qt package
-IF(WITH_QT5)
-  FIND_QT5()
+IF(WITH_QT6)
+  FIND_QT6()
 ENDIF()
 
 IF(WITH_QT)
