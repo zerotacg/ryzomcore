@@ -19,7 +19,7 @@
 #include <nel/misc/o_xml.h>
 #include <nel/misc/i_xml.h>
 
-#include "../common/gltf.h"
+#include <libgltf/gltf.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 				std::string imageUri = imageUriPrefix + textureFile;
 
 				gltf::Texture texture = { images.size() };
-				gltf::Material material = { { textures.size() } };
+				gltf::Material material = { .pbrMetallicRoughness{ textures.size() } };
 				for (auto j = 0; j < images.size(); ++j)
 				{
 					if (images[j].uri == imageUri)
@@ -252,7 +252,7 @@ int main(int argc, char **argv)
 		{
 			auto indices = part.indices;
 			fprintf(fp, ",");
-			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::UNSIGNED_INT, indices.size(), gltf::SCALAR };
+			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::ComponentType::UNSIGNED_INT, indices.size(), gltf::AccessorType::SCALAR };
 			gltfFile.write(accessor);
 			fprintf(fp, "\n");
 			for (auto &element : indices)

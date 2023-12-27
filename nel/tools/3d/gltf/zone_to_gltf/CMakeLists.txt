@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(zone_to_gltf ${SRC})
 
-TARGET_LINK_LIBRARIES(zone_to_gltf nel3d nelmisc nelligo)
+TARGET_LINK_LIBRARIES(zone_to_gltf nel3d nelmisc nelligo gltf::common)
 NL_DEFAULT_PROPS(zone_to_gltf "NeL, Tools, 3D: zone_to_gltf")
 NL_ADD_RUNTIME_FLAGS(zone_to_gltf)
 

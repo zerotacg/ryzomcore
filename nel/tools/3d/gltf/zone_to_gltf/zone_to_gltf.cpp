@@ -10,7 +10,7 @@
 #include <nel/ligo/zone_region.h>
 #include <vector>
 
-#include "../common/gltf.h"
+#include <libgltf/gltf.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 
 			buildFaces(landscape, zone.getZoneId(), patchIndex, faces, textureCordinates);
 
-			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1, .hasPosition = true, .hasTexcoord0 = true } };
+			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1 } };
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3 };
 			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2 };
 			primitive.attributes.position = asset.accessors.size();
