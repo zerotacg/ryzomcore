@@ -57,6 +57,11 @@ struct JsonWriter
 		fprintf(file, "%lu", value);
 	}
 
+	void write(const float &value)
+	{
+		fprintf(file, "%f", value);
+	}
+
 	template <class T>
 	void writeProperty(const std::string &key, const T &value)
 	{

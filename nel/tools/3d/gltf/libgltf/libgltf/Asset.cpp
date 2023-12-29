@@ -9,6 +9,14 @@ void Asset::write(JsonWriter &writer) const
 {
 	writer.writeProperty("asset", info);
 	writer.writeProperty("meshes", meshes);
+	if (!nodes.empty())
+	{
+		writer.writeProperty("nodes", nodes);
+	}
+	if (!scenes.empty())
+	{
+		writer.writeProperty("scenes", scenes);
+	}
 	if (!materials.empty())
 	{
 		writer.writeProperty("materials", materials);

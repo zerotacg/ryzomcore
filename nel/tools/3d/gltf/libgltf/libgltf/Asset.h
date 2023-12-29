@@ -9,6 +9,8 @@
 #include <libgltf/Image.h>
 #include <libgltf/Material.h>
 #include <libgltf/Mesh.h>
+#include <libgltf/Node.h>
+#include <libgltf/Scene.h>
 #include <libgltf/Texture.h>
 
 namespace gltf {
@@ -19,6 +21,8 @@ struct Asset
 	std::vector<Material> materials;
 	std::vector<Texture> textures;
 	std::vector<Image> images;
+	std::vector<Node> nodes;
+	std::vector<Scene> scenes;
 	std::vector<Accessor> accessors;
 	std::vector<BufferView> bufferViews;
 	std::vector<Buffer> buffers;
