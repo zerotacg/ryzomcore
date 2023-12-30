@@ -1,4 +1,8 @@
+#include <algorithm>
 #include <iostream>
+#include <sstream>
+#include <vector>
+
 #include <nel/misc/types_nl.h>
 #include <nel/misc/file.h>
 #include <nel/misc/o_xml.h>
@@ -8,7 +12,6 @@
 #include <nel/3d/zone.h>
 #include <nel/3d/landscape.h>
 #include <nel/ligo/zone_region.h>
-#include <vector>
 
 #include <libgltf/gltf.h>
 
@@ -73,6 +76,94 @@ std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string
 	return firstValue;
 }
 
+std::string zoneName(const sint x, const sint y)
+{
+	std::ostringstream name;
+
+	name << y + 1 << "_" << static_cast<char>('A' + (x / 26)) << static_cast<char>('A' + (x % 26));
+
+	return name.str();
+}
+
+void addZone(CLandscape &landscape, const std::string &zoneSearchDirectory, const sint x, const sint y)
+{
+	std::string zoneFilename(zoneSearchDirectory);
+	zoneFilename += zoneName(x, y);
+	zoneFilename += ".zonel";
+
+	CIFile zoneFile;
+	if (zoneFile.open(zoneFilename))
+	{
+		nlinfo("Found Neighbor Zone: %s", zoneFilename.c_str());
+		CZone zone;
+		zone.serial(zoneFile);
+		landscape.addZone(zone);
+		zoneFile.close();
+	}
+}
+
+void addNeighborZones(CLandscape &landscape, const uint16 &zoneId, const std::string &zoneSearchDirectory)
+{
+	const sint x(zoneId & 255);
+	const sint y(zoneId >> 8);
+
+	addZone(landscape, zoneSearchDirectory, x - 1, y - 1);
+	addZone(landscape, zoneSearchDirectory, x + 0, y - 1);
+	addZone(landscape, zoneSearchDirectory, x + 1, y - 1);
+	addZone(landscape, zoneSearchDirectory, x - 1, y + 0);
+	addZone(landscape, zoneSearchDirectory, x + 0, y + 0);
+	addZone(landscape, zoneSearchDirectory, x + 1, y + 0);
+	addZone(landscape, zoneSearchDirectory, x - 1, y + 1);
+	addZone(landscape, zoneSearchDirectory, x + 0, y + 1);
+	addZone(landscape, zoneSearchDirectory, x + 1, y + 1);
+}
+
+void validatePatchVertice(const CVector &vertex, const float scale, const CVector &zoneOffset)
+{
+	auto normalized = vertex - zoneOffset;
+	const float delta = 0.5f;
+	if (normalized.x < -delta || 160.0f + delta < normalized.x)
+	{
+		nlwarning("vertex is outside of zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
+	}
+	// else if (normalized.x < scale || (160.0f - scale) < normalized.x)
+	// {
+	// 	nlwarning("vertex is close to zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
+	// }
+	else if (normalized.y < -160.0f - delta || delta < normalized.y)
+	{
+		nlwarning("vertex is outside of zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
+	}
+	// else if (normalized.y < (-160.0f + scale) || -scale < normalized.y)
+	// {
+	// 	nlwarning("vertex is close to zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
+	// }
+}
+
+void clampVertice(CVector &vertex)
+{
+	const float delta(0.125);
+	vertex.x = std::clamp(vertex.x,0.0f, 160.f);
+	if (vertex.x < delta)
+	{
+		vertex.x = 0.0f;
+	}
+	else if (vertex.x > (160.0f - delta))
+	{
+		vertex.x = 160.0f;
+	}
+
+	vertex.y = std::clamp(vertex.y,-160.0f, 0.f);
+	if (vertex.y > -delta)
+	{
+		vertex.y = 0.0f;
+	}
+	else if (vertex.y < (-160.0f + delta))
+	{
+		vertex.y = -160.0f;
+	}
+}
+
 int main(int argc, char **argv)
 {
 	try
@@ -94,6 +185,7 @@ int main(int argc, char **argv)
 		}
 
 		std::string inputFilePath = args.getAdditionalArg("input").front();
+		std::string zoneSearchDirectory = CFile::getPath(inputFilePath);
 		std::string bankFilePath = getLongArgFirstValue(args, "tile-bank");
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
@@ -115,46 +207,43 @@ int main(int argc, char **argv)
 		CLandscape landscape;
 		bool firstVertex = true;
 		CAABBox bbox;
-		CZone zone;
-		zone.serial(zoneFile);
-		landscape.setNoiseMode(false);
-		landscape.addZone(zone);
+		CZone loadingZone;
+		loadingZone.serial(zoneFile);
 		zoneFile.close();
+		const auto zoneId(loadingZone.getZoneId());
+		landscape.setNoiseMode(false);
+		// add neighbor zones to get the same border vertices
+		addNeighborZones(landscape, zoneId, zoneSearchDirectory);
+		auto zone = landscape.getZone(zoneId);
 		uint32 triangleCount = 0;
 		uint32 textrueCordinateCount = 0;
 		COFile outputPosition;
 		std::vector<gltf::Image> images;
 		try
 		{
-			CIFile bankFile(bankFilePath);
-			auto &tileBank = landscape.TileBank;
-			tileBank.serial(bankFile);
-			nldebug("TileBank land count %i", tileBank.getLandCount());
-			nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
-			nldebug("TileBank tile count %i", tileBank.getTileCount());
-			for (auto i = 0; i < tileBank.getLandCount(); ++i)
+			if (!bankFilePath.empty())
 			{
-				nldebug("TileBank land %i '%s'", i, tileBank.getLand(i)->getName().c_str());
-			}
-			for (auto i = 0; i < tileBank.getTileSetCount(); ++i)
-			{
-				nldebug("TileBank tileSet %i '%s'", i, tileBank.getTileSet(i)->getName().c_str());
-			}
-			for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
-			{
-				auto tile = tileBank.getTile(tileId);
-				nldebug("TileBank tile %i diffuse: '%s' additive: '%s' alpha: '%s'", tileId, tile->getFileName(CTile::diffuse).c_str(), tile->getFileName(CTile::additive).c_str(), tile->getFileName(CTile::alpha).c_str());
-				std::string imageUri = tile->getFileName(CTile::diffuse);
-				if (!imageFileExtension.empty())
+				CIFile bankFile(bankFilePath);
+				auto &tileBank = landscape.TileBank;
+				tileBank.serial(bankFile);
+				nldebug("TileBank land count %i", tileBank.getLandCount());
+				nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
+				nldebug("TileBank tile count %i", tileBank.getTileCount());
+				for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
 				{
-					auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
-					imageFileName += ".";
-					imageFileName += imageFileExtension;
-					imageUri = CFile::getPath(imageUri);
-					imageUri += imageFileName;
+					auto tile = tileBank.getTile(tileId);
+					std::string imageUri = tile->getFileName(CTile::diffuse);
+					if (!imageFileExtension.empty())
+					{
+						auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
+						imageFileName += ".";
+						imageFileName += imageFileExtension;
+						imageUri = CFile::getPath(imageUri);
+						imageUri += imageFileName;
+					}
+					std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
+					images.push_back({ .uri = imageUriPrefix + imageUri });
 				}
-				std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
-				images.push_back({ .uri = imageUriPrefix + imageUri });
 			}
 		}
 		catch (const Exception &)
@@ -175,26 +264,31 @@ int main(int argc, char **argv)
 		}
 
 		CVector positionOffset = CVector::Null;
+		const sint zoneX(zoneId & 255);
+		const sint zoneY(zoneId >> 8);
+		CVector zoneOffset(160.0f * zoneX, -160.0f * zoneY, 0.0f);
 		if (useRelativePosion)
 		{
-			positionOffset = -zone.getPatchBias();
+			positionOffset = -zoneOffset;
 		}
 		gltf::Mesh mesh;
 		gltf::Asset asset = {
-			.images = images
+			.images = images,
+			.nodes = { { .name = zoneName(zoneX, zoneY), .mesh = 0 } },
+			.scenes = { { .nodes = { 0 } } }
 		};
 		for (size_t i = 0; i < asset.images.size(); ++i)
 		{
 			asset.textures.push_back({ .source = i });
 		}
-		for (sint patchIndex = 0; patchIndex < zone.getNumPatchs(); patchIndex++)
+		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
-			const CPatch *patch = static_cast<const CZone &>(zone).getPatch(patchIndex);
+			const CPatch *patch = static_cast<const CZone *>(zone)->getPatch(patchIndex);
 			// vector of triangle
 			std::vector<CTriangle> faces;
 			std::vector<CUV> textureCordinates;
 
-			buildFaces(landscape, zone.getZoneId(), patchIndex, faces, textureCordinates);
+			buildFaces(landscape, zoneId, patchIndex, faces, textureCordinates);
 
 			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1 } };
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3 };
@@ -204,36 +298,38 @@ int main(int argc, char **argv)
 			primitive.attributes.texcoord0 = asset.accessors.size();
 			asset.accessors.push_back(textcoord0);
 			auto &textures = patch->Tiles;
-			auto &tileBank = landscape.TileBank;
-			for (auto &texture : textures)
+			if (!bankFilePath.empty())
 			{
-				auto tileId = texture.Tile[0];
-				if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+				auto &tileBank = landscape.TileBank;
+				for (auto &texture : textures)
 				{
-					if (tileBank.getTileCount() > tileId)
+					auto tileId = texture.Tile[0];
+					if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 					{
-						auto tile = tileBank.getTile(texture.Tile[0]);
-						std::string diffuseTexture = tile->getFileName(CTile::diffuse);
-						std::replace(diffuseTexture.begin(), diffuseTexture.end(), '\\', '/');
-						nldebug("PatchTexture %i diffuse: '%s' additive: '%s' alpha: '%s'", patchIndex, diffuseTexture.c_str(), tile->getFileName(CTile::additive).c_str(), tile->getFileName(CTile::alpha).c_str());
-						primitive.material = asset.materials.size();
-						primitive.hasMaterial = true;
-						for (auto i = 0; i < asset.materials.size(); ++i)
+						if (tileBank.getTileCount() > tileId)
 						{
-							if (asset.materials[i].name == diffuseTexture)
+							auto tile = tileBank.getTile(texture.Tile[0]);
+							std::string diffuseTexture = tile->getFileName(CTile::diffuse);
+							std::replace(diffuseTexture.begin(), diffuseTexture.end(), '\\', '/');
+							primitive.material = asset.materials.size();
+							primitive.hasMaterial = true;
+							for (auto i = 0; i < asset.materials.size(); ++i)
 							{
-								primitive.material = i;
-								break;
+								if (asset.materials[i].name == diffuseTexture)
+								{
+									primitive.material = i;
+									break;
+								}
+							}
+							if (primitive.material == asset.materials.size())
+							{
+								asset.materials.push_back({ .name = diffuseTexture, .pbrMetallicRoughness = { tileId }, .hasPbrMetallicRoughness = true });
 							}
 						}
-						if (primitive.material == asset.materials.size())
+						else
 						{
-							asset.materials.push_back({ .name = diffuseTexture, .pbrMetallicRoughness = { tileId }, .hasPbrMetallicRoughness = true });
+							nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, landscape.TileBank.getTileCount());
 						}
-					}
-					else
-					{
-						nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, landscape.TileBank.getTileCount());
 					}
 				}
 			}
@@ -245,6 +341,12 @@ int main(int argc, char **argv)
 				face.V0 += positionOffset;
 				face.V1 += positionOffset;
 				face.V2 += positionOffset;
+				// clampVertice(face.V0);
+				// clampVertice(face.V1);
+				// clampVertice(face.V2);
+				// validatePatchVertice(face.V0, zone.getPatchScale(), zoneOffset);
+				// validatePatchVertice(face.V1, zone.getPatchScale(), zoneOffset);
+				// validatePatchVertice(face.V2, zone.getPatchScale(), zoneOffset);
 				// Serial the triangle
 				face.V0.serial(outputPosition);
 				face.V1.serial(outputPosition);
