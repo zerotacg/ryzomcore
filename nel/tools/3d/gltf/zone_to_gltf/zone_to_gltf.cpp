@@ -45,8 +45,8 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CTri
 		for (x = 0; x < ordS; x++)
 		{
 			CTriangle f;
-			// CUV a(x*OOS, y*OOT), b(x*OOS, (y+1)*OOT), c((x+1)*OOS, (y+1)*OOT), d((x+1)*OOS, y*OOT);
-			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			CUV a(x*OOS, y*OOT), b(x*OOS, (y+1)*OOT), c((x+1)*OOS, (y+1)*OOT), d((x+1)*OOS, y*OOT);
+			// CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 
 			f.V0 = pa->computeContinousVertex(x * OOS, y * OOT);
 			textureCordinates.push_back(a);
@@ -221,7 +221,8 @@ int main(int argc, char **argv)
 		COFile outputPosition;
 		std::vector<gltf::Image> images;
 		std::vector<gltf::Texture> textures;
-		std::map<std::string, size_t> imageToIndex;
+		std::map<std::string, size_t> filenameToTextureIndex;
+		std::map<uint16, size_t> tileIdToTexture;
 		try
 		{
 			if (!bankFilePath.empty())
@@ -236,14 +237,11 @@ int main(int argc, char **argv)
 				{
 					auto tile = tileBank.getTile(tileId);
 					std::string imageUri = tile->getFileName(CTile::diffuse);
-					gltf::Texture texture = {.source = images.size() };
-					auto foundImageIndex = imageToIndex.find(imageUri);
-					if ( foundImageIndex != imageToIndex.end())
+					auto foundImage = filenameToTextureIndex.find(imageUri);
+					if ( foundImage == filenameToTextureIndex.end())
 					{
-						texture.source = foundImageIndex->second;
-					} else
-					{
-						imageToIndex[imageUri] = texture.source;
+						gltf::Texture texture = {.source = images.size() };
+						filenameToTextureIndex[imageUri] = tileIdToTexture[tileId] = textures.size();
 						if (!imageFileExtension.empty())
 						{
 							auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
@@ -254,8 +252,11 @@ int main(int argc, char **argv)
 						}
 						std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
 						images.push_back({ .uri = imageUriPrefix + imageUri });
+						textures.push_back(texture);
+					} else
+					{
+						tileIdToTexture[tileId] = foundImage->second;
 					}
-					textures.push_back(texture);
 				}
 			}
 		}
@@ -276,19 +277,19 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		CVector positionOffset = CVector::Null;
 		const sint zoneX(zoneId & 255);
 		const sint zoneY(zoneId >> 8);
 		CVector zoneOffset(160.0f * zoneX, -160.0f * zoneY, 0.0f);
+		gltf::Mesh mesh;
+		gltf::Node node = { .name = zoneName(zoneX, zoneY), .mesh = 0, .translation = { zoneOffset.x, zoneOffset.y, zoneOffset.z } };
 		if (useRelativePosion)
 		{
-			positionOffset = -zoneOffset;
+			node.translation.clear();
 		}
-		gltf::Mesh mesh;
 		gltf::Asset asset = {
 			.textures = textures,
 			.images = images,
-			.nodes = { { .name = zoneName(zoneX, zoneY), .mesh = 0 } },
+			.nodes = { node },
 			.scenes = { { .nodes = { 0 } } }
 		};
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
@@ -316,15 +317,15 @@ int main(int argc, char **argv)
 					auto tileId = texture.Tile[0];
 					if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 					{
-						if (tileBank.getTileCount() > tileId)
+						if (tileIdToTexture.find(tileId) != tileIdToTexture.end())
 						{
 							auto tile = tileBank.getTile(texture.Tile[0]);
-							std::string diffuseTexture = tile->getFileName(CTile::diffuse);
-							std::replace(diffuseTexture.begin(), diffuseTexture.end(), '\\', '/');
+							std::string materialName = tile->getFileName(CTile::diffuse);
+							std::replace(materialName.begin(), materialName.end(), '\\', '/');
 							primitive.material = asset.materials.size();
 							for (auto i = 0; i < asset.materials.size(); ++i)
 							{
-								if (asset.materials[i].name == diffuseTexture)
+								if (asset.materials[i].name == materialName)
 								{
 									primitive.material = i;
 									break;
@@ -332,7 +333,7 @@ int main(int argc, char **argv)
 							}
 							if (primitive.material == asset.materials.size())
 							{
-								asset.materials.push_back({ .name = diffuseTexture, .pbrMetallicRoughness = { tileId }, .hasPbrMetallicRoughness = true });
+								asset.materials.push_back({ .name = materialName, .pbrMetallicRoughness = { tileIdToTexture[tileId] }, .hasPbrMetallicRoughness = true });
 							}
 						}
 						else
@@ -347,9 +348,9 @@ int main(int argc, char **argv)
 			// Add to the file
 			for (auto &face : faces)
 			{
-				face.V0 += positionOffset;
-				face.V1 += positionOffset;
-				face.V2 += positionOffset;
+				face.V0 -= zoneOffset;
+				face.V1 -= zoneOffset;
+				face.V2 -= zoneOffset;
 				// clampVertice(face.V0);
 				// clampVertice(face.V1);
 				// clampVertice(face.V2);
