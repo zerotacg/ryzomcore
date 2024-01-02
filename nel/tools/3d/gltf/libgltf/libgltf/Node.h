@@ -18,12 +18,8 @@ struct Node
 		if(!name.empty())
 		{
 			writer.writeProperty("name", name);
-
 		}
-		if(mesh)
-		{
-			writer.writeProperty("mesh", mesh.value());
-		}
+		writer.writeProperty("mesh", mesh);
 		if(!translation.empty())
 		{
 			writer.writeProperty("translation", translation);

@@ -2,6 +2,7 @@
 #define LIBGLTF_JSON_WRITER_H
 
 #include <iostream>
+#include <optional>
 #include <vector>
 
 #include <nel/misc/types_nl.h>
@@ -70,6 +71,15 @@ struct JsonWriter
 		fprintf(file, ": ");
 		write(value);
 		propertyPrefix.back() = ", ";
+	}
+
+	template <class T>
+	void writeProperty(const std::string &key, const std::optional<T> &value)
+	{
+		if(value.has_value())
+		{
+			writeProperty(key, value.value());
+		}
 	}
 };
 

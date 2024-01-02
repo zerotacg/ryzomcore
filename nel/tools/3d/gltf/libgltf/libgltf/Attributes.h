@@ -16,18 +16,9 @@ struct Attributes
 
 	void write(JsonWriter &writer) const
 	{
-		if (position)
-		{
-			writer.writeProperty("POSITION", position.value());
-		}
-		if (normal)
-		{
-			writer.writeProperty("NORMAL", normal.value());
-		}
-		if (texcoord0)
-		{
-			writer.writeProperty("TEXCOORD_0", texcoord0.value());
-		}
+		writer.writeProperty("POSITION", position);
+		writer.writeProperty("NORMAL", normal);
+		writer.writeProperty("TEXCOORD_0", texcoord0);
 	}
 };
 

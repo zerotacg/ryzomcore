@@ -1,6 +1,7 @@
 #ifndef LIBGLTF_PRIMITIVE_H
 #define LIBGLTF_PRIMITIVE_H
 
+#include <optional>
 #include <libgltf/Attributes.h>
 #include <libgltf/JsonWriter.h>
 
@@ -9,22 +10,14 @@ namespace gltf {
 struct Primitive
 {
 	Attributes attributes;
-	size_t indices;
-	size_t material;
-	bool hasIndices;
-	bool hasMaterial;
+	std::optional<size_t> indices;
+	std::optional<size_t> material;
 
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("attributes", attributes);
-		if (hasIndices)
-		{
-			writer.writeProperty("indices", indices);
-		}
-		if (hasMaterial)
-		{
-			writer.writeProperty("material", material);
-		}
+		writer.writeProperty("indices", indices);
+		writer.writeProperty("material", material);
 	}
 };
 

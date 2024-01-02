@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
 
 #include <nel/misc/types_nl.h>
 #include <nel/misc/file.h>
@@ -219,6 +220,8 @@ int main(int argc, char **argv)
 		uint32 textrueCordinateCount = 0;
 		COFile outputPosition;
 		std::vector<gltf::Image> images;
+		std::vector<gltf::Texture> textures;
+		std::map<std::string, size_t> imageToIndex;
 		try
 		{
 			if (!bankFilePath.empty())
@@ -233,16 +236,26 @@ int main(int argc, char **argv)
 				{
 					auto tile = tileBank.getTile(tileId);
 					std::string imageUri = tile->getFileName(CTile::diffuse);
-					if (!imageFileExtension.empty())
+					gltf::Texture texture = {.source = images.size() };
+					auto foundImageIndex = imageToIndex.find(imageUri);
+					if ( foundImageIndex != imageToIndex.end())
 					{
-						auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
-						imageFileName += ".";
-						imageFileName += imageFileExtension;
-						imageUri = CFile::getPath(imageUri);
-						imageUri += imageFileName;
+						texture.source = foundImageIndex->second;
+					} else
+					{
+						imageToIndex[imageUri] = texture.source;
+						if (!imageFileExtension.empty())
+						{
+							auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
+							imageFileName += ".";
+							imageFileName += imageFileExtension;
+							imageUri = CFile::getPath(imageUri);
+							imageUri += imageFileName;
+						}
+						std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
+						images.push_back({ .uri = imageUriPrefix + imageUri });
 					}
-					std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
-					images.push_back({ .uri = imageUriPrefix + imageUri });
+					textures.push_back(texture);
 				}
 			}
 		}
@@ -273,14 +286,11 @@ int main(int argc, char **argv)
 		}
 		gltf::Mesh mesh;
 		gltf::Asset asset = {
+			.textures = textures,
 			.images = images,
 			.nodes = { { .name = zoneName(zoneX, zoneY), .mesh = 0 } },
 			.scenes = { { .nodes = { 0 } } }
 		};
-		for (size_t i = 0; i < asset.images.size(); ++i)
-		{
-			asset.textures.push_back({ .source = i });
-		}
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
 			const CPatch *patch = static_cast<const CZone *>(zone)->getPatch(patchIndex);
@@ -312,7 +322,6 @@ int main(int argc, char **argv)
 							std::string diffuseTexture = tile->getFileName(CTile::diffuse);
 							std::replace(diffuseTexture.begin(), diffuseTexture.end(), '\\', '/');
 							primitive.material = asset.materials.size();
-							primitive.hasMaterial = true;
 							for (auto i = 0; i < asset.materials.size(); ++i)
 							{
 								if (asset.materials[i].name == diffuseTexture)
