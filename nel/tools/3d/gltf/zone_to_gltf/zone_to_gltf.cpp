@@ -21,10 +21,9 @@ using namespace NLMISC;
 using namespace NLLIGO;
 using namespace std;
 
-void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CTriangle> &faces, std::vector<CUV> &textureCordinates)
+void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CVector> &vertices, std::vector<CUV> &textureCordinates)
 {
-	faces.clear();
-
+	vertices.clear();
 	CZone *pZone = landscape.getZone(zoneId);
 
 	// Then trace all patch.
@@ -44,24 +43,26 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CTri
 	{
 		for (x = 0; x < ordS; x++)
 		{
-			CTriangle f;
 			CUV a(x*OOS, y*OOT), b(x*OOS, (y+1)*OOT), c((x+1)*OOS, (y+1)*OOT), d((x+1)*OOS, y*OOT);
 			// CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
+			CVector vb(pa->computeContinousVertex(x * OOS, (y + 1) * OOT));
+			CVector vc(pa->computeContinousVertex((x + 1) * OOS, (y + 1) * OOT));
+			CVector vd(pa->computeContinousVertex((x + 1) * OOS, y * OOT));
 
-			f.V0 = pa->computeContinousVertex(x * OOS, y * OOT);
+			vertices.push_back(va);
 			textureCordinates.push_back(a);
-			f.V1 = pa->computeContinousVertex(x * OOS, (y + 1) * OOT);
+			vertices.push_back(vb);
 			textureCordinates.push_back(b);
-			f.V2 = pa->computeContinousVertex((x + 1) * OOS, (y + 1) * OOT);
+			vertices.push_back(vc);
 			textureCordinates.push_back(c);
-			faces.push_back(f);
-			f.V0 = pa->computeContinousVertex(x * OOS, y * OOT);
+
+			vertices.push_back(va);
 			textureCordinates.push_back(a);
-			f.V1 = pa->computeContinousVertex((x + 1) * OOS, (y + 1) * OOT);
+			vertices.push_back(vc);
 			textureCordinates.push_back(c);
-			f.V2 = pa->computeContinousVertex((x + 1) * OOS, y * OOT);
+			vertices.push_back(vd);
 			textureCordinates.push_back(d);
-			faces.push_back(f);
 		}
 	}
 }
@@ -82,6 +83,15 @@ std::string zoneName(const sint x, const sint y)
 	std::ostringstream name;
 
 	name << y + 1 << "_" << static_cast<char>('A' + (x / 26)) << static_cast<char>('A' + (x % 26));
+
+	return name.str();
+}
+
+std::string materialName(const uint16 tileId)
+{
+	std::ostringstream name;
+
+	name << "M_tile_id_" << tileId;
 
 	return name.str();
 }
@@ -216,8 +226,6 @@ int main(int argc, char **argv)
 		// add neighbor zones to get the same border vertices
 		addNeighborZones(landscape, zoneId, zoneSearchDirectory);
 		auto zone = landscape.getZone(zoneId);
-		uint32 triangleCount = 0;
-		uint32 textrueCordinateCount = 0;
 		COFile outputPosition;
 		std::vector<gltf::Image> images;
 		std::vector<gltf::Texture> textures;
@@ -295,14 +303,13 @@ int main(int argc, char **argv)
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
 			const CPatch *patch = static_cast<const CZone *>(zone)->getPatch(patchIndex);
-			// vector of triangle
-			std::vector<CTriangle> faces;
+			std::vector<CVector> vertices;
 			std::vector<CUV> textureCordinates;
 
-			buildFaces(landscape, zoneId, patchIndex, faces, textureCordinates);
+			buildFaces(landscape, zoneId, patchIndex, vertices, textureCordinates);
 
 			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1 } };
-			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = faces.size() * 3, .type = gltf::AccessorType::VEC3 };
+			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 };
 			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2 };
 			primitive.attributes.position = asset.accessors.size();
 			asset.accessors.push_back(position);
@@ -320,12 +327,13 @@ int main(int argc, char **argv)
 						if (tileIdToTexture.find(tileId) != tileIdToTexture.end())
 						{
 							auto tile = tileBank.getTile(texture.Tile[0]);
-							std::string materialName = tile->getFileName(CTile::diffuse);
-							std::replace(materialName.begin(), materialName.end(), '\\', '/');
+							std::string name = tile->getFileName(CTile::diffuse);
+							std::replace(name.begin(), name.end(), '\\', '/');
+							// std::string name = materialName(tileId);
 							primitive.material = asset.materials.size();
 							for (auto i = 0; i < asset.materials.size(); ++i)
 							{
-								if (asset.materials[i].name == materialName)
+								if (asset.materials[i].name == name)
 								{
 									primitive.material = i;
 									break;
@@ -333,7 +341,8 @@ int main(int argc, char **argv)
 							}
 							if (primitive.material == asset.materials.size())
 							{
-								asset.materials.push_back({ .name = materialName, .pbrMetallicRoughness = { tileIdToTexture[tileId] }, .hasPbrMetallicRoughness = true });
+								asset.materials.push_back(gltf::Material{ .name = name, .pbrMetallicRoughness = gltf::MetallicRoughness{ tileIdToTexture[tileId] } });
+								// asset.materials.push_back({ .name = name });
 							}
 						}
 						else
@@ -346,32 +355,21 @@ int main(int argc, char **argv)
 			mesh.primitives.push_back(primitive);
 
 			// Add to the file
-			for (auto &face : faces)
+			for (auto &vertex : vertices)
 			{
-				face.V0 -= zoneOffset;
-				face.V1 -= zoneOffset;
-				face.V2 -= zoneOffset;
-				// clampVertice(face.V0);
-				// clampVertice(face.V1);
-				// clampVertice(face.V2);
-				// validatePatchVertice(face.V0, zone.getPatchScale(), zoneOffset);
-				// validatePatchVertice(face.V1, zone.getPatchScale(), zoneOffset);
-				// validatePatchVertice(face.V2, zone.getPatchScale(), zoneOffset);
-				// Serial the triangle
-				face.V0.serial(outputPosition);
-				face.V1.serial(outputPosition);
-				face.V2.serial(outputPosition);
+				vertex -= zoneOffset;
+				// clampVertice(vertex);
+				// validatePatchVertice(vertex, zone.getPatchScale(), zoneOffset);
+				vertex.serial(outputPosition);
 				if (firstVertex)
 				{
 					firstVertex = false;
-					bbox.setCenter(face.V0);
+					bbox.setCenter(vertex);
 				}
 				else
 				{
-					bbox.extend(face.V0);
+					bbox.extend(vertex);
 				}
-				bbox.extend(face.V1);
-				bbox.extend(face.V2);
 			}
 
 			for (auto &uv : textureCordinates)
@@ -379,9 +377,6 @@ int main(int argc, char **argv)
 				// Serial the triangle
 				uv.serial(outputTextureCordinate);
 			}
-
-			triangleCount += faces.size();
-			textrueCordinateCount += textureCordinates.size();
 		}
 		asset.meshes.push_back(mesh);
 

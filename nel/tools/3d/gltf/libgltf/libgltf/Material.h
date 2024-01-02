@@ -2,6 +2,7 @@
 #define LIBGLTF_MATERIAL_H
 
 #include <map>
+#include <optional>
 #include <string>
 
 #include <libgltf/other.h>
@@ -12,7 +13,7 @@ namespace gltf {
 struct Material
 {
 	std::string name;
-	MetallicRoughness pbrMetallicRoughness;
+	std::optional<MetallicRoughness> pbrMetallicRoughness;
 	bool hasPbrMetallicRoughness;
 	// NormalTextureInfo normalTexture;
 	// OcclusionTextureInfo occlusionTexture;
@@ -35,10 +36,7 @@ struct Material
 		{
 			writer.writeProperty("alphaMode", AlphaModeNames[static_cast<int>(alphaMode)]);
 		}
-		if(hasPbrMetallicRoughness)
-		{
-			writer.writeProperty("pbrMetallicRoughness", pbrMetallicRoughness);
-		}
+		writer.writeProperty("pbrMetallicRoughness", pbrMetallicRoughness);
 	}
 };
 
