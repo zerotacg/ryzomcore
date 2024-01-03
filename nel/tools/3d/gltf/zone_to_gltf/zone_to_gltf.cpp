@@ -43,7 +43,7 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CVec
 	{
 		for (x = 0; x < ordS; x++)
 		{
-			CUV a(x*OOS, y*OOT), b(x*OOS, (y+1)*OOT), c((x+1)*OOS, (y+1)*OOT), d((x+1)*OOS, y*OOT);
+			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
 			// CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
 			CVector vb(pa->computeContinousVertex(x * OOS, (y + 1) * OOT));
@@ -154,7 +154,7 @@ void validatePatchVertice(const CVector &vertex, const float scale, const CVecto
 void clampVertice(CVector &vertex)
 {
 	const float delta(0.125);
-	vertex.x = std::clamp(vertex.x,0.0f, 160.f);
+	vertex.x = std::clamp(vertex.x, 0.0f, 160.f);
 	if (vertex.x < delta)
 	{
 		vertex.x = 0.0f;
@@ -164,7 +164,7 @@ void clampVertice(CVector &vertex)
 		vertex.x = 160.0f;
 	}
 
-	vertex.y = std::clamp(vertex.y,-160.0f, 0.f);
+	vertex.y = std::clamp(vertex.y, -160.0f, 0.f);
 	if (vertex.y > -delta)
 	{
 		vertex.y = 0.0f;
@@ -229,6 +229,7 @@ int main(int argc, char **argv)
 		COFile outputPosition;
 		std::vector<gltf::Image> images;
 		std::vector<gltf::Texture> textures;
+		std::vector<gltf::Material> materials;
 		std::map<std::string, size_t> filenameToTextureIndex;
 		std::map<uint16, size_t> tileIdToTexture;
 		try
@@ -246,9 +247,9 @@ int main(int argc, char **argv)
 					auto tile = tileBank.getTile(tileId);
 					std::string imageUri = tile->getFileName(CTile::diffuse);
 					auto foundImage = filenameToTextureIndex.find(imageUri);
-					if ( foundImage == filenameToTextureIndex.end())
+					if (foundImage == filenameToTextureIndex.end())
 					{
-						gltf::Texture texture = {.source = images.size() };
+						gltf::Texture texture = { .source = images.size() };
 						filenameToTextureIndex[imageUri] = tileIdToTexture[tileId] = textures.size();
 						if (!imageFileExtension.empty())
 						{
@@ -261,10 +262,12 @@ int main(int argc, char **argv)
 						std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
 						images.push_back({ .uri = imageUriPrefix + imageUri });
 						textures.push_back(texture);
-					} else
+					}
+					else
 					{
 						tileIdToTexture[tileId] = foundImage->second;
 					}
+					materials.push_back(gltf::Material { .name = materialName(tileId), .pbrMetallicRoughness = gltf::MetallicRoughness { tileIdToTexture[tileId] } });
 				}
 			}
 		}
@@ -295,6 +298,7 @@ int main(int argc, char **argv)
 			node.translation.clear();
 		}
 		gltf::Asset asset = {
+			.materials = materials,
 			.textures = textures,
 			.images = images,
 			.nodes = { node },
@@ -315,39 +319,35 @@ int main(int argc, char **argv)
 			asset.accessors.push_back(position);
 			primitive.attributes.texcoord0 = asset.accessors.size();
 			asset.accessors.push_back(textcoord0);
-			auto &textures = patch->Tiles;
-			if (!bankFilePath.empty())
+			for (auto &texture : patch->Tiles)
 			{
-				auto &tileBank = landscape.TileBank;
-				for (auto &texture : textures)
+				auto tileId = texture.Tile[0];
+				if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 				{
-					auto tileId = texture.Tile[0];
-					if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+					if (!bankFilePath.empty())
 					{
-						if (tileIdToTexture.find(tileId) != tileIdToTexture.end())
+						if (tileId < asset.materials.size())
 						{
-							auto tile = tileBank.getTile(texture.Tile[0]);
-							std::string name = tile->getFileName(CTile::diffuse);
-							std::replace(name.begin(), name.end(), '\\', '/');
-							// std::string name = materialName(tileId);
-							primitive.material = asset.materials.size();
-							for (auto i = 0; i < asset.materials.size(); ++i)
-							{
-								if (asset.materials[i].name == name)
-								{
-									primitive.material = i;
-									break;
-								}
-							}
-							if (primitive.material == asset.materials.size())
-							{
-								asset.materials.push_back(gltf::Material{ .name = name, .pbrMetallicRoughness = gltf::MetallicRoughness{ tileIdToTexture[tileId] } });
-								// asset.materials.push_back({ .name = name });
-							}
+							primitive.material = tileId;
 						}
 						else
 						{
-							nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, landscape.TileBank.getTileCount());
+							nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, asset.materials.size());
+						}
+					} else
+					{
+						const auto name = materialName(tileId);
+						primitive.material = asset.materials.size();
+						for( auto i = 0; i < asset.materials.size(); ++i )
+						{
+							if ( asset.materials[i].name == name )
+							{
+								primitive.material = i;
+							}
+						}
+						if ( primitive.material == asset.materials.size())
+						{
+							asset.materials.push_back({ .name = name });
 						}
 					}
 				}
