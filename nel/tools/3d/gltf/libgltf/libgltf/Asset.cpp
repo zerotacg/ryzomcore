@@ -8,7 +8,10 @@ namespace gltf {
 void Asset::write(JsonWriter &writer) const
 {
 	writer.writeProperty("asset", info);
-	writer.writeProperty("meshes", meshes);
+	if (!meshes.empty())
+	{
+		writer.writeProperty("meshes", meshes);
+	}
 	if (!nodes.empty())
 	{
 		writer.writeProperty("nodes", nodes);
@@ -29,9 +32,18 @@ void Asset::write(JsonWriter &writer) const
 	{
 		writer.writeProperty("images", images);
 	}
-	writer.writeProperty("accessors", accessors);
-	writer.writeProperty("bufferViews", bufferViews);
-	writer.writeProperty("buffers", buffers);
+	if (!accessors.empty())
+	{
+		writer.writeProperty("accessors", accessors);
+	}
+	if (!bufferViews.empty())
+	{
+		writer.writeProperty("bufferViews", bufferViews);
+	}
+	if (!buffers.empty())
+	{
+		writer.writeProperty("buffers", buffers);
+	}
 }
 
 }

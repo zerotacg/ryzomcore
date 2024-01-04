@@ -1,5 +1,6 @@
 ADD_SUBDIRECTORY(libgltf)
 ADD_SUBDIRECTORY(shape_to_gltf)
+ADD_SUBDIRECTORY(tile_bank_to_gltf)
 if(WITH_QT6)
 ADD_SUBDIRECTORY(zone_info)
 ENDIF ()
