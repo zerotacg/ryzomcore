@@ -1,4 +1,4 @@
-name: Docker CI Tools
+name: Docker CI devcontainer
 
 on:
   push:
@@ -6,9 +6,11 @@ on:
       - core4
     tags:
       - v*
+    paths:
+      - .devcontainer/Dockerfile
 
 env:
-  IMAGE_NAME: ryzom_core_tools
+  IMAGE_NAME: ryzomcore-devcontainer
 
 jobs:
   push:
@@ -20,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+        run: docker build .devcontainer --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
 
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin

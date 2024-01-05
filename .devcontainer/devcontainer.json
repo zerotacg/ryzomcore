@@ -1,3 +1,3 @@
 {
-  "build": { "dockerfile": "ubuntu22.Dockerfile" }
+  "build": { "dockerfile": "Dockerfile" }
 }

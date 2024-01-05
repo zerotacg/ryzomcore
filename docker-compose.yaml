@@ -19,7 +19,7 @@ services:
     image: "ryzomcore/devcontainer-ubuntu22"
     build:
       context: .devcontainer
-      dockerfile: ubuntu22.Dockerfile
+      dockerfile: .devcontainer/Dockerfile
     volumes_from:
       - ubuntu20
 
