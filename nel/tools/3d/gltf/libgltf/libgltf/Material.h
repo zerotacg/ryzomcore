@@ -14,7 +14,6 @@ struct Material
 {
 	std::string name;
 	std::optional<MetallicRoughness> pbrMetallicRoughness;
-	bool hasPbrMetallicRoughness;
 	// NormalTextureInfo normalTexture;
 	// OcclusionTextureInfo occlusionTexture;
 	// TextureInfo emissiveTexture;

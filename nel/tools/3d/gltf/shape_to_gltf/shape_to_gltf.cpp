@@ -184,13 +184,13 @@ int main(int argc, char **argv)
 				std::string imageUri = imageUriPrefix + textureFile;
 
 				gltf::Texture texture = { images.size() };
-				gltf::Material material = { .pbrMetallicRoughness{ textures.size() } };
+				gltf::TextureInfo baseColorTexture = { textures.size() };
 				for (auto j = 0; j < images.size(); ++j)
 				{
 					if (images[j].uri == imageUri)
 					{
 						texture.source = j;
-						material.pbrMetallicRoughness.baseColorTexture.index = j;
+						baseColorTexture.index = j;
 					}
 				}
 				if (texture.source == images.size())
@@ -198,6 +198,7 @@ int main(int argc, char **argv)
 					images.push_back(gltf::Image { imageUri });
 					textures.push_back(texture);
 				}
+				gltf::Material material = { .pbrMetallicRoughness = gltf::MetallicRoughness{ baseColorTexture } };
 				materials.push_back(material);
 			}
 			fprintf(fp, "                }\n");
