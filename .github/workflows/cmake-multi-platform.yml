@@ -74,19 +74,28 @@ jobs:
         libswscale-dev
         libvorbis-dev
         libxml2-dev
+        ninja-build
         qtbase5-dev
         qttools5-dev
         qttools5-dev-tools
+
+    - name: Ccache for gh actions
+      uses: hendrikmuhs/ccache-action@v1.2.11
+      with:
+        key: ccache-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.c_compiler }}
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -G "Ninja"
         ${{ matrix.cmake_options }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
         -DWITH_STATIC=ON
         -DWITH_NEL_TESTS=ON
         -DWITH_NEL_SAMPLES=ON
