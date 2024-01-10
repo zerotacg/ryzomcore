@@ -247,6 +247,10 @@ int main(int argc, char **argv)
 					auto tile = tileBank.getTile(tileId);
 					std::string imageUri = tile->getFileName(CTile::diffuse);
 					auto foundImage = filenameToTextureIndex.find(imageUri);
+					if(tile->isFree())
+					{
+						continue;
+					}
 					if (foundImage == filenameToTextureIndex.end())
 					{
 						gltf::Texture texture = { .source = images.size() };
@@ -324,19 +328,19 @@ int main(int argc, char **argv)
 				auto tileId = texture.Tile[0];
 				if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 				{
+					const auto name = materialName(tileId);
 					if (!bankFilePath.empty())
 					{
-						if (tileId < asset.materials.size())
+						for (auto i = 0; i < asset.materials.size(); ++i)
 						{
-							primitive.material = tileId;
-						}
-						else
-						{
-							nlerror("PatchTexture tileId not in tileset %i >= %i", tileId, asset.materials.size());
+							auto& material(asset.materials[i]);
+							if (material.name == name)
+							{
+								primitive.material = i;
+							}
 						}
 					} else
 					{
-						const auto name = materialName(tileId);
 						primitive.material = asset.materials.size();
 						for( auto i = 0; i < asset.materials.size(); ++i )
 						{
