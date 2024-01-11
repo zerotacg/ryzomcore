@@ -141,32 +141,29 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", outputFilePath.c_str());
 			return EXIT_FAILURE;
 		}
-		gltf::JsonWriter gltfFile = { .file = fp };
-		fprintf(fp, "{\n");
-		fprintf(fp, "    \"asset\": { \"version\": \"2.0\" },\n");
-		fprintf(fp, "    \"meshes\": [\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "            \"primitives\": [\n");
-		const uint32 firstIndicesAccessor = 3;
+		gltf::JsonWriter gltfWriter = { .file = fp };
+		std::vector<gltf::Accessor> accessors = {
+			{ .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 },
+			{ .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = normals.size(), .type = gltf::AccessorType::VEC3 },
+			{ .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = textureCoordinates.size(), .type = gltf::AccessorType::VEC2 }
+		};
+		std::vector<gltf::Primitive> primitives;
 		std::vector<gltf::Material> materials;
 		std::vector<gltf::Texture> textures;
 		std::vector<gltf::Image> images;
-		for (auto i = 0; i < parts.size(); ++i)
+		for (auto &part : parts)
 		{
-			auto part = parts[i];
-			if (i > 0)
-			{
-				fprintf(fp, "                ,{\n");
-			}
-			else
-			{
-				fprintf(fp, "                {\n");
-			}
-			fprintf(fp, "                    \"attributes\": { \"POSITION\": 0, \"NORMAL\": 1, \"TEXCOORD_0\": 2 }\n");
-			fprintf(fp, "                   ,\"indices\": %i\n", firstIndicesAccessor + i);
+			gltf::Primitive primitive = {
+				.attributes = {
+				    .position = 0,
+				    .normal = 1,
+				    .texcoord0 = 2 },
+				.indices = accessors.size(),
+			};
 			if (!part.textures.empty())
 			{
-				fprintf(fp, "                   ,\"material\": %lu\n", materials.size());
+				primitive.material = materials.size();
+				primitives.push_back(primitive);
 				auto textureFile = part.textures.front();
 				if (imageFileLowerCase)
 				{
@@ -192,113 +189,44 @@ int main(int argc, char **argv)
 				}
 				if (texture.source == images.size())
 				{
-					images.push_back(gltf::Image { imageUri });
+					images.push_back({ .uri = imageUri });
 					textures.push_back(texture);
 				}
-				gltf::Material material = { .pbrMetallicRoughness = gltf::MetallicRoughness{ baseColorTexture } };
-				materials.push_back(material);
+				materials.push_back({ .pbrMetallicRoughness = gltf::MetallicRoughness { baseColorTexture } });
 			}
-			fprintf(fp, "                }\n");
-		}
-		fprintf(fp, "            ]\n");
-		fprintf(fp, "        }\n");
-		fprintf(fp, "    ]\n");
-		if (!materials.empty())
-		{
-			fprintf(fp, "   ,\"materials\": ");
-			gltfFile.write(materials);
-			fprintf(fp, "\n");
-		}
-		if (!textures.empty())
-		{
-			fprintf(fp, "   ,\"textures\": ");
-			gltfFile.write(textures);
-			fprintf(fp, "\n");
-		}
-		if (!images.empty())
-		{
-			fprintf(fp, "   ,\"images\": ");
-			gltfFile.write(images);
-			fprintf(fp, "\n");
-		}
-		fprintf(fp, "   ,\"accessors\": [\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "            \"bufferView\": 0,\n");
-		fprintf(fp, "            \"componentType\": 5126,\n");
-		fprintf(fp, "            \"count\": %lu,\n", vertices.size());
-		fprintf(fp, "            \"max\": [1.0, 1.0, 1.0],\n");
-		fprintf(fp, "            \"min\": [-1.0, -1.0, -1.0],\n");
-		fprintf(fp, "            \"type\": \"VEC3\"\n");
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "            \"bufferView\": 1,\n");
-		fprintf(fp, "            \"componentType\": 5126,\n");
-		fprintf(fp, "            \"count\": %lu,\n", normals.size());
-		fprintf(fp, "            \"max\": [1.0, 1.0, 1.0],\n");
-		fprintf(fp, "            \"min\": [-1.0, -1.0, -1.0],\n");
-		fprintf(fp, "            \"type\": \"VEC3\"\n");
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "            \"bufferView\": 2,\n");
-		fprintf(fp, "            \"componentType\": 5126,\n");
-		fprintf(fp, "            \"count\": %lu,\n", textureCoordinates.size());
-		fprintf(fp, "            \"max\": [1.0, 1.0],\n");
-		fprintf(fp, "            \"min\": [0.0, 0.0],\n");
-		fprintf(fp, "            \"type\": \"VEC2\"\n");
-		fprintf(fp, "        }\n");
-		for (auto &part : parts)
-		{
-			auto indices = part.indices;
-			fprintf(fp, ",");
-			gltf::Accessor accessor = { 3, outputIndices.getPos(), gltf::ComponentType::UNSIGNED_INT, indices.size(), gltf::AccessorType::SCALAR };
-			gltfFile.write(accessor);
-			fprintf(fp, "\n");
+
+			auto& indices = part.indices;
+			accessors.push_back( { .bufferView = 3, .byteOffset = outputIndices.getPos(), .componentType = gltf::ComponentType::UNSIGNED_INT, .count = indices.size(), .type = gltf::AccessorType::SCALAR });
 			for (auto &element : indices)
 			{
 				outputIndices.serial(element);
 			}
 		}
+		gltf::Asset asset = {
+			.meshes = { { .primitives = primitives } },
+			.materials = materials,
+			.textures = textures,
+			.images = images,
+			.accessors = accessors
+		};
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
+		asset.buffers.push_back({ .uri = positionFileName, .byteLength = outputPosition.getPos() });
 
-		fprintf(fp, "    ],\n");
-		fprintf(fp, "    \"bufferViews\": [\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"buffer\": 0,\n");
-		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"buffer\": 1,\n");
-		fprintf(fp, "			\"byteLength\": %i\n", outputNormals.getPos());
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"buffer\": 2,\n");
-		fprintf(fp, "			\"byteLength\": %i\n", outputTextureCoordinates.getPos());
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"buffer\": 3,\n");
-		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
-		fprintf(fp, "        }\n");
-		fprintf(fp, "    ],\n");
-		fprintf(fp, "    \"buffers\": [\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"uri\": \"%s\",\n", positionFileName.c_str());
-		fprintf(fp, "			\"byteLength\": %i\n", outputPosition.getPos());
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"uri\": \"%s\",\n", normalsFileName.c_str());
-		fprintf(fp, "			\"byteLength\": %i\n", outputNormals.getPos());
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"uri\": \"%s\",\n", textureCoordinatesFileName.c_str());
-		fprintf(fp, "			\"byteLength\": %i\n", outputTextureCoordinates.getPos());
-		fprintf(fp, "        },\n");
-		fprintf(fp, "        {\n");
-		fprintf(fp, "			\"uri\": \"%s\",\n", indicesFileName.c_str());
-		fprintf(fp, "			\"byteLength\": %i\n", outputIndices.getPos());
-		fprintf(fp, "        }\n");
-		fprintf(fp, "    ]\n");
-		fprintf(fp, "}\n");
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputNormals.getPos() });
+		asset.buffers.push_back({ .uri = normalsFileName, .byteLength = outputNormals.getPos() });
+
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCoordinates.getPos() });
+		asset.buffers.push_back({ .uri = textureCoordinatesFileName, .byteLength = outputTextureCoordinates.getPos() });
+
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputIndices.getPos() });
+		asset.buffers.push_back({ .uri = indicesFileName, .byteLength = outputIndices.getPos() });
+
+		gltfWriter.write(asset);
 		fclose(fp);
 		outputPosition.close();
+		outputNormals.close();
+		outputTextureCoordinates.close();
+		outputIndices.close();
 
 		return EXIT_SUCCESS;
 	}
@@ -432,7 +360,7 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
-		CIndexBuffer indexBuffer ;
+		CIndexBuffer indexBuffer;
 		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, indexBuffer);
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
