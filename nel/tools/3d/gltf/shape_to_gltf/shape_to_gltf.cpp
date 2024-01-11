@@ -207,6 +207,8 @@ int main(int argc, char **argv)
 			.materials = materials,
 			.textures = textures,
 			.images = images,
+			.nodes = { { .mesh = 0, .translation = { 0.0f, 0.0f, 0.0f } } },
+			.scenes = { { .nodes = { 0 } } },
 			.accessors = accessors
 		};
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
