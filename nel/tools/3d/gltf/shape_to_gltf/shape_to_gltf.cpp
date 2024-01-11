@@ -5,10 +5,8 @@
 #include <nel/misc/common.h>
 #include <nel/misc/cmd_args.h>
 #include <nel/misc/bitmap.h>
-#include <nel/3d/zone.h>
 #include <nel/3d/landscape.h>
 #include <nel/3d/texture_file.h>
-#include <nel/ligo/zone_region.h>
 #include <vector>
 #include <nel/3d/mesh.h>
 #include <nel/3d/mesh_mrm.h>
@@ -16,8 +14,6 @@
 #include <nel/3d/scene.h>
 #include <nel/3d/register_3d.h>
 #include <nel/misc/app_context.h>
-#include <nel/misc/o_xml.h>
-#include <nel/misc/i_xml.h>
 
 #include <libgltf/gltf.h>
 
@@ -32,6 +28,7 @@ struct MeshPart
 };
 
 bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts);
+bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts);
 
 std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
 {
@@ -92,9 +89,9 @@ int main(int argc, char **argv)
 		std::vector<MeshPart> parts;
 		nlinfo("File is a %s", shape->getClassName().c_str());
 
-		if (!processMesh(shape, vertices, normals, textureCoordinates, parts))
+		if (!processMesh(shape, vertices, normals, textureCoordinates, parts) && !processMeshMRMSkinned(shape, vertices, normals, textureCoordinates, parts))
 		{
-			nlwarning("File not a CMesh");
+			nlwarning("File not a CMesh or CMeshMRMSkinned");
 			return EXIT_FAILURE;
 		}
 		COFile outputPosition;
@@ -352,6 +349,91 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
 		auto indexBuffer = mesh->getRdrPassPrimitiveBlock(lodId, renderPass);
+		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
+		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
+		auto material = mesh->getMaterial(materialIndex);
+		if (material.getBlend())
+		{
+			nlinfo("Material Blend");
+		}
+		vector<string> textures;
+		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
+		{
+			if (material.texturePresent(textureIndex))
+			{
+				nlinfo("Texture at index %i is %s", textureIndex, material.getTexture(textureIndex)->getClassName().c_str());
+				auto textureFile = dynamic_cast<CTextureFile *>(material.getTexture(textureIndex));
+				if (textureFile)
+				{
+					nlinfo("CTextureFile %s", textureFile->getFileName().c_str());
+					textures.push_back(textureFile->getFileName());
+				}
+				else
+				{
+					nlwarning("Texture at index %i is not a CTextureFile", textureIndex);
+				}
+			}
+		}
+		CIndexBufferRead iba;
+		indexBuffer.lock(iba);
+		vector<uint32> indices;
+		switch (indexBuffer.getFormat())
+		{
+		case CIndexBuffer::Indices16:
+			nlinfo("IndexBuffer Format: Indices16");
+			break;
+		case CIndexBuffer::Indices32:
+			nlinfo("IndexBuffer Format: Indices32");
+			break;
+		case CIndexBuffer::IndicesUnknownFormat:
+			nlinfo("IndexBuffer Format: IndicesUnknownFormat");
+			break;
+		}
+
+		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
+		{
+			uint32 idx = getIndexAt(iba, i);
+			if (idx != -1)
+			{
+				indices.push_back(idx);
+			}
+		}
+		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
+		MeshPart part = { indices, textures };
+		parts.push_back(part);
+	}
+
+	return true;
+}
+
+bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
+{
+	auto *mesh = dynamic_cast<CMeshMRMSkinned *>(shape);
+
+	if (!mesh)
+		return false;
+
+	nlinfo("File is a CMeshMRMSkinned");
+
+	CVertexBuffer vertexBuffer;
+	mesh->getVertexBuffer(vertexBuffer);
+	CVertexBufferRead vba;
+	vertexBuffer.lock(vba);
+	const auto lodCount = mesh->getNbLod();
+	const uint lodId = lodCount - 1;
+	nlinfo("LodCount %i", lodCount);
+
+	for (auto i = 0; i < vertexBuffer.getNumVertices(); ++i)
+	{
+		vertices.push_back(*vba.getVertexCoordPointer(i));
+		normals.push_back(*vba.getNormalCoordPointer(i));
+		textureCoordinates.push_back(*vba.getTexCoordPointer(i));
+	}
+
+	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
+	{
+		CIndexBuffer indexBuffer ;
+		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, indexBuffer);
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
