@@ -67,6 +67,11 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CVec
 	}
 }
 
+uint8 getPatchTileIndex(const CPatch & patch, const uint8 s, const uint8 t)
+{
+	return t*patch.getOrderS() + s;
+}
+
 std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
 {
 	std::string firstValue;
@@ -316,13 +321,13 @@ int main(int argc, char **argv)
 
 			buildFaces(landscape, zoneId, patchIndex, vertices, textureCordinates);
 
+			size_t verticesPerTile = 6;
+
 			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1 } };
-			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 };
-			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = textureCordinates.size(), .type = gltf::AccessorType::VEC2 };
-			primitive.attributes.position = asset.accessors.size();
-			asset.accessors.push_back(position);
-			primitive.attributes.texcoord0 = asset.accessors.size();
-			asset.accessors.push_back(textcoord0);
+			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
+			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
+			auto vertex = vertices.begin();
+			auto uv = textureCordinates.begin();
 			for (auto &texture : patch->Tiles)
 			{
 				auto tileId = texture.Tile[0];
@@ -355,31 +360,22 @@ int main(int argc, char **argv)
 						}
 					}
 				}
-			}
-			mesh.primitives.push_back(primitive);
-
-			// Add to the file
-			for (auto &vertex : vertices)
-			{
-				vertex -= zoneOffset;
-				// clampVertice(vertex);
-				// validatePatchVertice(vertex, zone.getPatchScale(), zoneOffset);
-				vertex.serial(outputPosition);
-				if (firstVertex)
+				primitive.attributes.position = asset.accessors.size();
+				asset.accessors.push_back(position);
+				primitive.attributes.texcoord0 = asset.accessors.size();
+				asset.accessors.push_back(textcoord0);
+				mesh.primitives.push_back(primitive);
+				for( auto i = 0; i < verticesPerTile && vertex != vertices.end(); ++i, ++vertex)
 				{
-					firstVertex = false;
-					bbox.setCenter(vertex);
+					*vertex -= zoneOffset;
+					vertex->serial(outputPosition);
 				}
-				else
+				for( auto i = 0; i < verticesPerTile && uv != textureCordinates.end(); ++i, ++uv)
 				{
-					bbox.extend(vertex);
+					uv->serial(outputTextureCordinate);
 				}
-			}
-
-			for (auto &uv : textureCordinates)
-			{
-				// Serial the triangle
-				uv.serial(outputTextureCordinate);
+				position.byteOffset = outputPosition.getPos();
+				textcoord0.byteOffset = outputTextureCordinate.getPos();
 			}
 		}
 		asset.meshes.push_back(mesh);
