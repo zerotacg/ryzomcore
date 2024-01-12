@@ -340,23 +340,8 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
 		vector<string> textures;
-		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
-		{
-			if (material.texturePresent(textureIndex))
-			{
-				nlinfo("Texture at index %i is %s", textureIndex, material.getTexture(textureIndex)->getClassName().c_str());
-				auto textureFile = dynamic_cast<CTextureFile *>(material.getTexture(textureIndex));
-				if (textureFile)
-				{
-					nlinfo("CTextureFile %s", textureFile->getFileName().c_str());
-					textures.push_back(textureFile->getFileName());
-				}
-				else
-				{
-					nlwarning("Texture at index %i is not a CTextureFile", textureIndex);
-				}
-			}
-		}
+		fillTextureFileNames(textures, material);
+
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
 		vector<uint32> indices;
