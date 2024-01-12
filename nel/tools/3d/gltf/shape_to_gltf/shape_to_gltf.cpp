@@ -88,12 +88,6 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", positionFilePath.c_str());
 			return EXIT_FAILURE;
 		}
-		COFile outputIndices;
-		if (!outputIndices.open(indicesFilePath, false, false, false))
-		{
-			nlwarning("Can't open the file for writing: %s", indicesFilePath.c_str());
-			return EXIT_FAILURE;
-		}
 
 		COFile outputNormals;
 		if (!outputNormals.open(normalsFilePath, false, false, false))
@@ -105,6 +99,13 @@ int main(int argc, char **argv)
 		if (!outputTextureCoordinates.open(textureCoordinatesFilePath, false, false, false))
 		{
 			nlwarning("Can't open the file for writing: %s", textureCoordinatesFilePath.c_str());
+			return EXIT_FAILURE;
+		}
+
+		COFile outputIndices;
+		if (!outputIndices.open(indicesFilePath, false, false, false))
+		{
+			nlwarning("Can't open the file for writing: %s", indicesFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 
@@ -146,8 +147,11 @@ int main(int argc, char **argv)
 				    .position = 0,
 				    .normal = 1,
 				    .texcoord0 = 2 },
-				.indices = accessors.size(),
 			};
+			if (!part.indices.empty())
+			{
+				primitive.indices = accessors.size();
+			}
 			if (!part.textures.empty())
 			{
 				primitive.material = materials.size();
@@ -192,6 +196,7 @@ int main(int argc, char **argv)
 				outputIndices.serial(element);
 			}
 		}
+
 		gltf::Asset asset = {
 			.meshes = { { .primitives = primitives } },
 			.materials = materials,
