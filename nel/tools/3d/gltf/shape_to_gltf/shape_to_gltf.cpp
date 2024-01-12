@@ -11,6 +11,8 @@
 #include <nel/3d/register_3d.h>
 #include <nel/3d/scene.h>
 #include <nel/3d/texture_file.h>
+#include <nel/3d/texture_multi_file.h>
+#include <nel/3d/texture_cube.h>
 #include <nel/misc/app_context.h>
 
 #include <libgltf/gltf.h>
@@ -170,35 +172,37 @@ int main(int argc, char **argv)
 			if (!part.textures.empty())
 			{
 				primitive.material = materials.size();
-				auto textureFile = part.textures.front();
-				if (imageFileLowerCase)
+				for (auto textureFile : part.textures)
 				{
-					textureFile = toLower(textureFile);
-				}
-				if (!imageFileExtension.empty())
-				{
-					textureFile = CFile::getFilenameWithoutExtension(textureFile);
-					textureFile += ".";
-					textureFile += imageFileExtension;
-				}
-				std::string imageUri = imageUriPrefix + textureFile;
-
-				gltf::Texture texture = { images.size() };
-				gltf::TextureInfo baseColorTexture = { textures.size() };
-				for (auto j = 0; j < images.size(); ++j)
-				{
-					if (images[j].uri == imageUri)
+					if (imageFileLowerCase)
 					{
-						texture.source = j;
-						baseColorTexture.index = j;
+						textureFile = toLower(textureFile);
 					}
+					if (!imageFileExtension.empty())
+					{
+						textureFile = CFile::getFilenameWithoutExtension(textureFile);
+						textureFile += ".";
+						textureFile += imageFileExtension;
+					}
+					std::string imageUri = imageUriPrefix + textureFile;
+
+					gltf::Texture texture = { images.size() };
+					gltf::TextureInfo baseColorTexture = { textures.size() };
+					for (auto j = 0; j < images.size(); ++j)
+					{
+						if (images[j].uri == imageUri)
+						{
+							texture.source = j;
+							baseColorTexture.index = j;
+						}
+					}
+					if (texture.source == images.size())
+					{
+						images.push_back({ .uri = imageUri });
+						textures.push_back(texture);
+					}
+					materials.push_back({ .pbrMetallicRoughness = gltf::MetallicRoughness { baseColorTexture } });
 				}
-				if (texture.source == images.size())
-				{
-					images.push_back({ .uri = imageUri });
-					textures.push_back(texture);
-				}
-				materials.push_back({ .pbrMetallicRoughness = gltf::MetallicRoughness { baseColorTexture } });
 			}
 			primitives.push_back(primitive);
 
@@ -271,6 +275,57 @@ std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string
 	return firstValue;
 }
 
+void fillFileNames(std::vector<string> &textures, ITexture *generic)
+{
+	if (const auto specific = dynamic_cast<CTextureFile *>(generic))
+	{
+		const auto &fileName = specific->getFileName();
+		nlinfo("CTextureFile %s", fileName.c_str());
+		textures.push_back(fileName);
+	}
+	else if (const auto specific = dynamic_cast<CTextureMultiFile *>(generic))
+	{
+		nlinfo("CTextureMultiFile count %i", specific->getNumFileName());
+		for (auto i = 0; i < specific->getNumFileName(); ++i)
+		{
+			const auto &fileName = specific->getFileName(i);
+			nlinfo("CTextureMultiFile %i %s ", i, fileName.c_str());
+			textures.push_back(fileName);
+		}
+	}
+	else if (const auto specific = dynamic_cast<CTextureCube *>(generic))
+	{
+		nlinfo("CTextureCube");
+		fillFileNames(textures, specific->getTexture(CTextureCube::positive_x));
+		fillFileNames(textures, specific->getTexture(CTextureCube::negative_x));
+		fillFileNames(textures, specific->getTexture(CTextureCube::positive_y));
+		fillFileNames(textures, specific->getTexture(CTextureCube::negative_y));
+		fillFileNames(textures, specific->getTexture(CTextureCube::positive_z));
+		fillFileNames(textures, specific->getTexture(CTextureCube::negative_z));
+	}
+	else
+	{
+		nlwarning("Texture type not supported", generic->getClassName().c_str());
+	}
+}
+
+void fillTextureFileNames(std::vector<string> &textures, const CMaterial &material)
+{
+	if (material.getBlend())
+	{
+		nlinfo("Material Blend");
+	}
+	for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
+	{
+		if (material.texturePresent(textureIndex))
+		{
+			auto texture = material.getTexture(textureIndex);
+			nlinfo("Texture at index %i is %s", textureIndex, texture->getClassName().c_str());
+			fillFileNames(textures, texture);
+		}
+	}
+}
+
 bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
@@ -300,10 +355,6 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
-		if (material.getBlend())
-		{
-			nlinfo("Material Blend");
-		}
 		vector<string> textures;
 		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
 		{
@@ -398,6 +449,8 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 		{
 			nlinfo("Material Blend");
 		}
+		vector<string> textures;
+		fillTextureFileNames(textures, material);
 
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
@@ -416,7 +469,7 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 		}
 
 		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
-		parts.push_back({ .indices = indices });
+		parts.push_back({ .indices = indices, .textures = textures });
 	}
 
 	return true;
