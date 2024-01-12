@@ -356,6 +356,7 @@ bool processMeshMRMSkinned2(IShape *shape, vector<CVector> &vertices, vector<CVe
 	mesh->getVertexBuffer(vertexBuffer);
 	CVertexBufferRead vba;
 	vertexBuffer.lock(vba);
+
 	const auto lodCount = mesh->getNbLod();
 	const uint lodId = lodCount - 1;
 	nlinfo("LodCount %i", lodCount);
@@ -442,85 +443,55 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 
 	nlinfo("File is a CMeshMRMSkinned");
 
-	COFile ofile;
-
-	const auto meshIn = mesh->getMeshGeom();
-
-	std::vector<CMesh::CSkinWeight> skinWeights;
-	meshIn.getSkinWeights(skinWeights);
 	CVertexBuffer vertexBuffer;
-	meshIn.getVertexBuffer(vertexBuffer);
-
+	mesh->getVertexBuffer(vertexBuffer);
 	CVertexBufferRead vba;
 	vertexBuffer.lock(vba);
-	uint i, j;
 
-	uint numLods = mesh->getNbLod();
-	sint lodId = numLods - 1;
+	const auto lodCount = mesh->getNbLod();
+	const auto lodId = lodCount - 1;
+	nlinfo("LodCount %i", lodCount);
 
-	// **** First, for the best lod indicate what vertex is used or not. Also index geomorphs to know what real vertex is used
-	vector<sint> vertexUsed;
-	// -1 means "not used"
-	vertexUsed.resize(skinWeights.size(), -1);
-	// Parse all triangles.
-	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
+	for (auto i = 0; i < vertexBuffer.getNumVertices(); ++i)
 	{
-		CIndexBuffer pb;
-		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, pb);
-		CIndexBufferRead iba;
-		pb.lock(iba);
-		logIndexBufferFormat(iba.getFormat());
-		for (j = 0; j < pb.getNumIndexes(); ++j)
-		{
-			uint idx = getIndexAt(iba, j);
-			// Flag the vertex with its own index => used.
-			vertexUsed[idx] = idx;
-		}
-	}
-	// Special for Geomorphs: must take The End target vertex.
-	const std::vector<CMRMWedgeGeom> &geomorphs = meshIn.getGeomorphs(lodId);
-	for (i = 0; i < geomorphs.size(); ++i)
-	{
-		uint trueIdx = geomorphs[i].End;
-		// map to the Geomorph Target.
-		vertexUsed[i] = trueIdx;
-		// mark also the real vertex used as used.
-		vertexUsed[trueIdx] = trueIdx;
-	}
-
-	for (i = 0; i < vertexBuffer.getNumVertices(); ++i)
-	{
-		// Append
 		vertices.push_back(*vba.getVertexCoordPointer(i));
 		normals.push_back(*vba.getNormalCoordPointer(i));
 		textureCoordinates.push_back(*vba.getTexCoordPointer(i));
 	}
 
-	// **** Get All Faces
-	// Final List Of Triangles that match the bone.
-	vector<uint32> shadowTriangles;
-	// Parse all input tri of the mesh.
-	for (i = 0; i < mesh->getNbRdrPass(lodId); ++i)
+	const auto meshIn = mesh->getMeshGeom();
+	std::vector<CMesh::CSkinWeight> skinWeights;
+	meshIn.getSkinWeights(skinWeights);
+	const std::vector<CMRMWedgeGeom> &geomorphs = meshIn.getGeomorphs(lodId);
+	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
-		CIndexBuffer pb;
-		mesh->getRdrPassPrimitiveBlock(lodId, i, pb);
-
-		CIndexBufferRead iba;
-		pb.lock(iba);
-		for (j = 0; j < pb.getNumIndexes(); ++j)
+		CIndexBuffer indexBuffer;
+		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, indexBuffer);
+		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
+		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
+		auto material = mesh->getMaterial(materialIndex);
+		if (material.getBlend())
 		{
-			uint idx = getIndexAt(iba, j);
-			// Get the real Vertex (ie not the geomporhed one).
-			nlinfo("index %i" ,idx);
-			idx = vertexUsed[idx];
-			nlinfo("geomorph.End %i" ,idx);
-
-			shadowTriangles.push_back(idx);
+			nlinfo("Material Blend");
 		}
 
-		parts.push_back({ .indices = shadowTriangles });
+		CIndexBufferRead iba;
+		indexBuffer.lock(iba);
+		vector<uint32> indices;
+		logIndexBufferFormat(iba.getFormat());
+		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
+		{
+			uint idx = getIndexAt(iba, i);
+			// Get the real Vertex (ie not the geomporhed one).
+			if (idx < geomorphs.size())
+			{
+				// Special for Geomorphs: must take The End target vertex.
+				idx = geomorphs[idx].End;
+			}
+			indices.push_back(idx);
+		}
 
-		shadowTriangles.clear();
+		parts.push_back({ .indices = indices });
 	}
 
 	return true;
