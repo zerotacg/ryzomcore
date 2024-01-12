@@ -463,10 +463,10 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 	// -1 means "not used"
 	vertexUsed.resize(skinWeights.size(), -1);
 	// Parse all triangles.
-	for (i = 0; i < mesh->getNbRdrPass(lodId); ++i)
+	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
 		CIndexBuffer pb;
-		mesh->getRdrPassPrimitiveBlock(lodId, i, pb);
+		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, pb);
 		CIndexBufferRead iba;
 		pb.lock(iba);
 		logIndexBufferFormat(iba.getFormat());
@@ -488,28 +488,12 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 		vertexUsed[trueIdx] = trueIdx;
 	}
 
-	// **** For all vertices used (not geomorphs), compute vertex Skins.
-	vector<CVertex> shadowVertices;
-	vector<sint> vertexToVSkin;
-	vertexToVSkin.resize(vertexUsed.size());
-	// Skip Geomorphs.
-	for (i = geomorphs.size(); i < vertexUsed.size(); ++i)
+	for (i = 0; i < vertexBuffer.getNumVertices(); ++i)
 	{
-		// If this vertex is used.
-		if (vertexUsed[i] != -1)
-		{
-			// Build the vertex
-			CVertex shadowVert;
-			shadowVert.vertex = *vba.getVertexCoordPointer(i);
-			shadowVert.normal = *vba.getNormalCoordPointer(i);
-			shadowVert.uv = *vba.getTexCoordPointer(i);
-			// Append
-			uint index = vertices.size();
-			vertexToVSkin[i] = index;
-			vertices.push_back(shadowVert.vertex);
-			normals.push_back(shadowVert.normal);
-			textureCoordinates.push_back(shadowVert.uv);
-		}
+		// Append
+		vertices.push_back(*vba.getVertexCoordPointer(i));
+		normals.push_back(*vba.getNormalCoordPointer(i));
+		textureCoordinates.push_back(*vba.getTexCoordPointer(i));
 	}
 
 	// **** Get All Faces
@@ -530,9 +514,6 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 			nlinfo("index %i" ,idx);
 			idx = vertexUsed[idx];
 			nlinfo("geomorph.End %i" ,idx);
-			// Get the ShadowVertex associated
-			idx = vertexToVSkin[idx];
-			nlinfo("vertexToVSkin %i" ,idx);
 
 			shadowTriangles.push_back(idx);
 		}
