@@ -343,82 +343,6 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 	return true;
 }
 
-bool processMeshMRMSkinned2(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
-{
-	auto *mesh = dynamic_cast<CMeshMRMSkinned *>(shape);
-
-	if (!mesh)
-		return false;
-
-	nlinfo("File is a CMeshMRMSkinned");
-
-	CVertexBuffer vertexBuffer;
-	mesh->getVertexBuffer(vertexBuffer);
-	CVertexBufferRead vba;
-	vertexBuffer.lock(vba);
-
-	const auto lodCount = mesh->getNbLod();
-	const uint lodId = lodCount - 1;
-	nlinfo("LodCount %i", lodCount);
-
-	for (auto i = 0; i < vertexBuffer.getNumVertices(); ++i)
-	{
-		vertices.push_back(*vba.getVertexCoordPointer(i));
-		normals.push_back(*vba.getNormalCoordPointer(i));
-		textureCoordinates.push_back(*vba.getTexCoordPointer(i));
-	}
-
-	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
-	{
-		CIndexBuffer indexBuffer;
-		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, indexBuffer);
-		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
-		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
-		auto material = mesh->getMaterial(materialIndex);
-		if (material.getBlend())
-		{
-			nlinfo("Material Blend");
-		}
-		vector<string> textures;
-		for (auto textureIndex = 0; textureIndex < IDRV_MAT_MAXTEXTURES; ++textureIndex)
-		{
-			if (material.texturePresent(textureIndex))
-			{
-				nlinfo("Texture at index %i is %s", textureIndex, material.getTexture(textureIndex)->getClassName().c_str());
-				auto textureFile = dynamic_cast<CTextureFile *>(material.getTexture(textureIndex));
-				if (textureFile)
-				{
-					nlinfo("CTextureFile %s", textureFile->getFileName().c_str());
-					textures.push_back(textureFile->getFileName());
-				}
-				else
-				{
-					nlwarning("Texture at index %i is not a CTextureFile", textureIndex);
-				}
-			}
-		}
-		CIndexBufferRead iba;
-		indexBuffer.lock(iba);
-		vector<uint32> indices;
-		auto format = indexBuffer.getFormat();
-		logIndexBufferFormat(format);
-
-		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
-		{
-			uint32 idx = getIndexAt(iba, i);
-			if (idx != -1)
-			{
-				indices.push_back(idx);
-			}
-		}
-		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
-		MeshPart part = { indices, textures };
-		parts.push_back(part);
-	}
-
-	return true;
-}
-
 void logIndexBufferFormat(const CIndexBuffer::TFormat format)
 {
 	switch (format)
@@ -491,6 +415,7 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 			indices.push_back(idx);
 		}
 
+		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
 		parts.push_back({ .indices = indices });
 	}
 
