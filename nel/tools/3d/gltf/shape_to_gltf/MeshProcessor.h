@@ -1,17 +1,21 @@
 #ifndef MESH_PROCESSOR_H
 #define MESH_PROCESSOR_H
 
-#include <optional>
+#include <memory>
 #include <vector>
+
 #include <nel/3d/mesh.h>
 #include <nel/misc/vector.h>
 
-class MeshProcessor
+#include "MeshPart.h"
+
+struct MeshProcessor
 {
-public:
-	static std::optional<MeshProcessor> from(NL3D::IShape *shape);
+	virtual ~MeshProcessor() = default;
 
 	virtual void process(std::vector<NLMISC::CVector> &vertices, std::vector<NLMISC::CVector> &normals, std::vector<NLMISC::CUV> &textureCoordinates, std::vector<MeshPart> &parts) = 0;
+
+	static std::unique_ptr<MeshProcessor> from(NL3D::IShape *shape);
 };
 
 #endif // MESH_PROCESSOR_H

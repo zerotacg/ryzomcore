@@ -18,37 +18,11 @@
 #include <libgltf/gltf.h>
 
 #include "./shape_to_gltf.h"
+#include "./MeshProcessor.h"
 
 using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
-
-struct CVertex
-{
-	CVector vertex;
-	CVector normal;
-	CUV uv;
-};
-
-bool operator==(const CVertex &v1, const CVertex &v2)
-{
-	return (v1.vertex == v2.vertex) && (v1.normal == v2.normal) && (v1.uv == v2.uv);
-}
-
-bool operator<(const CVertex &v1, const CVertex &v2)
-{
-	/*
-	if (v1.vertex == v2.vertex)
-	{
-	    if (v1.normal == v2.normal)
-	    {
-	        return (v1.uv < v2.uv);
-	    }
-	    return (v1.normal < v1.normal);
-	}
-	*/
-	return (v1.vertex < v2.vertex);
-}
 
 int main(int argc, char **argv)
 {
@@ -98,9 +72,14 @@ int main(int argc, char **argv)
 		std::vector<MeshPart> parts;
 		nlinfo("File is a %s", shape->getClassName().c_str());
 
-		if (!processMesh(shape, vertices, normals, textureCoordinates, parts) && !processMeshMRMSkinned(shape, vertices, normals, textureCoordinates, parts))
+		auto meshProcessor = MeshProcessor::from(shape);
+		if (meshProcessor)
 		{
-			nlwarning("File not a CMesh or CMeshMRMSkinned");
+			meshProcessor->process(vertices, normals, textureCoordinates, parts);
+		}
+		if (!meshProcessor && !processMesh(shape, vertices, normals, textureCoordinates, parts) && !processMeshMRMSkinned(shape, vertices, normals, textureCoordinates, parts))
+		{
+			nlwarning("File not a CMesh or CMeshMRMSkinned or CWaterShape");
 			return EXIT_FAILURE;
 		}
 		COFile outputPosition;

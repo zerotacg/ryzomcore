@@ -4,11 +4,13 @@
 
 #include "WaterShapeProcessor.h"
 
-std::optional<MeshProcessor> MeshProcessor::from(NL3D::IShape *shape)
+using namespace std;
+
+unique_ptr<MeshProcessor> MeshProcessor::from(NL3D::IShape *shape)
 {
 	if (dynamic_cast<NL3D::CWaterShape *>(shape))
 	{
-		return WaterShapeProcessor(dynamic_cast<NL3D::CWaterShape *>(shape));
+		return std::make_unique<WaterShapeProcessor>(dynamic_cast<NL3D::CWaterShape *>(shape));
 	}
-	return std::nullopt;
+	return std::unique_ptr<MeshProcessor>{};
 }
