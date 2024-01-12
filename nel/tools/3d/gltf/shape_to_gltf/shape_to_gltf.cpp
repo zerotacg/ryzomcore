@@ -1,45 +1,53 @@
 #include <iostream>
+#include <vector>
 #include <nel/misc/types_nl.h>
-#include <nel/misc/file.h>
-#include <nel/misc/o_xml.h>
 #include <nel/misc/common.h>
 #include <nel/misc/cmd_args.h>
 #include <nel/misc/bitmap.h>
-#include <nel/3d/landscape.h>
-#include <nel/3d/texture_file.h>
-#include <vector>
+#include <nel/misc/file.h>
 #include <nel/3d/mesh.h>
 #include <nel/3d/mesh_mrm.h>
 #include <nel/3d/mesh_mrm_skinned.h>
-#include <nel/3d/scene.h>
 #include <nel/3d/register_3d.h>
+#include <nel/3d/scene.h>
+#include <nel/3d/texture_file.h>
 #include <nel/misc/app_context.h>
 
 #include <libgltf/gltf.h>
+
+#include "./shape_to_gltf.h"
 
 using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-struct MeshPart
+struct CVertex
 {
-	vector<uint32> indices;
-	vector<string> textures;
+	CVector vertex;
+	CVector normal;
+	CUV uv;
 };
 
-bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts);
-bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts);
-
-std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
+bool operator == (const CVertex &v1, const CVertex &v2)
 {
-	std::string firstValue;
-	const auto values = args.getLongArg(argName);
-	if (!values.empty())
-	{
-		firstValue = values.front();
-	}
-	return firstValue;
+	return (v1.vertex == v2.vertex) && (v1.normal == v2.normal) && (v1.uv == v2.uv);
 }
+
+bool operator < (const CVertex &v1, const CVertex &v2)
+{
+	/*
+	if (v1.vertex == v2.vertex)
+	{
+		if (v1.normal == v2.normal)
+		{
+			return (v1.uv < v2.uv);
+		}
+		return (v1.normal < v1.normal);
+	}
+	*/
+	return (v1.vertex < v2.vertex);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -163,7 +171,6 @@ int main(int argc, char **argv)
 			if (!part.textures.empty())
 			{
 				primitive.material = materials.size();
-				primitives.push_back(primitive);
 				auto textureFile = part.textures.front();
 				if (imageFileLowerCase)
 				{
@@ -194,9 +201,10 @@ int main(int argc, char **argv)
 				}
 				materials.push_back({ .pbrMetallicRoughness = gltf::MetallicRoughness { baseColorTexture } });
 			}
+			primitives.push_back(primitive);
 
-			auto& indices = part.indices;
-			accessors.push_back( { .bufferView = 3, .byteOffset = outputIndices.getPos(), .componentType = gltf::ComponentType::UNSIGNED_INT, .count = indices.size(), .type = gltf::AccessorType::SCALAR });
+			auto &indices = part.indices;
+			accessors.push_back({ .bufferView = 3, .byteOffset = outputIndices.getPos(), .componentType = gltf::ComponentType::UNSIGNED_INT, .count = indices.size(), .type = gltf::AccessorType::SCALAR });
 			for (auto &element : indices)
 			{
 				outputIndices.serial(element);
@@ -253,6 +261,17 @@ uint32 getIndexAt(const CIndexBufferRead &buffer, const int index)
 	}
 }
 
+std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
+{
+	std::string firstValue;
+	const auto values = args.getLongArg(argName);
+	if (!values.empty())
+	{
+		firstValue = values.front();
+	}
+	return firstValue;
+}
+
 bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
 {
 	auto *mesh = dynamic_cast<CMesh *>(shape);
@@ -307,18 +326,7 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
 		vector<uint32> indices;
-		switch (indexBuffer.getFormat())
-		{
-		case CIndexBuffer::Indices16:
-			nlinfo("IndexBuffer Format: Indices16");
-			break;
-		case CIndexBuffer::Indices32:
-			nlinfo("IndexBuffer Format: Indices32");
-			break;
-		case CIndexBuffer::IndicesUnknownFormat:
-			nlinfo("IndexBuffer Format: IndicesUnknownFormat");
-			break;
-		}
+		logIndexBufferFormat(indexBuffer.getFormat());
 
 		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
 		{
@@ -336,7 +344,7 @@ bool processMesh(IShape *shape, vector<CVector> &vertices, vector<CVector> &norm
 	return true;
 }
 
-bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
+bool processMeshMRMSkinned2(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
 {
 	auto *mesh = dynamic_cast<CMeshMRMSkinned *>(shape);
 
@@ -392,18 +400,8 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 		CIndexBufferRead iba;
 		indexBuffer.lock(iba);
 		vector<uint32> indices;
-		switch (indexBuffer.getFormat())
-		{
-		case CIndexBuffer::Indices16:
-			nlinfo("IndexBuffer Format: Indices16");
-			break;
-		case CIndexBuffer::Indices32:
-			nlinfo("IndexBuffer Format: Indices32");
-			break;
-		case CIndexBuffer::IndicesUnknownFormat:
-			nlinfo("IndexBuffer Format: IndicesUnknownFormat");
-			break;
-		}
+		auto format = indexBuffer.getFormat();
+		logIndexBufferFormat(format);
 
 		for (auto i = 0; i < indexBuffer.getNumIndexes(); ++i)
 		{
@@ -416,6 +414,227 @@ bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVec
 		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
 		MeshPart part = { indices, textures };
 		parts.push_back(part);
+	}
+
+	return true;
+}
+
+void logIndexBufferFormat(const CIndexBuffer::TFormat format)
+{
+	switch (format)
+	{
+	case CIndexBuffer::Indices16:
+		nlinfo("IndexBuffer Format: Indices16");
+		break;
+	case CIndexBuffer::Indices32:
+		nlinfo("IndexBuffer Format: Indices32");
+		break;
+	case CIndexBuffer::IndicesUnknownFormat:
+		nlinfo("IndexBuffer Format: IndicesUnknownFormat");
+		break;
+	}
+}
+
+bool processMeshMRMSkinned(IShape *shape, vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
+{
+	CMeshMRMSkinned *mesh = dynamic_cast<CMeshMRMSkinned*>(shape);
+
+	if (!mesh) return false;
+
+	nlinfo("File is a CMeshMRMSkinned");
+
+	COFile ofile;
+
+	CMeshMRMSkinnedGeom* meshIn = (CMeshMRMSkinnedGeom*)&mesh->getMeshGeom();
+
+	std::vector<CMesh::CSkinWeight>	skinWeights;
+	meshIn->getSkinWeights(skinWeights);
+	CVertexBuffer vertexBuffer;
+	meshIn->getVertexBuffer(vertexBuffer);
+
+	CVertexBufferRead vba;
+	vertexBuffer.lock (vba);
+	uint	i, j;
+
+	// **** Select the Lod.
+	uint	numLods= mesh->getNbLod();
+
+	// get the max tris displayed
+	float	numMeshFacesMin= (float)meshIn->getLevelDetail().MinFaceUsed;
+	float	numMeshFacesMax= (float)meshIn->getLevelDetail().MaxFaceUsed;
+	// find the lod
+	sint lodId = numLods-1;
+
+	// **** First, for the best lod indicate what vertex is used or not. Also index geomorphs to know what real vertex is used
+	vector<sint>		vertexUsed;
+	// -1 means "not used"
+	vertexUsed.resize(skinWeights.size(), -1);
+	// Parse all triangles.
+	for(i=0;i<meshIn->getNbRdrPass(lodId); ++i)
+	{
+		CIndexBuffer pb;
+		mesh->getRdrPassPrimitiveBlock(lodId, i, pb);
+		CIndexBufferRead iba;
+		pb.lock (iba);
+		if (iba.getFormat() == CIndexBuffer::Indices32)
+		{
+			const uint32	*triPtr= (const uint32 *) iba.getPtr();
+			for(j=0;j<pb.getNumIndexes(); ++j)
+			{
+				uint	idx= *triPtr;
+				// Flag the vertex with its own index => used.
+				vertexUsed[idx]= idx;
+				triPtr++;
+			}
+		}
+		else
+		{
+			const uint16	*triPtr= (const uint16 *) iba.getPtr();
+			for(j=0;j<pb.getNumIndexes(); ++j)
+			{
+				uint	idx= *triPtr;
+				// Flag the vertex with its own index => used.
+				vertexUsed[idx]= idx;
+				triPtr++;
+			}
+		}
+	}
+	// Special for Geomorphs: must take The End target vertex.
+	const std::vector<CMRMWedgeGeom>	&geomorphs= meshIn->getGeomorphs(lodId);
+	for(i=0;i<geomorphs.size(); ++i)
+	{
+		uint	trueIdx= geomorphs[i].End;
+		// map to the Geomorph Target.
+		vertexUsed[i]= trueIdx;
+		// mark also the real vertex used as used.
+		vertexUsed[trueIdx]= trueIdx;
+	}
+
+
+	// **** For all vertices used (not geomorphs), compute vertex Skins.
+	vector<CVertex>		shadowVertices;
+	vector<sint>		vertexToVSkin;
+	vertexToVSkin.resize(vertexUsed.size());
+	shadowVertices.reserve(vertexUsed.size());
+	// use a map to remove duplicates (because of UV/normal discontinuities before!!)
+	map<CVertex, uint>	shadowVertexMap;
+	uint						numMerged= 0;
+	// Skip Geomorphs.
+	for(i=geomorphs.size();i<vertexUsed.size(); ++i)
+	{
+		// If this vertex is used.
+		if(vertexUsed[i]!=-1)
+		{
+			// Build the vertex
+			CVertex shadowVert;
+			CUV uv;
+			shadowVert.vertex = *(CVector*)vba.getVertexCoordPointer(i);
+			shadowVert.normal = *(CVector*)vba.getNormalCoordPointer(i);
+			shadowVert.uv = *(CUV*)vba.getTexCoordPointer(i);
+/*
+			// Select the best Matrix.
+			CMesh::CSkinWeight		sw= skinWeights[i];
+			float	maxW= 0;
+			uint	matId= 0;
+			for(j=0;j<NL3D_MESH_SKINNING_MAX_MATRIX;j++)
+			{
+				// if no more matrix influenced, stop
+				if(sw.Weights[j]==0)
+					break;
+				if(sw.Weights[j]>maxW)
+				{
+					matId= sw.MatrixId[j];
+					maxW= sw.Weights[j];
+				}
+			}
+//			shadowVert.MatrixId= matId;
+*/
+			// If dont find the shadowVertex in the map.
+			map<CVertex, uint>::iterator		it= shadowVertexMap.find(shadowVert);
+			if(it==shadowVertexMap.end())
+			{
+				// Append
+				uint	index= shadowVertices.size();
+				vertexToVSkin[i]= index;
+				shadowVertices.push_back(shadowVert);
+				shadowVertexMap.insert(make_pair(shadowVert, index));
+			}
+			else
+			{
+				// Ok, map.
+				vertexToVSkin[i]= it->second;
+				numMerged++;
+			}
+
+		}
+	}
+
+
+	for(size_t y = 0; y < shadowVertices.size(); ++y)
+	{
+		CVector v = shadowVertices[y].vertex;
+		CVector vn = shadowVertices[y].normal;
+		CUV vt = shadowVertices[y].uv;
+
+		vertices.push_back(v);
+		normals.push_back(vn);
+		textureCoordinates.push_back(vt);
+	}
+
+	// **** Get All Faces
+	// Final List Of Triangles that match the bone.
+	vector<uint32>			shadowTriangles;
+	shadowTriangles.reserve(1000);
+	// Parse all input tri of the mesh.
+	for(i=0; i<meshIn->getNbRdrPass(lodId); ++i)
+	{
+		CIndexBuffer pb;
+		mesh->getRdrPassPrimitiveBlock(lodId, i, pb);
+
+		CIndexBufferRead iba;
+		pb.lock (iba);
+		if (iba.getFormat() == CIndexBuffer::Indices32)
+		{
+			const uint32	*triPtr= (const uint32 *) iba.getPtr();
+
+			for(j=0; j< pb.getNumIndexes(); ++j)
+			{
+				uint	idx= *triPtr;
+				// Get the real Vertex (ie not the geomporhed one).
+				idx= vertexUsed[idx];
+				// Get the ShadowVertex associated
+				idx= vertexToVSkin[idx];
+
+				shadowTriangles.push_back(idx);
+				triPtr++;
+			}
+		}
+		else
+		{
+			const uint16	*triPtr= (const uint16 *) iba.getPtr();
+			for(j=0; j< static_cast<const CIndexBuffer *>(&pb)->getNumIndexes(); ++j)
+			{
+				uint	idx= *triPtr;
+				// Get the real Vertex (ie not the geomporhed one).
+				idx= vertexUsed[idx];
+				// Get the ShadowVertex associated
+				idx= vertexToVSkin[idx];
+
+				shadowTriangles.push_back(idx);
+				triPtr++;
+			}
+		}
+
+		vector<uint32> indices;
+		for(size_t pass = 0; pass<shadowTriangles.size(); pass += 3)
+		{
+			indices.push_back(shadowTriangles[pass]);
+			indices.push_back(shadowTriangles[pass + 1]);
+			indices.push_back(shadowTriangles[pass + 2]);
+		}
+		parts.push_back({ .indices = indices });
+
+		shadowTriangles.clear();
 	}
 
 	return true;
