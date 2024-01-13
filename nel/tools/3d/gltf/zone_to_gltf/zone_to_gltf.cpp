@@ -92,6 +92,15 @@ std::string zoneName(const sint x, const sint y)
 	return name.str();
 }
 
+std::string zoneNameLowerCase(const sint x, const sint y)
+{
+	std::ostringstream name;
+
+	name << y + 1 << "_" << static_cast<char>('a' + (x / 26)) << static_cast<char>('a' + (x % 26));
+
+	return name.str();
+}
+
 std::string materialName(const uint16 tileId)
 {
 	std::ostringstream name;
@@ -108,6 +117,19 @@ void addZone(CLandscape &landscape, const std::string &zoneSearchDirectory, cons
 	zoneFilename += ".zonel";
 
 	CIFile zoneFile;
+	if (zoneFile.open(zoneFilename))
+	{
+		nlinfo("Found Neighbor Zone: %s", zoneFilename.c_str());
+		CZone zone;
+		zone.serial(zoneFile);
+		landscape.addZone(zone);
+		zoneFile.close();
+		return;
+	}
+
+	zoneFilename = zoneSearchDirectory;
+	zoneFilename += zoneNameLowerCase(x, y);
+	zoneFilename += ".zonel";
 	if (zoneFile.open(zoneFilename))
 	{
 		nlinfo("Found Neighbor Zone: %s", zoneFilename.c_str());

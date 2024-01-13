@@ -74,11 +74,21 @@ struct JsonWriter
 	}
 
 	template <class T>
+	void writePropertyVector(const std::string &key, const std::vector<T> &value)
+	{
+		fprintf(file, "%s", propertyPrefix.back().c_str());
+		write(key);
+		fprintf(file, ": ");
+		write(value);
+		propertyPrefix.back() = ", ";
+	}
+
+	template <class T>
 	void writeProperty(const std::string &key, const std::vector<T> &value)
 	{
 		if(!value.empty())
 		{
-			writeProperty(key, value);
+			writePropertyVector(key, value);
 		}
 	}
 
