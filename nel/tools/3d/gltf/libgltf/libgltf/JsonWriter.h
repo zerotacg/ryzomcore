@@ -74,6 +74,15 @@ struct JsonWriter
 	}
 
 	template <class T>
+	void writeProperty(const std::string &key, const std::vector<T> &value)
+	{
+		if(!value.empty())
+		{
+			writeProperty(key, value);
+		}
+	}
+
+	template <class T>
 	void writeProperty(const std::string &key, const std::optional<T> &value)
 	{
 		if(value.has_value())

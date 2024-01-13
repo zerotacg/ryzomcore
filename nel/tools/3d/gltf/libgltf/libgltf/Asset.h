@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <libgltf/Accessor.h>
+#include <libgltf/Animation.h>
 #include <libgltf/Buffer.h>
 #include <libgltf/BufferView.h>
 #include <libgltf/Image.h>
@@ -25,6 +26,7 @@ struct Asset
 	std::vector<Node> nodes;
 	std::vector<Skin> skins;
 	std::vector<Scene> scenes;
+	std::vector<Animation> animations;
 	std::vector<Accessor> accessors;
 	std::vector<BufferView> bufferViews;
 	std::vector<Buffer> buffers;
