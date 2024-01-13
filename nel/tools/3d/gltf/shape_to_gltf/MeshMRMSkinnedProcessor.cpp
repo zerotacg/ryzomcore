@@ -6,7 +6,7 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-void MeshMRMSkinnedProcessor::process(vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
+void MeshMRMSkinnedProcessor::process(Mesh& output)
 {
 	nlinfo("File is a CMeshMRMSkinned");
 
@@ -21,9 +21,9 @@ void MeshMRMSkinnedProcessor::process(vector<CVector> &vertices, vector<CVector>
 
 	for (auto i = 0; i < vertexBuffer.getNumVertices(); ++i)
 	{
-		vertices.push_back(*vba.getVertexCoordPointer(i));
-		normals.push_back(*vba.getNormalCoordPointer(i));
-		textureCoordinates.push_back(*vba.getTexCoordPointer(i));
+		output.vertices.push_back(*vba.getVertexCoordPointer(i));
+		output.normals.push_back(*vba.getNormalCoordPointer(i));
+		output.uvs.push_back(*vba.getTexCoordPointer(i));
 	}
 
 	const auto meshIn = mesh->getMeshGeom();
@@ -61,6 +61,6 @@ void MeshMRMSkinnedProcessor::process(vector<CVector> &vertices, vector<CVector>
 		}
 
 		nldebug("index min %i max %i", *min_element(indices.begin(), indices.end()), *max_element(indices.begin(), indices.end()));
-		parts.push_back({ .indices = indices, .textures = textures });
+		output.parts.push_back({ .indices = indices, .textures = textures });
 	}
 }

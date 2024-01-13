@@ -13,7 +13,7 @@ public:
 	{
 	}
 
-	void process(std::vector<NLMISC::CVector> &vertices, std::vector<NLMISC::CVector> &normals, std::vector<NLMISC::CUV> &textureCoordinates, std::vector<MeshPart> &parts) override;
+	void process(Mesh& output) override;
 
 private:
 	NL3D::CWaterShape *mesh;

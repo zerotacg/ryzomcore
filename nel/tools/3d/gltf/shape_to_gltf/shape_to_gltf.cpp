@@ -7,7 +7,6 @@
 #include <nel/misc/file.h>
 #include <nel/3d/mesh.h>
 #include <nel/3d/mesh_mrm.h>
-#include <nel/3d/mesh_mrm_skinned.h>
 #include <nel/3d/register_3d.h>
 #include <nel/3d/scene.h>
 #include <nel/3d/texture_file.h>
@@ -18,6 +17,7 @@
 #include <libgltf/gltf.h>
 
 #include "./shape_to_gltf.h"
+#include "./Mesh.h"
 #include "./MeshProcessor.h"
 
 using namespace NL3D;
@@ -45,14 +45,14 @@ int main(int argc, char **argv)
 		std::string inputFilePath = args.getAdditionalArg("input").front();
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
-		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
-		std::string positionFileName = fileName + ".position.bin";
+		std::string fileNameBase = CFile::getFilenameWithoutExtension(outputFilePath);
+		std::string positionFileName = fileNameBase + ".position.bin";
 		std::string positionFilePath = outputDirectory + "/" + positionFileName;
-		std::string indicesFileName = fileName + ".indices.bin";
+		std::string indicesFileName = fileNameBase + ".indices.bin";
 		std::string indicesFilePath = outputDirectory + "/" + indicesFileName;
-		std::string normalsFileName = fileName + ".normal.bin";
+		std::string normalsFileName = fileNameBase + ".normal.bin";
 		std::string normalsFilePath = outputDirectory + "/" + normalsFileName;
-		std::string textureCoordinatesFileName = fileName + ".texcoord_0.bin";
+		std::string textureCoordinatesFileName = fileNameBase + ".texcoord_0.bin";
 		std::string textureCoordinatesFilePath = outputDirectory + "/" + textureCoordinatesFileName;
 		std::string imageUriPrefix = getLongArgFirstValue(args, "imageUriPrefix");
 		std::string imageFileExtension = getLongArgFirstValue(args, "imageFileExtension");
@@ -66,16 +66,17 @@ int main(int argc, char **argv)
 		shapeStream.serial(inputFile);
 		inputFile.close();
 		IShape *shape = shapeStream.getShapePointer();
-		std::vector<CVector> vertices;
-		std::vector<CVector> normals;
-		std::vector<CUV> textureCoordinates;
-		std::vector<MeshPart> parts;
+		Mesh output;
+		std::vector<CVector> &vertices(output.vertices);
+		std::vector<CVector> &normals(output.normals);
+		std::vector<CUV> &textureCoordinates(output.uvs);
+		std::vector<MeshPart> &parts(output.parts);
 		nlinfo("File is a %s", shape->getClassName().c_str());
 
 		auto meshProcessor = MeshProcessor::from(shape);
 		if (meshProcessor)
 		{
-			meshProcessor->process(vertices, normals, textureCoordinates, parts);
+			meshProcessor->process(output);
 		}
 		if (!meshProcessor && !processMesh(shape, vertices, normals, textureCoordinates, parts))
 		{
@@ -122,6 +123,18 @@ int main(int argc, char **argv)
 		for (auto &element : textureCoordinates)
 		{
 			element.serial(outputTextureCoordinates);
+		}
+
+		COFile outputWeights;
+		if(!output.weights.empty())
+		{
+			std::string weightsFileName = fileNameBase + ".weights_0.bin";
+			std::string filePath = outputDirectory + "/" + weightsFileName;
+			if (!outputWeights.open(filePath, false, false, false))
+			{
+				nlwarning("Can't open the file for writing: %s", filePath.c_str());
+				return EXIT_FAILURE;
+			}
 		}
 
 		FILE *fp = nlfopen(outputFilePath, "w");
@@ -224,6 +237,7 @@ int main(int argc, char **argv)
 		outputNormals.close();
 		outputTextureCoordinates.close();
 		outputIndices.close();
+		outputWeights.close();
 
 		return EXIT_SUCCESS;
 	}
