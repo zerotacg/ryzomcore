@@ -10,7 +10,10 @@ struct Node
 {
 	std::string name;
 	std::optional<size_t> mesh;
+	std::optional<size_t> skin;
 	std::vector<float> translation;
+	std::vector<float> rotation;
+	std::vector<size_t> children;
 
 
 	void write(JsonWriter &writer) const
@@ -20,9 +23,18 @@ struct Node
 			writer.writeProperty("name", name);
 		}
 		writer.writeProperty("mesh", mesh);
+		writer.writeProperty("skin", skin);
 		if(!translation.empty())
 		{
 			writer.writeProperty("translation", translation);
+		}
+		if(!rotation.empty())
+		{
+			writer.writeProperty("rotation", rotation);
+		}
+		if(!children.empty())
+		{
+			writer.writeProperty("children", children);
 		}
 	}
 };
