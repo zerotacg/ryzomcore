@@ -14,7 +14,7 @@ class MeshProcessor
 public:
 	virtual ~MeshProcessor() = default;
 
-	virtual void process(std::vector<NLMISC::CVector> &vertices, std::vector<NLMISC::CVector> &normals, std::vector<NLMISC::CUV> &textureCoordinates, std::vector<MeshPart> &parts) = 0;
+	virtual void process(std::vector<NLMISC::CVector> &vertices, std::vector<NLMISC::CVector> &normals, std::vector<NLMISC::CUV> &uvs, std::vector<MeshPart> &parts) = 0;
 
 	static std::unique_ptr<MeshProcessor> from(NL3D::IShape *shape);
 };

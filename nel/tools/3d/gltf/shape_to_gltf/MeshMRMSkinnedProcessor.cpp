@@ -8,8 +8,6 @@ using namespace std;
 
 void MeshMRMSkinnedProcessor::process(vector<CVector> &vertices, vector<CVector> &normals, vector<CUV> &textureCoordinates, vector<MeshPart> &parts)
 {
-	nlinfo("File is a CWaterShape");
-
 	nlinfo("File is a CMeshMRMSkinned");
 
 	CVertexBuffer vertexBuffer;

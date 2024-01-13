@@ -13,12 +13,14 @@ struct Attributes
 	std::optional<uint32> position;
 	std::optional<uint32> normal;
 	std::optional<uint32> texcoord0;
+	std::optional<uint32> weights0;
 
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("POSITION", position);
 		writer.writeProperty("NORMAL", normal);
 		writer.writeProperty("TEXCOORD_0", texcoord0);
+		writer.writeProperty("WEIGHTS_0", weights0);
 	}
 };
 
