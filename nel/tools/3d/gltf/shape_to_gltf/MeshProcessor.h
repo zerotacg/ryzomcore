@@ -9,8 +9,9 @@
 
 #include "MeshPart.h"
 
-struct MeshProcessor
+class MeshProcessor
 {
+public:
 	virtual ~MeshProcessor() = default;
 
 	virtual void process(std::vector<NLMISC::CVector> &vertices, std::vector<NLMISC::CVector> &normals, std::vector<NLMISC::CUV> &textureCoordinates, std::vector<MeshPart> &parts) = 0;

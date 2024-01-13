@@ -5,8 +5,9 @@
 
 #include "MeshProcessor.h"
 
-struct WaterShapeProcessor : MeshProcessor
+class WaterShapeProcessor : public MeshProcessor
 {
+public:
 	explicit WaterShapeProcessor(NL3D::CWaterShape *source)
 	    : mesh(source)
 	{

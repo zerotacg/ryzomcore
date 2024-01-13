@@ -5,10 +5,11 @@
 
 #include "MeshProcessor.h"
 
-
-struct MeshMRMSkinnedProcessor : MeshProcessor {
+class MeshMRMSkinnedProcessor : public MeshProcessor
+{
+public:
 	explicit MeshMRMSkinnedProcessor(NL3D::CMeshMRMSkinned *source)
-		: mesh(source)
+	    : mesh(source)
 	{
 	}
 
@@ -16,9 +17,6 @@ struct MeshMRMSkinnedProcessor : MeshProcessor {
 
 private:
 	NL3D::CMeshMRMSkinned *mesh;
-
 };
 
-
-
-#endif //MESH_MRM_SKINNED_PROCESSOR_H
+#endif // MESH_MRM_SKINNED_PROCESSOR_H
