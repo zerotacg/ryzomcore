@@ -125,15 +125,19 @@ int main(int argc, char **argv)
 			element.serial(outputTextureCoordinates);
 		}
 
+		std::string weightsFileName = fileNameBase + ".weights_0.bin";
 		COFile outputWeights;
 		if(!output.weights.empty())
 		{
-			std::string weightsFileName = fileNameBase + ".weights_0.bin";
 			std::string filePath = outputDirectory + "/" + weightsFileName;
 			if (!outputWeights.open(filePath, false, false, false))
 			{
 				nlwarning("Can't open the file for writing: %s", filePath.c_str());
 				return EXIT_FAILURE;
+			}
+			for (auto &element : textureCoordinates)
+			{
+				element.serial(outputWeights);
 			}
 		}
 
@@ -144,10 +148,11 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		gltf::JsonWriter gltfWriter = { .file = fp };
-		std::vector<gltf::Accessor> accessors = {
+		std::vector accessors = {
 			{ .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 },
 			{ .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = normals.size(), .type = gltf::AccessorType::VEC3 },
-			{ .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = textureCoordinates.size(), .type = gltf::AccessorType::VEC2 }
+			{ .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = textureCoordinates.size(), .type = gltf::AccessorType::VEC2 },
+			gltf::Accessor::weight(4, 0, output.weights.size())
 		};
 		std::vector<gltf::Primitive> primitives;
 		std::vector<gltf::Material> materials;
@@ -230,6 +235,9 @@ int main(int argc, char **argv)
 
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputIndices.getPos() });
 		asset.buffers.push_back({ .uri = indicesFileName, .byteLength = outputIndices.getPos() });
+
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputWeights.getPos() });
+		asset.buffers.push_back({ .uri = weightsFileName, .byteLength = outputWeights.getPos() });
 
 		gltfWriter.write(asset);
 		fclose(fp);

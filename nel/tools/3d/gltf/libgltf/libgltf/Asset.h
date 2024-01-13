@@ -11,6 +11,7 @@
 #include <libgltf/Mesh.h>
 #include <libgltf/Node.h>
 #include <libgltf/Scene.h>
+#include <libgltf/Skin.h>
 #include <libgltf/Texture.h>
 
 namespace gltf {
@@ -22,6 +23,7 @@ struct Asset
 	std::vector<Texture> textures;
 	std::vector<Image> images;
 	std::vector<Node> nodes;
+	std::vector<Skin> skins;
 	std::vector<Scene> scenes;
 	std::vector<Accessor> accessors;
 	std::vector<BufferView> bufferViews;

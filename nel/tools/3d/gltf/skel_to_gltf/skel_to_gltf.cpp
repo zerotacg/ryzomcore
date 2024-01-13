@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
+		gltf::Skin skin;
 		std::vector<gltf::Node> nodes;
 		vector<CBoneBase> bones;
 		skeleton->retrieve(bones);
@@ -73,11 +74,10 @@ int main(int argc, char **argv)
 			nlinfo("Bone %s parent %i", bone.Name.c_str(), bone.FatherId);
 			auto &pos = bone.DefaultPos.getDefaultValue();
 			auto &quat = bone.DefaultRotQuat.getDefaultValue();
-			nodes.push_back({
-				.name = bone.Name,
+			skin.joints.push_back(nodes.size());
+			nodes.push_back({ .name = bone.Name,
 			    .translation = { pos.x, pos.y, pos.z },
-				.rotation = { quat.x, quat.y, quat.z, quat.w }
-			});
+			    .rotation = { quat.x, quat.y, quat.z, quat.w } });
 			auto parentId = bone.FatherId;
 			if (parentId != -1)
 			{
@@ -94,7 +94,8 @@ int main(int argc, char **argv)
 				nodes[parentId].children.push_back(i);
 			}
 		}
-		nodes.push_back({.mesh = 0, .skin = 0, .children = {0}});
+		skin.skeleton = nodes.size();
+		nodes.push_back({ .mesh = 0, .skin = 0, .children = { 0 } });
 
 		FILE *fp = nlfopen(outputFilePath, "w");
 		if (fp == NULL)
@@ -106,6 +107,7 @@ int main(int argc, char **argv)
 
 		gltf::Asset asset = {
 			.nodes = nodes,
+			.skins = { skin },
 			.scenes = { { .nodes = { 0 } } }
 		};
 

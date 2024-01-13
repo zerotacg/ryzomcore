@@ -16,6 +16,10 @@ void Asset::write(JsonWriter &writer) const
 	{
 		writer.writeProperty("nodes", nodes);
 	}
+	if (!skins.empty())
+	{
+		writer.writeProperty("skins", skins);
+	}
 	if (!scenes.empty())
 	{
 		writer.writeProperty("scenes", scenes);

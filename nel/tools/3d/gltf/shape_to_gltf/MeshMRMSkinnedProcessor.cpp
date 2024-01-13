@@ -1,12 +1,13 @@
 #include "MeshMRMSkinnedProcessor.h"
 
 #include "shape_to_gltf.h"
+#include "nel/3d/mesh_mrm_skinned_instance.h"
 
 using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-void MeshMRMSkinnedProcessor::process(Mesh& output)
+void MeshMRMSkinnedProcessor::process(Mesh &output)
 {
 	nlinfo("File is a CMeshMRMSkinned");
 
@@ -26,9 +27,18 @@ void MeshMRMSkinnedProcessor::process(Mesh& output)
 		output.uvs.push_back(*vba.getTexCoordPointer(i));
 	}
 
-	const auto meshIn = mesh->getMeshGeom();
+	const auto &meshIn = mesh->getMeshGeom();
 	std::vector<CMesh::CSkinWeight> skinWeights;
 	meshIn.getSkinWeights(skinWeights);
+	const auto& bones = meshIn.getBonesName();
+	for(auto& name: bones)
+	{
+		nlinfo("bone name %s", name.c_str());
+	}
+	for (auto &weight : skinWeights)
+	{
+		output.weights.emplace_back(weight.Weights[0], weight.Weights[1], weight.Weights[2], weight.Weights[3]);
+	}
 	const std::vector<CMRMWedgeGeom> &geomorphs = meshIn.getGeomorphs(lodId);
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
