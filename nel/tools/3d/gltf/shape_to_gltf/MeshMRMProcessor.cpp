@@ -1,4 +1,4 @@
-#include "MeshMRMSkinnedProcessor.h"
+#include "MeshMRMProcessor.h"
 
 #include "shape_to_gltf.h"
 
@@ -6,12 +6,11 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-void MeshMRMSkinnedProcessor::process(Mesh &output)
+void MeshMRMProcessor::process(Mesh &output)
 {
-	nlinfo("File is a CMeshMRMSkinned");
+	nlinfo("File is a CMeshMRM");
 
-	CVertexBuffer vertexBuffer;
-	mesh->getVertexBuffer(vertexBuffer);
+	const auto &vertexBuffer(mesh->getVertexBuffer());
 	CVertexBufferRead vba;
 	vertexBuffer.lock(vba);
 
@@ -26,36 +25,10 @@ void MeshMRMSkinnedProcessor::process(Mesh &output)
 	}
 
 	const auto &meshIn = mesh->getMeshGeom();
-	std::vector<CMesh::CSkinWeight> skinWeights;
-	meshIn.getSkinWeights(skinWeights);
-	const auto& bones = meshIn.getBonesName();
-	nlinfo("bone name count %i", bones.size());
-	for(auto& name: bones)
-	{
-		nlinfo("bone name %s", name.c_str());
-	}
-	for (auto &weight : skinWeights)
-	{
-		// first weight is always used, others only when positive
-		output.weights.emplace_back(weight.Weights[0], 0, 0, 0);
-		uint8 boneId = weight.MatrixId[0];
-		auto &boneName(bones[boneId]);
-
-		if(skeleton)
-		{
-			auto skeletonBoneId = skeleton->getBoneIdByName(boneName);
-			boneId = skeletonBoneId == -1 ? 0 : skeletonBoneId;
-		}
-		output.joints.emplace_back(boneId, 0, 0, 0);
-		nlinfo("weight %i", weight.Weights[0]);
-		nlinfo("boneId %i", boneId);
-		nlinfo("boneName %s", boneName.c_str());
-	}
 	const std::vector<CMRMWedgeGeom> &geomorphs = meshIn.getGeomorphs(lodId);
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)
 	{
-		CIndexBuffer indexBuffer;
-		mesh->getRdrPassPrimitiveBlock(lodId, renderPass, indexBuffer);
+		const auto &indexBuffer(mesh->getRdrPassPrimitiveBlock(lodId, renderPass));
 		auto materialIndex = mesh->getRdrPassMaterial(lodId, renderPass);
 		nlinfo("RenderPasss %i Elements %i Material %i", renderPass, indexBuffer.getNumIndexes(), materialIndex);
 		auto material = mesh->getMaterial(materialIndex);
