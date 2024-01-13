@@ -15,6 +15,7 @@ struct Mesh
 	std::vector<NLMISC::CVector> normals;
 	std::vector<NLMISC::CUV> uvs;
 	std::vector<NLMISC::CQuat> weights;
+	std::vector<NLMISC::CQuatT<uint8>> joints;
 
 	std::vector<MeshPart> parts;
 };

@@ -1,7 +1,10 @@
 #include "MeshMRMSkinnedProcessor.h"
 
+#include <map>
+
+#include <nel/3d/mesh_mrm_skinned_instance.h>
+
 #include "shape_to_gltf.h"
-#include "nel/3d/mesh_mrm_skinned_instance.h"
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -19,7 +22,6 @@ void MeshMRMSkinnedProcessor::process(Mesh &output)
 	const auto lodCount = mesh->getNbLod();
 	const auto lodId = lodCount - 1;
 	nlinfo("LodCount %i", lodCount);
-
 	for (auto i = 0; i < vertexBuffer.getNumVertices(); ++i)
 	{
 		output.vertices.push_back(*vba.getVertexCoordPointer(i));
@@ -31,13 +33,27 @@ void MeshMRMSkinnedProcessor::process(Mesh &output)
 	std::vector<CMesh::CSkinWeight> skinWeights;
 	meshIn.getSkinWeights(skinWeights);
 	const auto& bones = meshIn.getBonesName();
+	nlinfo("bone name count %i", bones.size());
 	for(auto& name: bones)
 	{
 		nlinfo("bone name %s", name.c_str());
 	}
 	for (auto &weight : skinWeights)
 	{
-		output.weights.emplace_back(weight.Weights[0], weight.Weights[1], weight.Weights[2], weight.Weights[3]);
+		// first weight is always used, others only when positive
+		output.weights.emplace_back(weight.Weights[0], 0, 0, 0);
+		uint8 boneId = weight.MatrixId[0];
+		auto &boneName(bones[boneId]);
+
+		if(skeleton)
+		{
+			auto skeletonBoneId = skeleton->getBoneIdByName(boneName);
+			boneId = skeletonBoneId == -1 ? 0 : skeletonBoneId;
+		}
+		output.joints.emplace_back(boneId, 0, 0, 0);
+		nlinfo("weight %i", weight.Weights[0]);
+		nlinfo("boneId %i", boneId);
+		nlinfo("boneName %s", boneName.c_str());
 	}
 	const std::vector<CMRMWedgeGeom> &geomorphs = meshIn.getGeomorphs(lodId);
 	for (auto renderPass = 0; renderPass < mesh->getNbRdrPass(lodId); ++renderPass)

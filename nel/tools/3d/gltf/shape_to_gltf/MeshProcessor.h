@@ -14,7 +14,7 @@ public:
 
 	virtual void process(Mesh& output) = 0;
 
-	static std::unique_ptr<MeshProcessor> from(NL3D::IShape *shape);
+	static std::unique_ptr<MeshProcessor> from(NL3D::IShape *shape, NL3D::IShape *skeleton);
 };
 
 #endif // MESH_PROCESSOR_H

@@ -36,6 +36,7 @@ int main(int argc, char **argv)
 		args.addArg("", "imageUriPrefix", "path", "prefix to add for image uris");
 		args.addArg("", "imageFileExtension", "ext", "file extension to use for images");
 		args.addArg("", "imageFileLowerCase", "", "convert filename to lower case");
+		args.addArg("", "skeleton", ".skel", "skeleton to use");
 		if (!args.parse(argc, argv))
 		{
 			args.displayHelp();
@@ -56,6 +57,7 @@ int main(int argc, char **argv)
 		std::string textureCoordinatesFilePath = outputDirectory + "/" + textureCoordinatesFileName;
 		std::string imageUriPrefix = getLongArgFirstValue(args, "imageUriPrefix");
 		std::string imageFileExtension = getLongArgFirstValue(args, "imageFileExtension");
+		std::string skeletonFilePath = getLongArgFirstValue(args, "skeleton");
 		bool imageFileLowerCase = args.haveLongArg("imageFileLowerCase");
 
 		registerSerial3d();
@@ -72,8 +74,17 @@ int main(int argc, char **argv)
 		std::vector<CUV> &textureCoordinates(output.uvs);
 		std::vector<MeshPart> &parts(output.parts);
 		nlinfo("File is a %s", shape->getClassName().c_str());
+		IShape *skeleton = nullptr;
+		if (!skeletonFilePath.empty())
+		{
+			CIFile skeletonFile(skeletonFilePath);
+			CShapeStream skeletonStream;
+			shapeStream.serial(skeletonFile);
+			skeletonFile.close();
+			skeleton = shapeStream.getShapePointer();
+		}
 
-		auto meshProcessor = MeshProcessor::from(shape);
+		auto meshProcessor = MeshProcessor::from(shape, skeleton);
 		if (meshProcessor)
 		{
 			meshProcessor->process(output);
@@ -135,9 +146,28 @@ int main(int argc, char **argv)
 				nlwarning("Can't open the file for writing: %s", filePath.c_str());
 				return EXIT_FAILURE;
 			}
-			for (auto &element : textureCoordinates)
+			for (auto &element : output.weights)
 			{
 				element.serial(outputWeights);
+			}
+		}
+
+		std::string jointsFileName = fileNameBase + ".joints_0.bin";
+		COFile outputJoints;
+		if(!output.joints.empty())
+		{
+			auto & outputFileName(jointsFileName);
+			auto & input(output.joints);
+			auto & outputFile(outputJoints);
+			std::string filePath = outputDirectory + "/" + outputFileName;
+			if (!outputFile.open(filePath, false, false, false))
+			{
+				nlwarning("Can't open the file for writing: %s", filePath.c_str());
+				return EXIT_FAILURE;
+			}
+			for (auto &element : input)
+			{
+				element.serial(outputFile);
 			}
 		}
 
@@ -152,7 +182,8 @@ int main(int argc, char **argv)
 			{ .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 },
 			{ .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = normals.size(), .type = gltf::AccessorType::VEC3 },
 			{ .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = textureCoordinates.size(), .type = gltf::AccessorType::VEC2 },
-			gltf::Accessor::weight(4, 0, output.weights.size())
+			gltf::Accessor::weight(4, 0, output.weights.size()),
+			gltf::Accessor::joint(5, 0, output.joints.size())
 		};
 		std::vector<gltf::Primitive> primitives;
 		std::vector<gltf::Material> materials;
@@ -238,6 +269,9 @@ int main(int argc, char **argv)
 
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputWeights.getPos() });
 		asset.buffers.push_back({ .uri = weightsFileName, .byteLength = outputWeights.getPos() });
+
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputJoints.getPos() });
+		asset.buffers.push_back({ .uri = jointsFileName, .byteLength = outputJoints.getPos() });
 
 		gltfWriter.write(asset);
 		fclose(fp);

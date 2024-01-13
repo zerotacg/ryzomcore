@@ -28,6 +28,17 @@ struct Accessor
 			.type = AccessorType::VEC4
 		};
 	}
+
+	static Accessor joint(uint32 bufferView, sint32 byteOffset, size_t count)
+	{
+		return Accessor {
+			.bufferView = bufferView,
+			.byteOffset = byteOffset,
+			.componentType = ComponentType::UNSIGNED_BYTE,
+			.count = count,
+			.type = AccessorType::VEC4
+		};
+	}
 };
 
 }
