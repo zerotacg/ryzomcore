@@ -10,7 +10,7 @@ namespace gltf {
 
 struct Accessor
 {
-	uint32 bufferView;
+	size_t bufferView;
 	sint32 byteOffset;
 	ComponentType componentType;
 	size_t count;

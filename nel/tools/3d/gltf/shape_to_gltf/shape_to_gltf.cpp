@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 
 		std::string weightsFileName = fileNameBase + ".weights_0.bin";
 		COFile outputWeights;
-		if(!output.weights.empty())
+		if (!output.weights.empty())
 		{
 			std::string filePath = outputDirectory + "/" + weightsFileName;
 			if (!outputWeights.open(filePath, false, false, false))
@@ -154,11 +154,11 @@ int main(int argc, char **argv)
 
 		std::string jointsFileName = fileNameBase + ".joints_0.bin";
 		COFile outputJoints;
-		if(!output.joints.empty())
+		if (!output.joints.empty())
 		{
-			auto & outputFileName(jointsFileName);
-			auto & input(output.joints);
-			auto & outputFile(outputJoints);
+			auto &outputFileName(jointsFileName);
+			auto &input(output.joints);
+			auto &outputFile(outputJoints);
 			std::string filePath = outputDirectory + "/" + outputFileName;
 			if (!outputFile.open(filePath, false, false, false))
 			{
@@ -178,25 +178,50 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		gltf::JsonWriter gltfWriter = { .file = fp };
-		std::vector accessors = {
-			{ .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 },
-			{ .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = normals.size(), .type = gltf::AccessorType::VEC3 },
-			{ .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = textureCoordinates.size(), .type = gltf::AccessorType::VEC2 },
-			gltf::Accessor::weight(4, 0, output.weights.size()),
-			gltf::Accessor::joint(5, 0, output.joints.size())
+		gltf::Asset asset = {
+			.meshes = { { } },
+			.nodes = { { .mesh = 0, .translation = { 0.0f, 0.0f, 0.0f } } },
+			.scenes = { { .nodes = { 0 } } },
 		};
-		std::vector<gltf::Primitive> primitives;
-		std::vector<gltf::Material> materials;
-		std::vector<gltf::Texture> textures;
-		std::vector<gltf::Image> images;
+		auto& accessors (asset.accessors);
+		accessors.push_back({ .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = vertices.size(), .type = gltf::AccessorType::VEC3 });
+		accessors.push_back({ .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = normals.size(), .type = gltf::AccessorType::VEC3 });
+		accessors.push_back({ .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = textureCoordinates.size(), .type = gltf::AccessorType::VEC2 });
+		gltf::Primitive primitive = {
+			.attributes = {
+				.position = 0,
+				.normal = 1,
+				.texcoord0 = 2 },
+		};
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
+		asset.buffers.push_back({ .uri = positionFileName, .byteLength = outputPosition.getPos() });
+
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputNormals.getPos() });
+		asset.buffers.push_back({ .uri = normalsFileName, .byteLength = outputNormals.getPos() });
+
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCoordinates.getPos() });
+		asset.buffers.push_back({ .uri = textureCoordinatesFileName, .byteLength = outputTextureCoordinates.getPos() });
+
+		if (!output.weights.empty())
+		{
+			primitive.attributes.weights0 = accessors.size();
+			accessors.push_back(gltf::Accessor::weight(asset.bufferViews.size(), 0, output.weights.size()));
+			asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputWeights.getPos() });
+			asset.buffers.push_back({ .uri = weightsFileName, .byteLength = outputWeights.getPos() });
+		}
+		if (!output.joints.empty())
+		{
+			primitive.attributes.joints0 = accessors.size();
+			accessors.push_back(gltf::Accessor::joint(asset.bufferViews.size(), 0, output.joints.size()));
+			asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputJoints.getPos() });
+			asset.buffers.push_back({ .uri = jointsFileName, .byteLength = outputJoints.getPos() });
+		}
+		auto& primitives(asset.meshes[0].primitives);
+		auto& materials(asset.materials);
+		auto& textures(asset.textures);
+		auto& images(asset.images);
 		for (auto &part : parts)
 		{
-			gltf::Primitive primitive = {
-				.attributes = {
-				    .position = 0,
-				    .normal = 1,
-				    .texcoord0 = 2 },
-			};
 			if (!part.indices.empty())
 			{
 				primitive.indices = accessors.size();
@@ -239,39 +264,14 @@ int main(int argc, char **argv)
 			primitives.push_back(primitive);
 
 			auto &indices = part.indices;
-			accessors.push_back({ .bufferView = 3, .byteOffset = outputIndices.getPos(), .componentType = gltf::ComponentType::UNSIGNED_INT, .count = indices.size(), .type = gltf::AccessorType::SCALAR });
+			accessors.push_back({ .bufferView = asset.bufferViews.size(), .byteOffset = outputIndices.getPos(), .componentType = gltf::ComponentType::UNSIGNED_INT, .count = indices.size(), .type = gltf::AccessorType::SCALAR });
 			for (auto &element : indices)
 			{
 				outputIndices.serial(element);
 			}
 		}
-
-		gltf::Asset asset = {
-			.meshes = { { .primitives = primitives } },
-			.materials = materials,
-			.textures = textures,
-			.images = images,
-			.nodes = { { .mesh = 0, .translation = { 0.0f, 0.0f, 0.0f } } },
-			.scenes = { { .nodes = { 0 } } },
-			.accessors = accessors
-		};
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
-		asset.buffers.push_back({ .uri = positionFileName, .byteLength = outputPosition.getPos() });
-
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputNormals.getPos() });
-		asset.buffers.push_back({ .uri = normalsFileName, .byteLength = outputNormals.getPos() });
-
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCoordinates.getPos() });
-		asset.buffers.push_back({ .uri = textureCoordinatesFileName, .byteLength = outputTextureCoordinates.getPos() });
-
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputIndices.getPos() });
 		asset.buffers.push_back({ .uri = indicesFileName, .byteLength = outputIndices.getPos() });
-
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputWeights.getPos() });
-		asset.buffers.push_back({ .uri = weightsFileName, .byteLength = outputWeights.getPos() });
-
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputJoints.getPos() });
-		asset.buffers.push_back({ .uri = jointsFileName, .byteLength = outputJoints.getPos() });
 
 		gltfWriter.write(asset);
 		fclose(fp);

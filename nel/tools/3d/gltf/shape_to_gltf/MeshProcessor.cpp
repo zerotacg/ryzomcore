@@ -20,7 +20,7 @@ unique_ptr<MeshProcessor> MeshProcessor::from(IShape *shape, IShape *skeleton)
 	{
 		return std::make_unique<MeshMRMProcessor>(dynamic_cast<CMeshMRM *>(shape));
 	}
-	if (dynamic_cast<CMeshMRM *>(shape))
+	if (dynamic_cast<CMeshMRMSkinned *>(shape))
 	{
 		return std::make_unique<MeshMRMSkinnedProcessor>(dynamic_cast<CMeshMRMSkinned *>(shape), dynamic_cast<CSkeletonShape *>(skeleton));
 	}

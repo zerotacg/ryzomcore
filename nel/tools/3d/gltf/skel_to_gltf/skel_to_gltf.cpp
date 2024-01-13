@@ -77,7 +77,8 @@ int main(int argc, char **argv)
 			skin.joints.push_back(nodes.size());
 			nodes.push_back({ .name = bone.Name,
 			    .translation = { pos.x, pos.y, pos.z },
-			    .rotation = { quat.x, quat.y, quat.z, quat.w } });
+			    .rotation = { quat.x, quat.y, quat.z, quat.w }
+			});
 			auto parentId = bone.FatherId;
 			if (parentId != -1)
 			{

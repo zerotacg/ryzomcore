@@ -13,6 +13,7 @@ struct Node
 	std::optional<size_t> skin;
 	std::vector<float> translation;
 	std::vector<float> rotation;
+	std::vector<float> scale;
 	std::vector<size_t> children;
 
 
@@ -31,6 +32,10 @@ struct Node
 		if(!rotation.empty())
 		{
 			writer.writeProperty("rotation", rotation);
+		}
+		if(!scale.empty())
+		{
+			writer.writeProperty("scale", scale);
 		}
 		if(!children.empty())
 		{
