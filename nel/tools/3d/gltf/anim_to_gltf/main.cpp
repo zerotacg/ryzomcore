@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include <nel/misc/types_nl.h>
 #include <nel/misc/common.h>
@@ -47,8 +48,23 @@ int main(int argc, char **argv)
 		input.serial(inputFile);
 		inputFile.close();
 
-		gltf::Asset asset = { };
+		nldebug("Time Begin %f End %f", input.getBeginTime(), input.getEndTime());
+		std::set<std::string> trackNames;
+		input.getTrackNames(trackNames);
+		for (auto &name : trackNames)
+		{
+			auto trackId = input.getIdTrackByName(name);
+			nldebug("track name %s id %i", name.c_str(), trackId);
+			if (trackId != CAnimation::NotFound)
+			{
+				auto track = input.getTrack(trackId);
+				nldebug("track is %s", track->getClassName().c_str());
+			}
+		}
 
+		gltf::Asset asset = {
+			.animations = {}
+		};
 
 		FILE *fp = nlfopen(outputFilePath, "w");
 		if (fp == NULL)

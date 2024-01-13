@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include <nel/misc/types_nl.h>
 #include <libgltf/Channel.h>
 #include <libgltf/Sampler.h>
 #include <libgltf/JsonWriter.h>
