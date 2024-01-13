@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 		gltf::Asset asset = {
 			.nodes = nodes,
 			.skins = { skin },
-			.scenes = { { .nodes = { 0 } } }
+			.scenes = { { .nodes = { nodes.size() - 1 } } }
 		};
 
 		gltfWriter.write(asset);
