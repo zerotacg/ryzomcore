@@ -253,6 +253,11 @@ int main(int argc, char **argv)
 		// add neighbor zones to get the same border vertices
 		addNeighborZones(landscape, zoneId, zoneSearchDirectory);
 		auto zone = landscape.getZone(zoneId);
+		if(zone == nullptr)
+		{
+			nlerror("Can't finde zone with id: %i", zoneId);
+			return EXIT_FAILURE;
+		}
 		COFile outputPosition;
 		std::vector<gltf::Image> images;
 		std::vector<gltf::Texture> textures;
@@ -322,8 +327,8 @@ int main(int argc, char **argv)
 		const sint zoneX(zoneId & 255);
 		const sint zoneY(zoneId >> 8);
 		CVector zoneOffset(160.0f * zoneX, -160.0f * zoneY, 0.0f);
-		gltf::Mesh mesh;
-		gltf::Node node = { .name = zoneName(zoneX, zoneY), .mesh = 0, .translation = { zoneOffset.x, zoneOffset.y, zoneOffset.z } };
+		gltf::Mesh mesh = { .name = zoneName(zoneX, zoneY) };
+		gltf::Node node = { .name = mesh.name, .mesh = 0, .translation = { zoneOffset.x, zoneOffset.y, zoneOffset.z } };
 		if (useRelativePosion)
 		{
 			node.translation.clear();

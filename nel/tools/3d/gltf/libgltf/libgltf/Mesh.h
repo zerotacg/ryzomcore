@@ -11,9 +11,17 @@ namespace gltf {
 struct Mesh
 {
 	std::vector<Primitive> primitives;
+	std::vector<size_t> weights;
+	std::string name;
+
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("primitives", primitives);
+		writer.writeProperty("weights", weights);
+		if (!name.empty())
+		{
+			writer.writeProperty("name", name);
+		}
 	}
 };
 
