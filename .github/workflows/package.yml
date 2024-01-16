@@ -33,9 +33,9 @@ jobs:
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "${{ env.main_branch }}" ] && VERSION=snapshot
-          VERSION="$VERSION+sha.${COMMIT_HASH:0:8}"
           echo VERSION=$VERSION
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "full_version=$[VERSION}+sha.${COMMIT_HASH:0:8}" >> "$GITHUB_OUTPUT"
 
       - name: Dependencies
         run: >
@@ -82,7 +82,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ env.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ env.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ env.build_type }}
-          -DCPACK_PACKAGE_VERSION="${{ steps.strings.outputs.version }}"
+          -DCPACK_PACKAGE_VERSION="${{ steps.strings.outputs.full_version }}"
           -DWITH_STATIC=ON
           -DWITH_NEL_TESTS=ON
           -DWITH_NEL_SAMPLES=ON
