@@ -9,12 +9,11 @@ env:
   c_compiler: gcc
   cpp_compiler: g++
   build_type: Release
-  os: ubuntu-latest
   main_branch: feature/gltf-tools
 
 jobs:
   package:
-    runs-on: ${{ env.os }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
 
