@@ -9,7 +9,7 @@ env:
   c_compiler: gcc
   cpp_compiler: g++
   build_type: Release
-  main_branch: feature/gltf-tools
+  main_branch: gltf-tools
 
 jobs:
   package:
