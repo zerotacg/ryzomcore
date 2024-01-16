@@ -1,0 +1,113 @@
+name: Package
+
+on:
+  push:
+    branches: [ "feature/gltf-tools" ]
+    tags:
+      - v*
+env:
+  c_compiler: gcc
+  cpp_compiler: g++
+  build_type: Release
+  os: ubuntu-latest
+  main_branch: feature/gltf-tools
+
+jobs:
+  package:
+    runs-on: ${{ env.os }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          COMMIT_HASH=${{ github.sha }}
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "${{ env.main_branch }}" ] && VERSION=snapshot
+          VERSION="$VERSION+sha.${COMMIT_HASH:0:8}"
+          echo VERSION=$VERSION
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Dependencies
+        run: >
+          sudo apt update;
+          sudo apt install --yes
+          autoconf
+          automake
+          bison
+          clang-15
+          freeglut3-dev
+          libavcodec-dev
+          libavdevice-dev
+          libavformat-dev
+          libcpptest-dev
+          libcurl4-openssl-dev
+          libfreetype6-dev
+          libgif-dev
+          libgsf-1-dev
+          libjpeg-dev
+          liblua5.2-dev
+          libluabind-dev
+          liblzma-dev
+          libmysqlclient-dev
+          libogg-dev
+          libopenal-dev
+          libpng-dev
+          libpostproc-dev
+          libsquish-dev
+          libssl-dev
+          libswscale-dev
+          libvorbis-dev
+          libxml2-dev
+          ninja-build
+          qtbase5-dev
+          qttools5-dev
+          qttools5-dev-tools
+
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -G "Ninja"
+          -DCMAKE_CXX_COMPILER=${{ env.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ env.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ env.build_type }}
+          -DCPACK_PACKAGE_VERSION="${{ steps.strings.outputs.version }}"
+          -DWITH_STATIC=ON
+          -DWITH_NEL_TESTS=ON
+          -DWITH_NEL_SAMPLES=ON
+          -DWITH_LUA51=OFF
+          -DWITH_LUA52=ON
+          -DWITH_RYZOM=ON
+          -DWITH_RYZOM_SERVER=ON
+          -DWITH_RYZOM_CLIENT=ON
+          -DWITH_RYZOM_TOOLS=ON
+          -DWITH_NEL_TOOLS=ON
+          -DWITH_NELNS=ON
+          -DWITH_NELNS_LOGIN_SYSTEM=ON
+          -DWITH_NELNS_SERVER=ON
+          -DWITH_QT5=ON
+          -DWITH_LIBGSF=ON
+          -S ${{ github.workspace }}
+
+      - name: Build
+        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ env.build_type }}
+
+      - name: Unit Tests
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+        run: ctest --build-config ${{ env.build_type }}
+
+      - name: Package
+        run: |
+          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{env.build_type}} --target package
+          gh release create --prerelease ${{ steps.strings.outputs.build-output-dir }}/*.sh
