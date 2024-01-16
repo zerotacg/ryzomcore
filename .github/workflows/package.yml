@@ -11,6 +11,10 @@ env:
   build_type: Release
   main_branch: gltf-tools
 
+concurrency:
+  group: "package"
+  cancel-in-progress: false
+
 jobs:
   package:
     runs-on: ubuntu-latest
