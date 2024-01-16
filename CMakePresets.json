@@ -1,0 +1,96 @@
+{
+  "version": 6,
+  "include": [],
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/default",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "WITH_STATIC": "ON",
+        "WITH_NEL_TESTS": "ON",
+        "WITH_NEL_SAMPLES": "ON",
+        "WITH_LUA51": "OFF",
+        "WITH_LUA52": "ON",
+        "WITH_RYZOM": "ON",
+        "WITH_RYZOM_SERVER": "ON",
+        "WITH_RYZOM_CLIENT": "ON",
+        "WITH_RYZOM_TOOLS": "ON",
+        "WITH_NEL_TOOLS": "ON",
+        "WITH_NELNS": "ON",
+        "WITH_NELNS_LOGIN_SYSTEM": "ON",
+        "WITH_NELNS_SERVER": "ON",
+        "WITH_QT5": "ON",
+        "WITH_LIBGSF": "ON"
+      }
+    },
+    {
+      "name": "ninja-multi",
+      "inherits": "default",
+      "displayName": "Ninja Multi-Config",
+      "description": "Default build using Ninja Multi-Config generator",
+      "generator": "Ninja Multi-Config"
+    },
+    {
+      "name": "windows-only",
+      "inherits": "default",
+      "displayName": "Windows-only configuration",
+      "description": "This build is only available on Windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "generators": [
+        "STGZ"
+      ]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "default",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "default"
+        },
+        {
+          "type": "build",
+          "name": "default"
+        },
+        {
+          "type": "test",
+          "name": "default"
+        },
+        {
+          "type": "package",
+          "name": "default"
+        }
+      ]
+    }
+  ]
+}
