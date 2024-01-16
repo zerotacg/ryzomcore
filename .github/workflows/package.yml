@@ -107,6 +107,8 @@ jobs:
         run: ctest --build-config ${{ env.build_type }}
 
       - name: Package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{env.build_type}} --target package
           gh release create --prerelease ${{ steps.strings.outputs.build-output-dir }}/*.sh
