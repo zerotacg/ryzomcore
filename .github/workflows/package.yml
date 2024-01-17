@@ -35,7 +35,7 @@ jobs:
           [ "$VERSION" == "${{ env.main_branch }}" ] && VERSION=snapshot
           echo VERSION=$VERSION
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "full_version=$[VERSION}+sha.${COMMIT_HASH:0:8}" >> "$GITHUB_OUTPUT"
+          echo "full_version=${VERSION}+sha.${COMMIT_HASH:0:8}" >> "$GITHUB_OUTPUT"
 
       - name: Dependencies
         run: >
