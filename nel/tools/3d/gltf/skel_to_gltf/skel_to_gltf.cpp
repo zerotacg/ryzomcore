@@ -79,6 +79,7 @@ int main(int argc, char **argv)
 			    .translation = { pos.x, pos.y, pos.z },
 			    .rotation = { quat.x, quat.y, quat.z, quat.w }
 			});
+
 			auto parentId = bone.FatherId;
 			if (parentId != -1)
 			{
@@ -95,6 +96,14 @@ int main(int argc, char **argv)
 				nodes[parentId].children.push_back(i);
 			}
 		}
+
+		// move root bone to position of skin
+		auto matrix = bones[0].InvBindPos.inverted();
+		auto &pos = matrix.getPos();
+		auto quat = matrix.getRot();
+		nodes[0].translation = { pos.x, pos.y, pos.z };
+		nodes[0].rotation = { quat.x, quat.y, quat.z, quat.w };
+
 		skin.skeleton = nodes.size();
 		nodes.push_back({ .mesh = 0, .skin = 0, .children = { 0 } });
 
