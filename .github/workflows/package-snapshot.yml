@@ -1,10 +1,9 @@
-name: Package
+name: Package Snapshot
 
 on:
   push:
     branches: [ "feature/gltf-tools" ]
-    tags:
-      - v*
+
 env:
   c_compiler: gcc
   cpp_compiler: g++
@@ -115,4 +114,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{env.build_type}} --target package
+          gh release delete --yes "${{ steps.strings.outputs.version }}"
           gh release create --prerelease "${{ steps.strings.outputs.version }}" ${{ steps.strings.outputs.build-output-dir }}/*.sh
