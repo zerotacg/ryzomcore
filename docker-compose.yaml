@@ -1,11 +1,17 @@
 services:
+  devcontainer:
+    image: "ryzomcore/devcontainer"
+    build: ./.devcontainer
+    volumes:
+      - ".:/home/ryzom/ryzomcore"
+
   ubuntu20:
     image: "ryzomcore/devcontainer-ubuntu20"
     build:
       context: .devcontainer
       dockerfile: ubuntu20.Dockerfile
-    volumes:
-      - ".:/home/ryzom/ryzomcore"
+    volumes_from:
+      - devcontainer
 
   ubuntu20_client:
     image: "ryzomcore/devcontainer-ubuntu20_client"
@@ -13,15 +19,7 @@ services:
       context: .devcontainer
       dockerfile: ubuntu20_client.Dockerfile
     volumes_from:
-      - ubuntu20
-
-  ubuntu22:
-    image: "ryzomcore/devcontainer-ubuntu22"
-    build:
-      context: .devcontainer
-      dockerfile: Dockerfile
-    volumes_from:
-      - ubuntu20
+      - devcontainer
 
   web:
     image: bitnami/nginx:1.25
