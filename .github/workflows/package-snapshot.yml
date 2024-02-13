@@ -32,9 +32,11 @@ jobs:
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "${{ env.main_branch }}" ] && VERSION=snapshot
-          echo VERSION=$VERSION
+          FULL_VERSION=${VERSION}+sha.${COMMIT_HASH:0:8}
+          [ "$VERSION" == "${{ env.main_branch }}" ] && FULL_VERSION=${VERSION}
+          echo VERSION=$VERSION FULL_VERSION=$FULL_VERSION
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "full_version=${VERSION}+sha.${COMMIT_HASH:0:8}" >> "$GITHUB_OUTPUT"
+          echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Dependencies
         run: >
@@ -73,8 +75,6 @@ jobs:
           qttools5-dev-tools
 
       - name: Configure CMake
-        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -G "Ninja"
@@ -100,13 +100,10 @@ jobs:
           -S ${{ github.workspace }}
 
       - name: Build
-        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ env.build_type }}
 
       - name: Unit Tests
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: ctest --build-config ${{ env.build_type }}
 
       - name: Package
