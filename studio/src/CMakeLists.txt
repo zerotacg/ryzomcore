@@ -54,6 +54,7 @@ ADD_DEFINITIONS(-DQT_NO_KEYWORDS ${QT_DEFINITIONS})
 NL_DEFAULT_PROPS(studio "Tools: Studio")
 NL_ADD_RUNTIME_FLAGS(studio)
 
+ADD_SUBDIRECTORY(libqtpropertybrowser-text)
 ADD_SUBDIRECTORY(plugins)
 add_dependencies(studio
 		studio_plugin_bnp_manager
@@ -62,6 +63,24 @@ add_dependencies(studio
 		studio_plugin_example
 		studio_plugin_georges_editor
 		studio_plugin_landscape_editor
+)
+
+add_dependencies(studio
+		studio_plugin_bnp_manager
+		studio_plugin_core
+		studio_plugin_disp_sheet_id
+		studio_plugin_example
+		studio_plugin_georges_editor
+		studio_plugin_gui_editor
+		studio_plugin_landscape_editor
+		studio_plugin_log
+		studio_plugin_mission_compiler
+		studio_plugin_object_viewer
+		studio_plugin_sheet_builder
+		studio_plugin_tile_editor
+#		studio_plugin_translation_manager # requires QFtp which is removed in qt5
+		studio_plugin_world_editor
+#		studio_plugin_zone_painter
 )
 
 INSTALL(TARGETS studio RUNTIME DESTINATION ${NL_BIN_PREFIX} COMPONENT runtime BUNDLE DESTINATION /Applications)
