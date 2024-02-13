@@ -111,5 +111,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{env.build_type}} --target package
-          gh release delete --cleanup-tag --yes "${{ steps.strings.outputs.version }}"
+          gh release delete --cleanup-tag --yes "${{ steps.strings.outputs.version }}" || true
           gh release create --prerelease "${{ steps.strings.outputs.version }}" ${{ steps.strings.outputs.build-output-dir }}/*.sh
