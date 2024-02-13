@@ -33,7 +33,7 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "${{ env.main_branch }}" ] && VERSION=snapshot
           FULL_VERSION=${VERSION}+sha.${COMMIT_HASH:0:8}
-          [ "$VERSION" == "${{ env.main_branch }}" ] && FULL_VERSION=${VERSION}
+          [ "$VERSION" == "snapshot" ] && FULL_VERSION=${VERSION}
           echo VERSION=$VERSION FULL_VERSION=$FULL_VERSION
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
