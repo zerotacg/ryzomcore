@@ -22,7 +22,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.22)
 
 #-----------------------------------------------------------------------------
 # Load some macros.
-SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 #-----------------------------------------------------------------------------
 # Set CMake 2.6 Policies.
 IF(COMMAND cmake_policy)
@@ -44,8 +44,8 @@ IF(HUNTER_ENABLED)
   cmake_minimum_required(VERSION 3.24)
   INCLUDE("CMakeModules/HunterGate.cmake")
   HunterGate(
-    URL "https://github.com/cpp-pm/hunter/archive/v0.25.3.tar.gz"
-    SHA1 "0dfbc2cb5c4cf7e83533733bdfd2125ff96680cb"
+    URL "https://github.com/cpp-pm/hunter/archive/v0.25.5.tar.gz"
+    SHA1 "a20151e4c0740ee7d0f9994476856d813cdead29"
     FILEPATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules/HunterConfig.cmake"
   )
 
@@ -323,6 +323,18 @@ ENDIF()
 IF(WITH_NEL)
   IF(WITH_NEL_TESTS)
     FIND_PACKAGE(CppTest)
+
+    ENABLE_TESTING()
+    include(FetchContent)
+    FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/a7f443b80b105f940225332ed3c31f2790092f47.zip
+            EXCLUDE_FROM_ALL
+    )
+    SET(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    include(GoogleTest)
+    include(CMakeModules/add_test_executable.cmake)
   ENDIF()
 
   IF(HUNTER_ENABLED)
@@ -453,7 +465,7 @@ ENDIF()
 
 IF(WITH_NEL_TESTS)
   ENABLE_TESTING()
-  ADD_TEST(nel_unit_test ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nel_unit_test --html)
+  ADD_TEST(NAME nel_unit_test COMMAND nel_unit_test)
   IF(BUILD_DASHBOARD)
     INCLUDE(Dart)
     SET(SVNCOMMAND svn)
@@ -474,14 +486,13 @@ if(NOT DEFINED CPACK_PACKAGE_VERSION)
 endif()
 SET(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};NeL;ALL;/")
 SET(CPACK_PACKAGE_EXECUTABLES "ryzomcore${NL_VERSION}" "ryzomcore")
-SET(CPACK_SET_DESTDIR TRUE)
 
 # NSIS Specific Packing Setup
 SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "RyzomCore")
 SET(CPACK_NSIS_MODIFY_PATH "ON")
-SET(CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/resources/nevraxpill.ico)
-SET(CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/resources/nevraxpill.ico)
-SET(CPACK_PACKAGE_ICON ${CMAKE_SOURCE_DIR}/resources\\\\nel.bmp)
+SET(CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/nel/resources/nevraxpill.ico)
+SET(CPACK_NSIS_MUI_UNIICON ${CMAKE_SOURCE_DIR}/nel/resources/nevraxpill.ico)
+SET(CPACK_PACKAGE_ICON ${CMAKE_SOURCE_DIR}/nel/resources\\\\nel.bmp)
 SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} RyzomCore")
 SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\dev.ryzom.com")
 SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\dev.ryzom.com\\\\projects\\\\nel\\\\wiki")
@@ -495,6 +506,7 @@ IF(WIN32)
   SET(CPACK_GENERATOR "NSIS;ZIP")
   SET(CPACK_SOURCE_GENERATOR "ZIP")
 ELSE()
+  SET(CPACK_SET_DESTDIR TRUE)
   SET(CPACK_GENERATOR "TGZ;STGZ")
   SET(CPACK_SOURCE_GENERATOR "TGZ")
 ENDIF()

@@ -3,15 +3,21 @@ name: build studio
 on:
   push:
     branches: [ "core4", "feature/*" ]
+    paths-ignore:
+      - '.github/workflows/**.yml'
+      - '!.github/workflows/build-studio.yml'
   pull_request:
     branches: [ "core4" ]
+    paths-ignore:
+      - '.github/workflows/**.yml'
+      - '!.github/workflows/build-studio.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set reusable strings
         id: strings
         shell: bash

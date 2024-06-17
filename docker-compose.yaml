@@ -3,6 +3,14 @@ services:
     image: "ryzomcore/devcontainer"
     build: ./.devcontainer
     volumes:
+      - ./:/tmp/ryzomcore
+
+  tools:
+    image: "ryzomcore/tools"
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
       - ".:/home/ryzom/ryzomcore"
 
   ubuntu20:

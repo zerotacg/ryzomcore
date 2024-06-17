@@ -1,96 +1,168 @@
 {
   "version": 6,
-  "include": [],
   "configurePresets": [
     {
-      "name": "default",
-      "displayName": "Default Config",
-      "description": "Default build using Ninja generator",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/default",
-      "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
-        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-        "WITH_STATIC": "ON",
-        "WITH_NEL_TESTS": "ON",
-        "WITH_NEL_SAMPLES": "ON",
-        "WITH_LUA51": "OFF",
-        "WITH_LUA52": "ON",
-        "WITH_RYZOM": "ON",
-        "WITH_RYZOM_SERVER": "ON",
-        "WITH_RYZOM_CLIENT": "ON",
-        "WITH_RYZOM_TOOLS": "ON",
-        "WITH_NEL_TOOLS": "ON",
-        "WITH_NELNS": "ON",
-        "WITH_NELNS_LOGIN_SYSTEM": "ON",
-        "WITH_NELNS_SERVER": "ON",
-        "WITH_QT5": "ON",
-        "WITH_LIBGSF": "ON"
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "inherits": "base",
+      "name": "linux",
+      "hidden": true,
+      "generator": "Ninja Multi-Config",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
       }
     },
     {
-      "name": "ninja-multi",
-      "inherits": "default",
-      "displayName": "Ninja Multi-Config",
-      "description": "Default build using Ninja Multi-Config generator",
-      "generator": "Ninja Multi-Config"
-    },
-    {
-      "name": "windows-only",
-      "inherits": "default",
-      "displayName": "Windows-only configuration",
-      "description": "This build is only available on Windows",
+      "inherits": "base",
+      "name": "windows",
+      "hidden": true,
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       }
+    },
+    {
+      "inherits": "base",
+      "name": "macos",
+      "hidden": true,
+      "generator": "Xcode",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "inherits": "base",
+      "name": "default",
+      "cacheVariables": {
+        "WITH_STATIC": true,
+        "WITH_NEL_TESTS": true,
+        "WITH_NEL_SAMPLES": true,
+        "WITH_LUA51": false,
+        "WITH_LUA52": true,
+        "WITH_RYZOM": true,
+        "WITH_RYZOM_SERVER": true,
+        "WITH_RYZOM_CLIENT": true,
+        "WITH_RYZOM_TOOLS": true,
+        "WITH_NEL_TOOLS": true,
+        "WITH_NELNS": true,
+        "WITH_NELNS_LOGIN_SYSTEM": true,
+        "WITH_NELNS_SERVER": true,
+        "WITH_QT5": true,
+        "WITH_LIBGSF": true
+      }
+    },
+    {
+      "inherits": [
+        "default"
+      ],
+      "name": "default-coverage",
+      "cacheVariables": {
+        "CMAKE_C_FLAGS": "--coverage",
+        "CMAKE_CXX_FLAGS": "--coverage"
+      }
+    },
+    {
+      "inherits": [
+        "linux",
+        "default"
+      ],
+      "name": "linux-default"
+    },
+    {
+      "inherits": "base",
+      "name": "client",
+      "cacheVariables": {
+        "FINAL_VERSION": false,
+        "WITH_DRIVER_OPENAL": true,
+        "WITH_DRIVER_OPENGL": true,
+        "WITH_INSTALL_LIBRARIES": false,
+        "WITH_NEL_SAMPLES": false,
+        "WITH_NEL_TESTS": false,
+        "WITH_NEL_TOOLS": false,
+        "WITH_RYZOM_CLIENT": true,
+        "WITH_RYZOM_SERVER": false,
+        "WITH_RYZOM_TOOLS": false
+      }
+    },
+    {
+      "inherits": [
+        "linux",
+        "client"
+      ],
+      "name": "linux-client"
+    },
+    {
+      "inherits": [
+        "windows",
+        "client"
+      ],
+      "name": "windows-client",
+      "cacheVariables": {
+        "WITH_DRIVER_DIRECT3D": true,
+        "WITH_DRIVER_XAUDIO2": true
+      }
+    },
+    {
+      "inherits": [
+        "macos",
+        "client"
+      ],
+      "name": "macos-client",
+      "cacheVariables": {
+        "WITH_LIBXML2_ICONV": false
+      }
     }
   ],
   "buildPresets": [
     {
-      "name": "default",
-      "configurePreset": "default"
+      "name": "debug",
+      "configurePreset": "default",
+      "configuration": "Debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "default",
+      "configuration": "Release"
+    },
+    {
+      "name": "client",
+      "configurePreset": "client",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
     {
       "name": "default",
       "configurePreset": "default",
-      "output": {"outputOnFailure": true},
-      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false
+      },
+      "environment": {
+        "GTEST_OUTPUT": "xml:${sourceDir}/build/reports/"
+      }
     }
   ],
   "packagePresets": [
     {
       "name": "default",
-      "configurePreset": "default",
-      "generators": [
-        "STGZ"
-      ]
-    }
-  ],
-  "workflowPresets": [
+      "configurePreset": "default"
+    },
     {
-      "name": "default",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "default"
-        },
-        {
-          "type": "build",
-          "name": "default"
-        },
-        {
-          "type": "test",
-          "name": "default"
-        },
-        {
-          "type": "package",
-          "name": "default"
-        }
-      ]
+      "name": "client",
+      "configurePreset": "client"
     }
   ]
 }
