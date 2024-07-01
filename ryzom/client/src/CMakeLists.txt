@@ -222,7 +222,7 @@ IF(WITH_RYZOM_CLIENT)
               nel3d
               nelgui
               nelsound
-              nel_sevenzip
+              nel::sevenzip
               ryzom_clientsheets
               ryzom_gameshare
               nelpacs
