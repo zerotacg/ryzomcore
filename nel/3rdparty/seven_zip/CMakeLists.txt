@@ -9,6 +9,7 @@ NL_TARGET_LIB(nel_sevenzip ${LIB_SRC})
 NL_DEFAULT_PROPS(nel_sevenzip "NeL, 3rd Party: Seven Zip")
 NL_ADD_RUNTIME_FLAGS(nel_sevenzip)
 NL_ADD_LIB_SUFFIX(nel_sevenzip)
+ADD_LIBRARY(nel::sevenzip ALIAS nel_sevenzip)
 
 ADD_DEFINITIONS(-D_7ZIP_ST)
 
@@ -19,7 +20,7 @@ ENDIF()
 IF(WITH_NEL_TOOLS)
   ADD_EXECUTABLE(nellzma ${CMAKE_CURRENT_SOURCE_DIR}/LzmaUtil.c)
 
-  TARGET_LINK_LIBRARIES(nellzma nel_sevenzip)
+  TARGET_LINK_LIBRARIES(nellzma nel::sevenzip)
   NL_DEFAULT_PROPS(nellzma "NeL, 3rd Party: LZMA")
   NL_ADD_RUNTIME_FLAGS(nellzma)
 
