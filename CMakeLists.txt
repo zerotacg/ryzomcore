@@ -411,7 +411,7 @@ IF(WITH_NEL)
   ADD_SUBDIRECTORY(nel)
 
   # Aliases for targets
-  SET(NELMISC_LIBRARIES nelmisc)
+  SET(NELMISC_LIBRARIES nel::misc)
   SET(NELNET_LIBRARIES nelnet)
   SET(NELLIGO_LIBRARIES nelligo)
   SET(NELGEORGES_LIBRARIES nelgeorges)

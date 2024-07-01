@@ -33,7 +33,7 @@ TARGET_LINK_LIBRARIES(pipeline_max_dump
 	${GLIB2_LIBRARIES}
 	${GOBJECT2_LIBRARIES}
 	pipeline_max
-	nelmisc
+	nel::misc
 )
 
 NL_DEFAULT_PROPS(pipeline_max_dump "NeL, Tools, 3D: Pipeline Max Dump (Temporary Tool)")

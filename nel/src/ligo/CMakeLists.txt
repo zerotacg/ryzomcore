@@ -5,7 +5,7 @@ NL_TARGET_LIB(nelligo ${HEADERS} ${SRC})
 
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 
-TARGET_LINK_LIBRARIES(nelligo nelmisc)
+TARGET_LINK_LIBRARIES(nelligo nel::misc)
 NL_DEFAULT_PROPS(nelligo "NeL, Library: NeL Ligo")
 NL_ADD_RUNTIME_FLAGS(nelligo)
 

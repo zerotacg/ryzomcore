@@ -5,8 +5,8 @@ SOURCE_GROUP("" FILES ${SRC})
 ADD_LIBRARY(nel_3dsmax_shared SHARED ${SRC})
 
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
-TARGET_LINK_LIBRARIES(nel_3dsmax_shared 
-							nelmisc
+TARGET_LINK_LIBRARIES(nel_3dsmax_shared
+		 					nel::misc
 							nel3d
 							nel_mesh_lib 
 							nel_patch_lib 

@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_backup_service
 					ryzom_adminmodules
 					ryzom_gameshare
 					ryzom_servershare
-					nelmisc 
+					nel::misc
 					nelnet
 					nelgeorges
 					nelligo)

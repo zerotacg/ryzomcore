@@ -20,7 +20,7 @@ INCLUDE_DIRECTORIES(
 )
 
 TARGET_LINK_LIBRARIES(ryzom_client_patcher
-				nelmisc
+				nel::misc
 				nelweb
 				nelnet
 				ryzom_gameshare

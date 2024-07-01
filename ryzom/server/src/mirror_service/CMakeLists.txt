@@ -7,7 +7,7 @@ INCLUDE_DIRECTORIES(${RZ_SERVER_SRC_DIR})
 TARGET_LINK_LIBRARIES(ryzom_mirror_service
 					ryzom_adminmodules
 					ryzom_gameshare
-					nelmisc
+					nel::misc
 					nelnet
 					nelgeorges)
 

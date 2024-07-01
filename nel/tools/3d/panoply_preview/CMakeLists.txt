@@ -30,7 +30,7 @@ ELSE()
 ENDIF()
 
 TARGET_LINK_LIBRARIES(nl_panoply_preview
-	nelmisc
+	nel::misc
 	nel3d
 	shared_widgets
 	${PANOPLY_PREVIEW_QT_LIBRARIES})

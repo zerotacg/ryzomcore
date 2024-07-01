@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_LIBRARY(nel_mesh_lib STATIC ${SRC})
 
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR} ${MAXSDK_CS_INCLUDE_DIR})
-TARGET_LINK_LIBRARIES(nel_mesh_lib nelmisc)
+TARGET_LINK_LIBRARIES(nel_mesh_lib nel::misc)
 NL_DEFAULT_PROPS(nel_mesh_lib "MAX Plugin: NeL Mesh Library")
 NL_ADD_RUNTIME_FLAGS(nel_mesh_lib)
 NL_ADD_LIB_SUFFIX(nel_mesh_lib)

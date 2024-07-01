@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(ig_lighter ${SRC})
 
-TARGET_LINK_LIBRARIES(ig_lighter nelmisc nel3d nelpacs)
+TARGET_LINK_LIBRARIES(ig_lighter nel::misc nel3d nelpacs)
 NL_DEFAULT_PROPS(ig_lighter "NeL, Tools, 3D: ig_lighter")
 NL_ADD_RUNTIME_FLAGS(ig_lighter)
 

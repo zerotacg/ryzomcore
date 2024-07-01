@@ -9,8 +9,8 @@ INCLUDE_DIRECTORIES(${RZ_SERVER_SRC_DIR})
 TARGET_LINK_LIBRARIES(build_world_packed_col	
 					ryzom_gameshare
 					ryzom_servershare 
-					ryzom_aishare 
-					nelmisc
+					ryzom_aishare
+					nel::misc
 					nel3d)
 
 NL_DEFAULT_PROPS(build_world_packed_col "Ryzom, Tools, Server: Build World Packed Collisions")

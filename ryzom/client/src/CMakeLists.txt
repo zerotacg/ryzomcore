@@ -215,7 +215,7 @@ IF(WITH_RYZOM_CLIENT)
   ENDIF()
 
   TARGET_LINK_LIBRARIES(ryzom_client
-              nelmisc
+              nel::misc
               nelnet
               nelligo
               nelgeorges

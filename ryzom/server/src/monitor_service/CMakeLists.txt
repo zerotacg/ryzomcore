@@ -7,7 +7,7 @@ INCLUDE_DIRECTORIES(${RZ_SERVER_SRC_DIR} ${MYSQL_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(ryzom_monitor_service
 						ryzom_gameshare
 						${MYSQL_LIBRARIES}
-						nelmisc 
+						nel::misc
 						nelnet
 						nelgeorges)
 

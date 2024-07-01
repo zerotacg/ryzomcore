@@ -40,7 +40,7 @@ SOURCE_GROUP("OVQT Extension System" FILES ${OVQT_EXT_SYS_SRC})
 
 ADD_LIBRARY(studio_plugin_translation_manager MODULE ${SRC} ${OVQT_PLUG_TRANSLATION_MANAGER_MOC_SRC} ${OVQT_EXT_SYS_SRC} ${OVQT_PLUG_TRANSLATION_MANAGER_UI_HDRS})
 
-TARGET_LINK_LIBRARIES(studio_plugin_translation_manager studio_plugin_core nelmisc nelligo nelgeorges ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARY} ${QT_QTNETWORK_LIBRARY} )
+TARGET_LINK_LIBRARIES(studio_plugin_translation_manager studio_plugin_core nel::misc nelligo nelgeorges ${QT_LIBRARIES} ${QT_QTOPENGL_LIBRARY} ${QT_QTNETWORK_LIBRARY} )
 
 NL_DEFAULT_PROPS(studio_plugin_translation_manager "Tools: Studio Plugin: Translation Manager")
 NL_ADD_RUNTIME_FLAGS(studio_plugin_translation_manager)

@@ -11,7 +11,7 @@ TARGET_LINK_LIBRARIES(ai_data_service
 					ryzom_gameshare
 					server_share
 					ai_share
-					nelmisc
+					nel::misc
 					nelnet
 					nelgeorges
 					nelpacs

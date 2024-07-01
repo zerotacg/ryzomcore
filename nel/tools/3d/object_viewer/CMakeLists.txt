@@ -4,8 +4,8 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_LIBRARY(object_viewer_dll SHARED ${SRC})
 
-TARGET_LINK_LIBRARIES(object_viewer_dll 
-							nelmisc
+TARGET_LINK_LIBRARIES(object_viewer_dll
+							nel::misc
 							nel3d
 							nelsound
 							nelsnd_lowlevel

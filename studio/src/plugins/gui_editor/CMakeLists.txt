@@ -84,7 +84,7 @@ ADD_LIBRARY(studio_plugin_gui_editor MODULE ${SRC}
 TARGET_LINK_LIBRARIES(
 						studio_plugin_gui_editor
 						studio_plugin_core
-						nelmisc
+						nel::misc
 						nel3d
 						nelgui
 						${QT_LIBRARIES}

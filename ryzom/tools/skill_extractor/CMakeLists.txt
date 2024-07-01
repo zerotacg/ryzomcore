@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 
 ADD_EXECUTABLE(skill_extractor ${SRC})
 
-TARGET_LINK_LIBRARIES(skill_extractor nelmisc)
+TARGET_LINK_LIBRARIES(skill_extractor nel::misc)
 
 NL_DEFAULT_PROPS(skill_extractor "Ryzom, Tools, Misc: Skill Extractor")
 NL_ADD_RUNTIME_FLAGS(skill_extractor)

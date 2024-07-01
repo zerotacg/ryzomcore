@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(shapes_exporter WIN32 ${SRC})
 
-TARGET_LINK_LIBRARIES(shapes_exporter nelmisc nel3d)
+TARGET_LINK_LIBRARIES(shapes_exporter nel::misc nel3d)
 NL_DEFAULT_PROPS(shapes_exporter "NeL, Tools, 3D: Shapes Exporter")
 NL_ADD_RUNTIME_FLAGS(shapes_exporter)
 

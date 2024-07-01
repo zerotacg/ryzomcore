@@ -8,8 +8,8 @@ ADD_LIBRARY(nel_patch_paint SHARED ${SRC})
 
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 
-TARGET_LINK_LIBRARIES(nel_patch_paint 
-							nelmisc
+TARGET_LINK_LIBRARIES(nel_patch_paint
+							nel::misc
 							nelligo
 							nel3d
 							nel_mesh_lib 

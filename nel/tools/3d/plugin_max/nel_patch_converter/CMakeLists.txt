@@ -6,7 +6,7 @@ ADD_LIBRARY(nel_patch_converter SHARED ${SRC})
 
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(nel_patch_converter
-							nelmisc 
+							nel::misc
 							nel3d
 							nel_mesh_lib 
 							nel_patch_lib 

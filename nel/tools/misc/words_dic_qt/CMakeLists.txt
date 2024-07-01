@@ -30,7 +30,7 @@ ENDIF()
 
 ADD_EXECUTABLE(words_dic_qt WIN32 ${WORDS_DIC_SRC} ${WORDS_DIC_MOC_SRCS} ${WORDS_DIC_RC_SRCS} ${WORDS_DIC_UI_HDRS})
 
-TARGET_LINK_LIBRARIES(words_dic_qt ${QT_LIBRARIES} nelmisc)
+TARGET_LINK_LIBRARIES(words_dic_qt ${QT_LIBRARIES} nel::misc)
 NL_DEFAULT_PROPS(words_dic_qt "NeL, Tools, Misc: Qt Words Dic")
 NL_ADD_RUNTIME_FLAGS(words_dic_qt)
 

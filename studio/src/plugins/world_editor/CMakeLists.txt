@@ -54,8 +54,8 @@ ADD_LIBRARY(studio_plugin_world_editor MODULE ${SRC}
 
 TARGET_LINK_LIBRARIES(	studio_plugin_world_editor 
 						studio_plugin_core 
-						studio_plugin_landscape_editor 
-						nelmisc 
+						studio_plugin_landscape_editor
+						nel::misc
 						nel3d
 						${QtPropertyBrowser_LIBRARY}
 						QtPropertyBrowser::Text

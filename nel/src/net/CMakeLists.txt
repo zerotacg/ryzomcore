@@ -12,7 +12,7 @@ IF(WITH_GTK)
   ENDIF()
 ENDIF()
 
-TARGET_LINK_LIBRARIES(nelnet nelmisc)
+TARGET_LINK_LIBRARIES(nelnet nel::misc)
 NL_DEFAULT_PROPS(nelnet "NeL, Library: NeL Net")
 NL_ADD_RUNTIME_FLAGS(nelnet)
 

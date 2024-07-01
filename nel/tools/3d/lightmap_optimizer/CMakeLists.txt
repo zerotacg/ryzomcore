@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(lightmap_optimizer ${SRC})
 
-TARGET_LINK_LIBRARIES(lightmap_optimizer nel3d nelmisc)
+TARGET_LINK_LIBRARIES(lightmap_optimizer nel3d nel::misc)
 NL_DEFAULT_PROPS(lightmap_optimizer "NeL, Tools, 3D: lightmap_optimizer")
 NL_ADD_RUNTIME_FLAGS(lightmap_optimizer)
 

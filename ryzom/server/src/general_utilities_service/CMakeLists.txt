@@ -133,7 +133,7 @@ TARGET_LINK_LIBRARIES(ryzom_general_utilities_service
 						ryzom_gameshare
 						ryzom_servershare
 						ryzom_aishare
-						nelmisc
+						nel::misc
 						nelnet
 						nelgeorges
 						nelligo)

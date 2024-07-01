@@ -46,7 +46,7 @@ ADD_EXECUTABLE(studio WIN32 MACOSX_BUNDLE
 		   ${STUDIO_PLUGIN_UIS} )
 
 TARGET_LINK_LIBRARIES(studio
-		nelmisc 
+		nel::misc
 		${QT_LIBRARIES}
 		${QT_QTMAIN_LIBRARY})
 

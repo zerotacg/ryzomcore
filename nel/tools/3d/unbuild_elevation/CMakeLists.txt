@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(unbuild_elevation ${SRC})
 
-TARGET_LINK_LIBRARIES(unbuild_elevation nel3d nelmisc nelligo)
+TARGET_LINK_LIBRARIES(unbuild_elevation nel3d nel::misc nelligo)
 NL_DEFAULT_PROPS(unbuild_elevation "NeL, Tools, 3D: Unbuild Elevation")
 NL_ADD_RUNTIME_FLAGS(unbuild_elevation)
 

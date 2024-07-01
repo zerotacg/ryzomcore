@@ -23,7 +23,7 @@ INCLUDE_DIRECTORIES(${QT_INCLUDES})
 TARGET_LINK_LIBRARIES(nel_launcher_qt
 						${QT_LIBRARIES}
 						${QT_QTMAIN_LIBRARY}
-						nelmisc
+						nel::misc
 						nelnet)
 
 NL_DEFAULT_PROPS(nel_launcher_qt "NelNS, Launcher: NeL Launcher Qt")

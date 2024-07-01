@@ -5,7 +5,7 @@ NL_TARGET_LIB(nellogic ${HEADERS} ${SRC})
 
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 
-TARGET_LINK_LIBRARIES(nellogic nelmisc nelnet)
+TARGET_LINK_LIBRARIES(nellogic nel::misc nelnet)
 NL_DEFAULT_PROPS(nellogic "NeL, Library: NeL Logic")
 NL_ADD_RUNTIME_FLAGS(nellogic)
 

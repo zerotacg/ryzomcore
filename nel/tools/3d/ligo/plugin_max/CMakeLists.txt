@@ -7,7 +7,7 @@ ADD_LIBRARY(ligoscape_utility SHARED ${SRC})
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(ligoscape_utility
-							nelmisc
+							nel::misc
 							nelligo
 							nel3d
 							nelpacs
