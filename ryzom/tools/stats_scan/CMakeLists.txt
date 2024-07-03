@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 
 ADD_EXECUTABLE(stats_scan WIN32 ${SRC})
 
-TARGET_LINK_LIBRARIES(stats_scan ryzom_gameshare nel::misc nelnet nelligo nelgeorges)
+TARGET_LINK_LIBRARIES(stats_scan ryzom_gameshare NeL::misc nelnet nelligo nelgeorges)
 
 NL_DEFAULT_PROPS(stats_scan "Ryzom, Tools, Misc: Stats Scan")
 NL_ADD_RUNTIME_FLAGS(stats_scan)

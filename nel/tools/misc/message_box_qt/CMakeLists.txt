@@ -13,7 +13,7 @@ SET( QT_USE_QT3SUPPORT TRUE)
 SET( QT_USE_QTXML TRUE)
 
 ADD_EXECUTABLE(message_box_qt WIN32 ${MESSAGE_BOX_SRC})
-TARGET_LINK_LIBRARIES(message_box_qt ${QT_LIBRARIES} nel::misc)
+TARGET_LINK_LIBRARIES(message_box_qt ${QT_LIBRARIES} NeL::misc)
 NL_DEFAULT_PROPS(message_box_qt "NeL, Tools, Misc: Qt Message Box")
 NL_ADD_RUNTIME_FLAGS(message_box_qt)
 

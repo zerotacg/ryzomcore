@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_mail_forum_service
 						ryzom_adminmodules
 						ryzom_gameshare
 						ryzom_servershare
-						nel::misc
+						NeL::misc
 						nelnet)
 
 NL_DEFAULT_PROPS(ryzom_mail_forum_service "Ryzom, Services: Mail Forum Service (MFS)")

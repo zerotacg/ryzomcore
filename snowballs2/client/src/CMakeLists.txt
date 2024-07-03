@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_EXECUTABLE(snowballs_client WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(snowballs_client
-						nel::misc
+						NeL::misc
 						nelpacs
 						nelnet
 						nel3d)

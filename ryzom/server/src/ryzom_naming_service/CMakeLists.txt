@@ -6,7 +6,7 @@ INCLUDE_DIRECTORIES(${RZ_SERVER_SRC_DIR} ${MYSQL_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(ryzom_naming_service
 						ryzom_adminmodules
-						nel::misc
+						NeL::misc
 						nelnet)
 
 NL_DEFAULT_PROPS(ryzom_naming_service "Ryzom, Services: Ryzom Naming Service (NS)")

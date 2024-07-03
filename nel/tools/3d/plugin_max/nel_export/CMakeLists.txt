@@ -9,7 +9,7 @@ ADD_LIBRARY(nel_export SHARED ${SRC} nel_export.rc)
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(nel_export
-							nel::misc
+							NeL::misc
 							nelpacs
 							nel3d
 							nel_mesh_lib 

@@ -25,7 +25,7 @@ TARGET_LINK_LIBRARIES(sheets_packer_shard
 					ryzom_gameshare
 					ryzom_servershare
 					ryzom_aishare
-					nel::misc
+					NeL::misc
 					nelgeorges
 					nelnet
 					nelligo)

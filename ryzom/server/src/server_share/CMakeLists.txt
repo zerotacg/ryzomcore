@@ -13,7 +13,7 @@ NL_TARGET_LIB(ryzom_servershare ${SRC} ${R2})
 INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(ryzom_servershare
-						nel::misc
+						NeL::misc
 						nelpacs
 						nelgeorges
 						nelnet

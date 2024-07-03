@@ -11,7 +11,7 @@ TARGET_LINK_LIBRARIES(ryzom_entity_view_service
 						ryzom_gameshare
 						ryzom_servershare
 						ryzom_aishare
-						nel::misc
+						NeL::misc
 						nelnet
 						nelgeorges
 						nelligo)

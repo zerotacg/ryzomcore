@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_EXECUTABLE(snowballs_chat_service WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(snowballs_chat_service
-						nel::misc
+						NeL::misc
 						nelnet)
 
 NL_DEFAULT_PROPS(snowballs_chat_service "Snowballs, Services: Chat")

@@ -9,7 +9,7 @@ INCLUDE_DIRECTORIES(${RZ_SERVER_SRC_DIR})
 TARGET_LINK_LIBRARIES(r2_islands_textures
 					ryzom_gameshare
 					ryzom_aishare
-					nel::misc
+					NeL::misc
 					nel3d)
 
 NL_DEFAULT_PROPS(r2_islands_textures "Ryzom, Tools, Server: R2 Islands Textures")

@@ -5,7 +5,7 @@ SOURCE_GROUP("" FILES ${SRC})
 ADD_EXECUTABLE(prim_export ${SRC})
 
 TARGET_LINK_LIBRARIES(prim_export
-					nel::misc
+					NeL::misc
 					nelligo
 					nel3d
 					nelgeorges)

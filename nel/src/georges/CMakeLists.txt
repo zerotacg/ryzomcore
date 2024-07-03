@@ -7,7 +7,7 @@ NL_TARGET_LIB(nelgeorges ${HEADERS} ${SRC})
 
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 
-TARGET_LINK_LIBRARIES(nelgeorges nel::misc)
+TARGET_LINK_LIBRARIES(nelgeorges NeL::misc)
 NL_DEFAULT_PROPS(nelgeorges "NeL, Library: NeL Georges")
 NL_ADD_RUNTIME_FLAGS(nelgeorges)
 

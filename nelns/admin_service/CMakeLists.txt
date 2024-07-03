@@ -7,7 +7,7 @@ INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(admin_service
 						${MYSQL_LIBRARIES}
 						${ZLIB_LIBRARIES}
-						nel::misc
+						NeL::misc
 						nelnet)
 
 NL_DEFAULT_PROPS(admin_service "NelNS, Services: Admin Service")

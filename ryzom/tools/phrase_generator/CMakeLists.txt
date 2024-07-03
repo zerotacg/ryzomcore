@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_EXECUTABLE(phrase_generator ${SRC})
 
 TARGET_LINK_LIBRARIES(phrase_generator
-						nel::misc
+						NeL::misc
 						nelgeorges)
 
 NL_DEFAULT_PROPS(phrase_generator "Ryzom, Tools: Phrase Generator")

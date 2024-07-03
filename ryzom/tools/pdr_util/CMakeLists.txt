@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 
 ADD_EXECUTABLE(pdr_util ${SRC})
 
-TARGET_LINK_LIBRARIES(pdr_util ryzom_gameshare nel::misc nelnet nelligo nelgeorges)
+TARGET_LINK_LIBRARIES(pdr_util ryzom_gameshare NeL::misc nelnet nelligo nelgeorges)
 
 NL_DEFAULT_PROPS(pdr_util "Ryzom, Tools: PDR Utility")
 NL_ADD_RUNTIME_FLAGS(pdr_util)

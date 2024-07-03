@@ -6,11 +6,11 @@ SET(NL_CT_CFG "NL_CT_CFG=\"${NL_SHARE_ABSOLUTE_PREFIX}/nl_sample_class_transport
 TARGET_COMPILE_DEFINITIONS(nl_sample_ct_ai_service PRIVATE ${NL_CT_CFG})
 TARGET_COMPILE_DEFINITIONS(nl_sample_ct_gd_service PRIVATE ${NL_CT_CFG})
 
-TARGET_LINK_LIBRARIES(nl_sample_ct_ai_service nel::misc nelnet)
+TARGET_LINK_LIBRARIES(nl_sample_ct_ai_service NeL::misc nelnet)
 NL_DEFAULT_PROPS(nl_sample_ct_ai_service "NeL, Samples, Net, Class Transport: AI Service")
 NL_ADD_RUNTIME_FLAGS(nl_sample_ct_ai_service)
 
-TARGET_LINK_LIBRARIES(nl_sample_ct_gd_service nel::misc nelnet)
+TARGET_LINK_LIBRARIES(nl_sample_ct_gd_service NeL::misc nelnet)
 NL_DEFAULT_PROPS(nl_sample_ct_gd_service "NeL, Samples, Net, Class Transport: GD Service")
 NL_ADD_RUNTIME_FLAGS(nl_sample_ct_gd_service)
 

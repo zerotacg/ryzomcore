@@ -8,7 +8,7 @@ SET(CMAKE_MFC_FLAG 2)
 ADD_EXECUTABLE(object_viewer WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(	object_viewer
-						nel::misc
+						NeL::misc
 						nel3d
 						nelsound
 						nelsnd_lowlevel

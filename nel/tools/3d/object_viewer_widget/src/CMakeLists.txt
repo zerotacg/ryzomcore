@@ -39,7 +39,7 @@ ADD_LIBRARY(object_viewer_widget_qt ${TYPE}
 		${OBJECT_VIEWER_WIDGET_MOC_SRCS})
 
 TARGET_LINK_LIBRARIES(object_viewer_widget_qt
-        nel::misc
+        NeL::misc
 		nel3d
 		${QT_LIBRARIES})
 

@@ -33,7 +33,7 @@ TARGET_LINK_LIBRARIES(pipeline_max_rewrite_assets
 	${GLIB2_LIBRARIES}
 	${GOBJECT2_LIBRARIES}
 	pipeline_max
-	nel::misc
+	NeL::misc
 )
 
 NL_DEFAULT_PROPS(pipeline_max_dump "NeL, Tools, 3D: Pipeline Max Rewrite Assets")

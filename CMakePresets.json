@@ -2,6 +2,7 @@
   "version": 6,
   "include": [
     "cmake/CMakePresets.base.json",
-    "cmake/CMakePresets.nel.json"
+    "cmake/CMakePresets.nel.json",
+    "cmake/CMakePresets.snowballs.json"
   ]
 }

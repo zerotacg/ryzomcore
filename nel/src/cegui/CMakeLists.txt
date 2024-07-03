@@ -5,7 +5,7 @@ ADD_LIBRARY(nelceguirenderer SHARED ${HEADERS} ${SRC} nelceguirenderer.def)
 
 INCLUDE_DIRECTORIES(BEFORE ${FREETYPE_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${CEGUI_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(nelceguirenderer nel::misc nel3d ${CEGUI_LIBRARY})
+TARGET_LINK_LIBRARIES(nelceguirenderer NeL::misc nel3d ${CEGUI_LIBRARY})
 NL_DEFAULT_PROPS(nelceguirenderer "NeL, Library: CEGUI Renderer")
 NL_ADD_RUNTIME_FLAGS(nelceguirenderer)
 NL_ADD_LIB_SUFFIX(nelceguirenderer)

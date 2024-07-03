@@ -6,7 +6,7 @@ ADD_LIBRARY(tile_utility SHARED ${SRC})
 
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(tile_utility
-							nel::misc
+							NeL::misc
 							nel3d
 							nel_mesh_lib
 							nel_patch_lib 

@@ -9,7 +9,7 @@ INCLUDE_DIRECTORIES(${RZ_SERVER_SRC_DIR})
 TARGET_LINK_LIBRARIES(ai_build_wmap
 					ryzom_gameshare
 					ryzom_aishare
-					nel::misc)
+					NeL::misc)
 
 NL_DEFAULT_PROPS(ai_build_wmap "Ryzom, Tools, Server: AI Build World Map")
 NL_ADD_RUNTIME_FLAGS(ai_build_wmap)

@@ -7,7 +7,7 @@ LIST(REMOVE_ITEM SRC
 
 NL_TARGET_LIB(ryzom_pd ${SRC})
 
-TARGET_LINK_LIBRARIES(ryzom_pd nel::misc nelnet ryzom_gameshare)
+TARGET_LINK_LIBRARIES(ryzom_pd NeL::misc nelnet ryzom_gameshare)
 NL_DEFAULT_PROPS(ryzom_pd "Ryzom, Library: PD Lib")
 NL_ADD_RUNTIME_FLAGS(ryzom_pd)
 NL_ADD_LIB_SUFFIX(ryzom_pd)

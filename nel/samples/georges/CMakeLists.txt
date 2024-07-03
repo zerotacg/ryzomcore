@@ -4,7 +4,7 @@ ADD_EXECUTABLE(nl_sample_georges ${SRC})
 
 TARGET_COMPILE_DEFINITIONS(nl_sample_georges PRIVATE "GF_DIR=\"${NL_SHARE_ABSOLUTE_PREFIX}/nl_sample_georges/\"")
 
-TARGET_LINK_LIBRARIES(nl_sample_georges nelgeorges nel::misc)
+TARGET_LINK_LIBRARIES(nl_sample_georges nelgeorges NeL::misc)
 NL_DEFAULT_PROPS(nl_sample_georges "NeL, Samples: Georges")
 NL_ADD_RUNTIME_FLAGS(nl_sample_georges)
 

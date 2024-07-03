@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(zone_lighter ${SRC})
 
-TARGET_LINK_LIBRARIES(zone_lighter nel3d nelgeorges nel::misc)
+TARGET_LINK_LIBRARIES(zone_lighter nel3d nelgeorges NeL::misc)
 NL_DEFAULT_PROPS(zone_lighter "NeL, Tools, 3D: zone_lighter")
 NL_ADD_RUNTIME_FLAGS(zone_lighter)
 

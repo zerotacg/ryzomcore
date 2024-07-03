@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(get_neighbors ${SRC})
 
-TARGET_LINK_LIBRARIES(get_neighbors nel::misc)
+TARGET_LINK_LIBRARIES(get_neighbors NeL::misc)
 NL_DEFAULT_PROPS(get_neighbors "NeL, Tools, 3D: get_neighbors")
 NL_ADD_RUNTIME_FLAGS(get_neighbors)
 

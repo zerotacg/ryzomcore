@@ -13,7 +13,7 @@ INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/ryzom/client/src)
 TARGET_LINK_LIBRARIES(sheets_packer	
 					ryzom_clientsheets
 					ryzom_gameshare
-					nel::misc
+					NeL::misc
 					nelgeorges
 					nelnet
 					nelligo)

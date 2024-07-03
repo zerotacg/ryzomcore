@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h *.rc)
 ADD_LIBRARY(world_editor_primitive_plugin SHARED ${SRC})
 
 TARGET_LINK_LIBRARIES(world_editor_primitive_plugin
-							nel::misc
+							NeL::misc
 							nel3d
 							nelsound
 							nelsnd_lowlevel)

@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp)
 
 ADD_EXECUTABLE(nl_sample_command ${SRC})
 
-TARGET_LINK_LIBRARIES(nl_sample_command nel::misc)
+TARGET_LINK_LIBRARIES(nl_sample_command NeL::misc)
 NL_DEFAULT_PROPS(nl_sample_command "NeL, Samples, Misc: Commands")
 NL_ADD_RUNTIME_FLAGS(nl_sample_command)
 

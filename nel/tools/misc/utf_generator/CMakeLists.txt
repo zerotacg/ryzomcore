@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(nl_utf_generator ${SRC})
 
-TARGET_LINK_LIBRARIES(nl_utf_generator nel::misc)
+TARGET_LINK_LIBRARIES(nl_utf_generator NeL::misc)
 NL_DEFAULT_PROPS(nl_utf_generator "NeL, Tools, Misc: UTF Generator")
 NL_ADD_RUNTIME_FLAGS(nl_utf_generator)
 

@@ -19,7 +19,7 @@ TARGET_LINK_LIBRARIES(ryzom_ios_service
 					ryzom_pd
 					ryzom_gameshare
 					ryzom_servershare
-					nel::misc
+					NeL::misc
 					nelnet
 					nelpacs
 					nelgeorges

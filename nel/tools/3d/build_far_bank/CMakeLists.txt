@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(build_far_bank ${SRC})
 
-TARGET_LINK_LIBRARIES(build_far_bank nel3d nel::misc)
+TARGET_LINK_LIBRARIES(build_far_bank nel3d NeL::misc)
 NL_DEFAULT_PROPS(build_far_bank "NeL, Tools, 3D: build_far_bank")
 NL_ADD_RUNTIME_FLAGS(build_far_bank)
 

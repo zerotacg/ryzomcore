@@ -176,7 +176,7 @@ ADD_LIBRARY(studio_plugin_object_viewer MODULE ${SRC}
 
 TARGET_LINK_LIBRARIES(studio_plugin_object_viewer 
 			studio_plugin_core
-			nel::misc
+			NeL::misc
 			nel3d
 			nelsound
 			nelligo

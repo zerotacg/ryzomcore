@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 		
 ADD_EXECUTABLE(memlog ${SRC})
 
-TARGET_LINK_LIBRARIES(memlog nel::misc)
+TARGET_LINK_LIBRARIES(memlog NeL::misc)
 NL_DEFAULT_PROPS(memlog "NeL, Tools, Memory: memlog")
 NL_ADD_RUNTIME_FLAGS(memlog)
 

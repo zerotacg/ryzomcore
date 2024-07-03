@@ -6,7 +6,7 @@ ADD_EXECUTABLE(build_indoor_rbank ${SRC})
 
 ADD_DEFINITIONS(-DNL_BIRB_CFG="${NL_ETC_PREFIX}/")
 
-TARGET_LINK_LIBRARIES(build_indoor_rbank nel::misc nelpacs)
+TARGET_LINK_LIBRARIES(build_indoor_rbank NeL::misc nelpacs)
 NL_DEFAULT_PROPS(build_indoor_rbank "NeL, Tools, PACS: build_indoor_rbank")
 NL_ADD_RUNTIME_FLAGS(build_indoor_rbank)
 

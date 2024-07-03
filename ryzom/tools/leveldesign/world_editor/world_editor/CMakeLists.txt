@@ -13,7 +13,7 @@ ADD_EXECUTABLE(world_editor WIN32 ${SRC})
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(world_editor
-					nel::misc
+					NeL::misc
 					nelligo
 					nel3d
 					nelgeorges

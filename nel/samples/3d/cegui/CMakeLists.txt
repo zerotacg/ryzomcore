@@ -6,7 +6,7 @@ TARGET_COMPILE_DEFINITIONS(nl_sample_cegui PRIVATE "CEGUI_DATA_DIR=\"${NL_SHARE_
 
 INCLUDE_DIRECTORIES(${CEGUI_INCLUDE_DIRS})
 
-TARGET_LINK_LIBRARIES(nl_sample_cegui ${CEGUI_LIBRARY} nel::misc nel3d)
+TARGET_LINK_LIBRARIES(nl_sample_cegui ${CEGUI_LIBRARY} NeL::misc nel3d)
 NL_DEFAULT_PROPS(nl_sample_cegui "NeL, Samples, 3D: NeL CEGUI Demo")
 NL_ADD_RUNTIME_FLAGS(nl_sample_cegui)
 

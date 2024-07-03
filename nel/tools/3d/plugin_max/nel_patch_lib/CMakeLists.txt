@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_LIBRARY(nel_patch_lib STATIC ${SRC})
 
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
-TARGET_LINK_LIBRARIES(nel_patch_lib nel::misc nel3d ${MAXSDK_LIBRARIES})
+TARGET_LINK_LIBRARIES(nel_patch_lib NeL::misc nel3d ${MAXSDK_LIBRARIES})
 NL_DEFAULT_PROPS(nel_patch_lib "MAX Plugin: NeL Patch Library")
 NL_ADD_RUNTIME_FLAGS(nel_patch_lib)
 NL_ADD_LIB_SUFFIX(nel_patch_lib)

@@ -9,7 +9,7 @@ add_library(nelns::ns ALIAS nelns_naming_service)
 target_include_directories(nelns_naming_service PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(nelns_naming_service
-        nel::misc
+        NeL::misc
         nelnet
 )
 

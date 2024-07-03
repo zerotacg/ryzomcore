@@ -3,7 +3,7 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_EXECUTABLE(sheet_random_generator ${SRC})
 
 TARGET_LINK_LIBRARIES(sheet_random_generator
-						nel::misc
+						NeL::misc
 						nelgeorges)
 
 NL_DEFAULT_PROPS(sheet_random_generator "Ryzom, Tools: Sheets Random Generator")

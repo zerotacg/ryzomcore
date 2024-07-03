@@ -5,7 +5,7 @@ NL_TARGET_LIB(ryzom_aishare ${SRC})
 TARGET_LINK_LIBRARIES(ryzom_aishare
 						ryzom_gameshare
 						ryzom_servershare
-						nel::misc
+						NeL::misc
 						nelnet
 						nelgeorges
 						nelpacs)

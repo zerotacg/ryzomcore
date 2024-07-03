@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 
 ADD_EXECUTABLE(xml_packer ${SRC})
 
-TARGET_LINK_LIBRARIES(xml_packer nel::misc)
+TARGET_LINK_LIBRARIES(xml_packer NeL::misc)
 NL_DEFAULT_PROPS(xml_packer "NeL, Tools, Misc: xml_packer")
 NL_ADD_RUNTIME_FLAGS(xml_packer)
 
