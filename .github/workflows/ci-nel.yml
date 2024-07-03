@@ -37,7 +37,7 @@ jobs:
           VERSION="$VERSION+sha.${COMMIT_HASH:0:8}"
           echo VERSION=$VERSION
           echo "build-version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "project-name=nel >> "$GITHUB_OUTPUT"
+          echo "project-name=nel" >> "$GITHUB_OUTPUT"
 
   configure:
     needs: [ strings ]
