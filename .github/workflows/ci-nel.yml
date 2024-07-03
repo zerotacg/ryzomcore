@@ -3,7 +3,7 @@ name: "NeL: CI / CD"
 on:
   push:
     branches: [ "core4", "feature/*" ]
-    paths: &paths
+    paths:
       - .github/workflows/ci-nel.yml
       - nel/**
       - CMakeLists.txt
@@ -11,7 +11,11 @@ on:
 
   pull_request:
     branches: [ "core4" ]
-    paths: *paths
+    paths:
+      - .github/workflows/ci-nel.yml
+      - nel/**
+      - CMakeLists.txt
+      - CMakePresets.txt
 
 env:
   project_name: nel
