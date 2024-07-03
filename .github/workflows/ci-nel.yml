@@ -39,7 +39,7 @@ jobs:
           echo "build-version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "project-name=nel" >> "$GITHUB_OUTPUT"
 
-  configure:
+  build:
     needs: [ strings ]
     runs-on: ${{ matrix.os }}
 
@@ -56,63 +56,35 @@ jobs:
       - uses: lukka/get-cmake@latest
 
       - uses: actions/checkout@v4
+      - name: Dependencies Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install --yes \
+            build-essential ccache \
+            bison autoconf automake \
+            libpng-dev \
+            libjpeg-dev \
+            libgif-dev libfreetype6-dev \
+            freeglut3-dev \
+            liblua5.2-dev libluabind-dev libcpptest-dev \
+            libogg-dev libvorbis-dev libopenal-dev \
+            libavcodec-dev libavformat-dev libavdevice-dev libswscale-dev libpostproc-dev \
+            libmysqlclient-dev \
+            libxml2-dev \
+            libcurl4-openssl-dev libssl-dev \
+            libsquish-dev \
+            liblzma-dev \
+            libgsf-1-dev \
+            qtbase5-dev qttools5-dev qttools5-dev-tools \
 
       - name: Configure CMake
         run: cmake --preset ${{ matrix.preset }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: configure-${{ matrix.os }}
-          path: ${{ needs.strings.outputs.build-output-dir }}
-
-  build:
-    needs: [ strings, configure ]
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04, windows-2022 ]
-
-    steps:
-      - uses: lukka/get-cmake@latest
-
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: configure-${{ matrix.os }}
-          merge-multiple: true
-          path: ${{ needs.strings.outputs.build-output-dir }}
 
       - name: Build
         run: cmake --build --preset ${{ needs.strings.outputs.project-name }}
 
       - name: Test
         run: ctest --preset ${{ needs.strings.outputs.project-name }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.os }}
-          path: ${{ needs.strings.outputs.build-output-dir }}
-
-  package:
-    needs: [ strings, build ]
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04, windows-2022 ]
-
-    steps:
-      - uses: lukka/get-cmake@latest
-
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: build-${{ matrix.os }}
-          merge-multiple: true
-          path: ${{ needs.strings.outputs.build-output-dir }}
 
       - name: Package
         run: cpack --preset ${{ needs.strings.outputs.project-name }} -R "${{ needs.strings.outputs.build-version }}"
