@@ -17,15 +17,13 @@ on:
       - CMakeLists.txt
       - CMakePresets.txt
 
-env:
-  project_name: nel
-
 jobs:
   strings:
     runs-on: ubuntu-latest
     outputs:
       build-output-dir: ${{ steps.strings.outputs.build-output-dir }}
       build-version: ${{ steps.strings.outputs.build-version }}
+      project-name: ${{ steps.strings.outputs.project-name }}
     steps:
       - name: Set reusable strings
         id: strings
@@ -39,6 +37,7 @@ jobs:
           VERSION="$VERSION+sha.${COMMIT_HASH:0:8}"
           echo VERSION=$VERSION
           echo "build-version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "project-name=nel >> "$GITHUB_OUTPUT"
 
   configure:
     needs: [ strings ]
@@ -49,9 +48,9 @@ jobs:
         os: [ ubuntu-22.04, windows-2022 ]
         include:
           - os: ubuntu-22.04
-            preset: linux-${{ env.project_name }}
+            preset: linux-${{ needs.strings.outputs.project-name }}
           - os: windows-2022
-            preset: windows-${{ env.project_name }}
+            preset: windows-${{ needs.strings.outputs.project-name }}
 
     steps:
       - uses: lukka/get-cmake@latest
@@ -86,10 +85,10 @@ jobs:
           path: ${{ needs.strings.outputs.build-output-dir }}
 
       - name: Build
-        run: cmake --build --preset ${{ env.project_name }}
+        run: cmake --build --preset ${{ needs.strings.outputs.project-name }}
 
       - name: Test
-        run: ctest --preset ${{ env.project_name }}
+        run: ctest --preset ${{ needs.strings.outputs.project-name }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -116,10 +115,10 @@ jobs:
           path: ${{ needs.strings.outputs.build-output-dir }}
 
       - name: Package
-        run: cpack --preset ${{ env.project_name }} -R "${{ needs.strings.outputs.build-version }}"
+        run: cpack --preset ${{ needs.strings.outputs.project-name }} -R "${{ needs.strings.outputs.build-version }}"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: package-${{ env.project_name }}-${{ matrix.os }}-${{ needs.strings.outputs.build-version }}
-          path: ${{ needs.strings.outputs.build-output-dir }}/${{ env.project_name }}/ryzomcore-*
+          name: package-${{ needs.strings.outputs.project-name }}-${{ matrix.os }}-${{ needs.strings.outputs.build-version }}
+          path: ${{ needs.strings.outputs.build-output-dir }}/${{ needs.strings.outputs.project-name }}/ryzomcore-*
 
