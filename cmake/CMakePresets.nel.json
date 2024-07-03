@@ -6,7 +6,6 @@
   ],
   "configurePresets": [
     {
-      "inherits": "linux",
       "binaryDir": "${sourceDir}/build/nel",
       "name": "nel",
       "cacheVariables": {
@@ -33,6 +32,13 @@
         "nel"
       ],
       "name": "linux-nel"
+    },
+    {
+      "inherits": [
+        "windows",
+        "nel"
+      ],
+      "name": "windows-nel"
     }
   ],
   "buildPresets": [
