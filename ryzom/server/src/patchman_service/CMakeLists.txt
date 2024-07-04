@@ -28,7 +28,7 @@ TARGET_LINK_LIBRARIES(ryzom_patchman_service
 					ryzom_servershare
 					NeL::misc
 					NeL::net
-					nelpacs
+					NeL::pacs
 					nelgeorges
 					nelligo)
 

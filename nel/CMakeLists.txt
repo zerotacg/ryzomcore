@@ -6,6 +6,7 @@ ENDIF ()
 
 project(NeL VERSION ${RyzomCore_VERSION} LANGUAGES CXX C)
 
+include(../cmake/add_library_alias.cmake)
 
 IF(WITH_STATIC_DRIVERS)
   ADD_DEFINITIONS(-DNL_STATIC)
@@ -92,11 +93,10 @@ set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
-set(package_components 3d misc net sevenzip)
-
+set(package_components 3d misc net pacs sevenzip sound)
 set(targets_export_name "${PROJECT_NAME}-targets")
 
-install(TARGETS 3d misc net sevenzip
+install(TARGETS nel3d nelmisc nelnet nelpacs nel_sevenzip nelsound
         COMPONENT libraries
         EXPORT "${targets_export_name}"
         FILE_SET HEADERS

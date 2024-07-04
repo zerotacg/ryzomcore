@@ -3,7 +3,7 @@ FILE(GLOB PRIV_H *.h)
 
 NL_TARGET_LIB(ryzom_export ${PRIV_H} ${SRC})
 
-TARGET_LINK_LIBRARIES(ryzom_export NeL::misc nelligo nelgeorges NeL::3d nelpacs)
+TARGET_LINK_LIBRARIES(ryzom_export NeL::misc nelligo nelgeorges NeL::3d NeL::pacs)
 NL_DEFAULT_PROPS(ryzom_export "Ryzom, Library, World: Export Tools")
 NL_ADD_RUNTIME_FLAGS(ryzom_export)
 NL_ADD_LIB_SUFFIX(ryzom_export)

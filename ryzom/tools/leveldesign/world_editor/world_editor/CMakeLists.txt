@@ -17,7 +17,7 @@ TARGET_LINK_LIBRARIES(world_editor
 					nelligo
 					NeL::3d
 					nelgeorges
-					nelpacs)
+					NeL::pacs)
 
 NL_DEFAULT_PROPS(world_editor "Ryzom, Tools, World: World Editor")
 NL_ADD_RUNTIME_FLAGS(world_editor)

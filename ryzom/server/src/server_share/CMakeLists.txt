@@ -14,7 +14,7 @@ INCLUDE_DIRECTORIES(${MYSQL_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(ryzom_servershare
 						NeL::misc
-						nelpacs
+						NeL::pacs
 						nelgeorges
 						NeL::net
 						ryzom_gameshare

@@ -2,6 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 FILE(GLOB HEADERS ../../include/nel/pacs/*.h)
 
 NL_TARGET_LIB(nelpacs ${HEADERS} ${SRC})
+add_library_project_alias(nelpacs pacs)
 
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 

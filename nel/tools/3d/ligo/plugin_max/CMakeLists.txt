@@ -10,7 +10,7 @@ TARGET_LINK_LIBRARIES(ligoscape_utility
 							NeL::misc
 							nelligo
 							NeL::3d
-							nelpacs
+							NeL::pacs
 							${MAXSDK_LIBRARIES}
 							nel_patch_lib
 							nel_mesh_lib

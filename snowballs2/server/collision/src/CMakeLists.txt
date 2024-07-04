@@ -5,7 +5,7 @@ ADD_EXECUTABLE(snowballs_collision_service WIN32 ${SRC})
 TARGET_LINK_LIBRARIES(snowballs_collision_service
 						NeL::misc
 						NeL::net
-						nelpacs
+						NeL::pacs
 						NeL::3d)
 
 NL_DEFAULT_PROPS(snowballs_collision_service "Snowballs, Services: Collision")

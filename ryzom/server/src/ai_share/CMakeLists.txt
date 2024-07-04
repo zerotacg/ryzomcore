@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_aishare
 						NeL::misc
 						NeL::net
 						nelgeorges
-						nelpacs)
+						NeL::pacs)
 
 NL_DEFAULT_PROPS(ryzom_aishare "Ryzom, Library: AI Shared")
 NL_ADD_RUNTIME_FLAGS(ryzom_aishare)

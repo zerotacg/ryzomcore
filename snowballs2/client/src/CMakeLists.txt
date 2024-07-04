@@ -4,7 +4,7 @@ ADD_EXECUTABLE(snowballs_client WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(snowballs_client
 						NeL::misc
-						nelpacs
+						NeL::pacs
 						NeL::net
 						NeL::3d)
 

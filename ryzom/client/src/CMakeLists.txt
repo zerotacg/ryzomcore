@@ -225,7 +225,7 @@ IF(WITH_RYZOM_CLIENT)
               NeL::sevenzip
               ryzom_clientsheets
               ryzom_gameshare
-              nelpacs
+              NeL::pacs
               ${LUA_LIBRARIES}
               ${LUABIND_LIBRARIES}
               ${CURL_LIBRARIES}

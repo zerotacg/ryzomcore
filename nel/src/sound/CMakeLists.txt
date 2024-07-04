@@ -89,6 +89,7 @@ SOURCE_GROUP("user_classes" FILES ${USER_CLASSES})
 
 
 NL_TARGET_LIB(nelsound ${HEADERS} ${SRC})
+add_library_project_alias(nelsound sound)
 
 IF(HUNTER_ENABLED)
   HUNTER_ADD_PACKAGE(libogg)

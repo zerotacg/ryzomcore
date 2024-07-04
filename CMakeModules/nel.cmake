@@ -29,11 +29,6 @@ MACRO(NL_TARGET_LIB name)
   ELSE()
     ADD_LIBRARY(${name} SHARED ${ARGN})
   ENDIF()
-
-  ADD_LIBRARY(${PROJECT_NAME}::${name} ALIAS ${name})
-
-  string(TOLOWER ${PROJECT_NAME} _LOWER_PROJECT_NAME)
-  set_target_properties(${name} PROPERTIES OUTPUT_NAME "${_LOWER_PROJECT_NAME}${name}")
 ENDMACRO(NL_TARGET_LIB)
 
 ###

@@ -14,7 +14,7 @@ TARGET_LINK_LIBRARIES(ai_data_service
 					NeL::misc
 					NeL::net
 					nelgeorges
-					nelpacs
+					NeL::pacs
 					nelligo)
 
 NL_DEFAULT_PROPS(ai_data_service "Ryzom, Services: AI Data Service (AIDS)")

@@ -10,7 +10,7 @@ INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(nel_export
 							NeL::misc
-							nelpacs
+							NeL::pacs
 							NeL::3d
 							nel_mesh_lib 
 							nel_patch_lib
