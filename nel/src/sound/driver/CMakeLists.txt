@@ -2,6 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 FILE(GLOB HEADERS ../../../include/nel/sound/driver/*.h)
 
 NL_TARGET_LIB(nelsnd_lowlevel ${HEADERS} ${SRC})
+add_library_project_alias(nelsnd_lowlevel snd_lowlevel)
 
 TARGET_LINK_LIBRARIES(nelsnd_lowlevel NeL::misc)
 NL_DEFAULT_PROPS(nelsnd_lowlevel "NeL, Library: Sound Lowlevel")

@@ -178,9 +178,9 @@ TARGET_LINK_LIBRARIES(studio_plugin_object_viewer
 			studio_plugin_core
 			NeL::misc
 			NeL::3d
-			nelsound
-			nelligo
-			nelgeorges
+			NeL::sound
+			NeL::ligo
+			NeL::georges
 			${QT_LIBRARIES}
 			${QT_QTOPENGL_LIBRARY})
 

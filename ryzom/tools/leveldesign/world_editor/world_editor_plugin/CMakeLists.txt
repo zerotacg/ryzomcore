@@ -5,8 +5,8 @@ ADD_LIBRARY(world_editor_plugin SHARED ${SRC} world_editor_plugin.rc)
 TARGET_LINK_LIBRARIES(world_editor_plugin
 							NeL::misc
 							NeL::3d
-							nelsound
-							nelsnd_lowlevel
+							NeL::sound
+							NeL::snd_lowlevel
 							Version.lib)
 							
 NL_DEFAULT_PROPS(world_editor_plugin "Ryzom, Tools, World: World Editor Plugin DLL")

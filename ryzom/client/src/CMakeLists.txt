@@ -217,11 +217,11 @@ IF(WITH_RYZOM_CLIENT)
   TARGET_LINK_LIBRARIES(ryzom_client
               NeL::misc
               NeL::net
-              nelligo
-              nelgeorges
+              NeL::ligo
+              NeL::georges
               NeL::3d
-              nelgui
-              nelsound
+              NeL::gui
+              NeL::sound
               NeL::sevenzip
               ryzom_clientsheets
               ryzom_gameshare

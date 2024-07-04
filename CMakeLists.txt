@@ -417,11 +417,26 @@ IF(WITH_NEL)
   # Aliases for targets
   SET(NELMISC_LIBRARIES NeL::misc)
   SET(NELNET_LIBRARIES NeL::net)
-  SET(NELLIGO_LIBRARIES nelligo)
-  SET(NELGEORGES_LIBRARIES nelgeorges)
+  SET(NELLIGO_LIBRARIES Nel::ligo)
+  SET(NELGEORGES_LIBRARIES Nel::georges)
   SET(NEL3D_LIBRARIES NeL::3d)
-  SET(NELGUI_LIBRARIES nelgui)
-  SET(NELSOUND_LIBRARIES nelsound)
+  SET(NELGUI_LIBRARIES Nel::gui)
+  SET(NELSOUND_LIBRARIES Nel::sound)
+
+  set(subprojects
+          NeL
+          CACHE STRING "Subprojects to use directly from source"
+  )
+
+  macro(find_package)
+    IF (POLICY CMP0057)
+      cmake_policy(SET CMP0057 NEW)
+    ENDIF ()
+
+    if (NOT "${ARGV0}" IN_LIST subprojects)
+      _find_package(${ARGV})
+    endif ()
+  endmacro()
 ELSE()
 #  FIND_PACKAGE(NeL COMPONENTS 3d misc pacs sound nimp REQUIRED)
 #  FIND_PACKAGE(NeL REQUIRED)

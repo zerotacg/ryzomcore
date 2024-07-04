@@ -4,6 +4,7 @@ FILE(GLOB HEADERS ../../include/nel/georges/*.h)
 # SOURCE_GROUP(headers FILES ${HEADERS})
 
 NL_TARGET_LIB(nelgeorges ${HEADERS} ${SRC})
+add_library_project_alias(nelgeorges georges)
 
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 

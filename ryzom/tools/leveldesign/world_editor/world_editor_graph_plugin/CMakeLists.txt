@@ -5,8 +5,8 @@ ADD_LIBRARY(world_editor_graph_plugin SHARED ${SRC})
 TARGET_LINK_LIBRARIES(world_editor_graph_plugin
 							NeL::misc
 							NeL::3d
-							nelsound
-							nelsnd_lowlevel
+							NeL::sound
+							NeL::snd_lowlevel
 							ryzom_mission_compiler_lib)
 							
 NL_DEFAULT_PROPS(world_editor_graph_plugin "Ryzom, Tools, World: World Editor Graph Plugin")

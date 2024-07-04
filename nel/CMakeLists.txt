@@ -93,10 +93,10 @@ set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
-set(package_components 3d misc net pacs sevenzip sound)
+set(package_components 3d georges ligo misc net pacs sevenzip sound snd_lowlevel)
 set(targets_export_name "${PROJECT_NAME}-targets")
 
-install(TARGETS nel3d nelmisc nelnet nelpacs nel_sevenzip nelsound
+install(TARGETS nel3d nelgeorges nelligo nelmisc nelnet nelpacs nel_sevenzip nelsound nelsnd_lowlevel
         COMPONENT libraries
         EXPORT "${targets_export_name}"
         FILE_SET HEADERS

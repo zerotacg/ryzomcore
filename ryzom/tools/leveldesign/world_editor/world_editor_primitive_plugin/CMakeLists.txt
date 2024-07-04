@@ -5,8 +5,8 @@ ADD_LIBRARY(world_editor_primitive_plugin SHARED ${SRC})
 TARGET_LINK_LIBRARIES(world_editor_primitive_plugin
 							NeL::misc
 							NeL::3d
-							nelsound
-							nelsnd_lowlevel)
+							NeL::sound
+							NeL::snd_lowlevel)
 							
 NL_DEFAULT_PROPS(world_editor_primitive_plugin "Ryzom, Tools, World: World Editor Primitive Plugin")
 NL_ADD_RUNTIME_FLAGS(world_editor_primitive_plugin)
