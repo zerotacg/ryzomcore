@@ -47,12 +47,10 @@ jobs:
 
     strategy:
       matrix:
-        os: [ ubuntu-22.04, windows-2022 ]
+        os: [ ubuntu-22.04 ]
         include:
           - os: ubuntu-22.04
             preset: linux-${{ needs.strings.outputs.project-name }}
-          - os: windows-2022
-            preset: windows-${{ needs.strings.outputs.project-name }}
 
     steps:
       - uses: lukka/get-cmake@latest
