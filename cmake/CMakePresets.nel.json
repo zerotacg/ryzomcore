@@ -38,7 +38,12 @@
         "windows",
         "nel"
       ],
-      "name": "windows-nel"
+      "name": "windows-nel",
+      "cacheVariables": {
+        "HUNTER_ENABLED": true,
+        "HUNTER_CONFIGURATION_TYPES": "Release",
+        "HUNTER_ROOT": "${sourceDir}/build/.hunter"
+      }
     }
   ],
   "buildPresets": [
