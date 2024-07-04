@@ -7,7 +7,7 @@ ADD_EXECUTABLE(prim_export ${SRC})
 TARGET_LINK_LIBRARIES(prim_export
 					NeL::misc
 					nelligo
-					nel3d
+					NeL::3d
 					nelgeorges)
 
 NL_DEFAULT_PROPS(prim_export "Ryzom, Tools, World: Primitive Export")

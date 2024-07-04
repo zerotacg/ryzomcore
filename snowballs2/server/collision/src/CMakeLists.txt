@@ -6,7 +6,7 @@ TARGET_LINK_LIBRARIES(snowballs_collision_service
 						NeL::misc
 						nelnet
 						nelpacs
-						nel3d)
+						NeL::3d)
 
 NL_DEFAULT_PROPS(snowballs_collision_service "Snowballs, Services: Collision")
 NL_ADD_RUNTIME_FLAGS(snowballs_collision_service)

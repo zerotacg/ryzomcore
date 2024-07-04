@@ -6,7 +6,7 @@ TARGET_LINK_LIBRARIES(snowballs_client
 						NeL::misc
 						nelpacs
 						nelnet
-						nel3d)
+						NeL::3d)
 
 NL_DEFAULT_PROPS(snowballs_client "Snowballs, Client: Snowballs Client")
 NL_ADD_RUNTIME_FLAGS(snowballs_client)

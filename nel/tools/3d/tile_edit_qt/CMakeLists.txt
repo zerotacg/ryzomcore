@@ -28,7 +28,7 @@ SOURCE_GROUP(QtGeneratedMocSrc FILES ${TILE_EDIT_MOC_SRCS})
 
 ADD_EXECUTABLE(tile_edit_qt WIN32 ${TILE_EDIT_SRC} ${TILE_EDIT_MOC_SRCS} ${TILE_EDIT_RC_SRCS} ${TILE_EDIT_UI_HDRS})
 
-TARGET_LINK_LIBRARIES(tile_edit_qt ${QT_LIBRARIES} NeL::misc nel3d)
+TARGET_LINK_LIBRARIES(tile_edit_qt ${QT_LIBRARIES} NeL::misc NeL::3d)
 NL_DEFAULT_PROPS(tile_edit_qt "NeL, Tools, 3D: Qt Tile Editor")
 NL_ADD_RUNTIME_FLAGS(tile_edit_qt)
 

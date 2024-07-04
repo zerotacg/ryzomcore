@@ -40,7 +40,7 @@ ADD_LIBRARY(object_viewer_widget_qt ${TYPE}
 
 TARGET_LINK_LIBRARIES(object_viewer_widget_qt
         NeL::misc
-		nel3d
+        NeL::3d
 		${QT_LIBRARIES})
 
 NL_DEFAULT_PROPS(object_viewer_widget_qt "NeL, Tools, 3D: Object Viewer Qt Widget")

@@ -85,7 +85,7 @@ TARGET_LINK_LIBRARIES(
 						studio_plugin_gui_editor
 						studio_plugin_core
 						NeL::misc
-						nel3d
+						NeL::3d
 						nelgui
 						${QT_LIBRARIES}
 						${QT_QTOPENGL_LIBRARY}

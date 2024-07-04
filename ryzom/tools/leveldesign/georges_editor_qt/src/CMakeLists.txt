@@ -54,7 +54,7 @@ ADD_EXECUTABLE(georges_editor_qt WIN32 MACOSX_BUNDLE ${GEORGES_EDITOR_SRC} ${GEO
 
 TARGET_LINK_LIBRARIES(georges_editor_qt
 		NeL::misc
-		nel3d
+		NeL::3d
 		nelgeorges
 		${QT_LIBRARIES}
 		${QT_QTOPENGL_LIBRARY}

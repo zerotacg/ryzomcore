@@ -9,7 +9,6 @@ NL_TARGET_LIB(sevenzip ${LIB_SRC})
 NL_DEFAULT_PROPS(sevenzip "NeL, 3rd Party: Seven Zip")
 NL_ADD_RUNTIME_FLAGS(sevenzip)
 NL_ADD_LIB_SUFFIX(sevenzip)
-ADD_LIBRARY(NeL::sevenzip ALIAS sevenzip)
 set_target_properties(sevenzip PROPERTIES OUTPUT_NAME "nel_sevenzip")
 
 TARGET_COMPILE_DEFINITIONS(sevenzip PUBLIC _7ZIP_ST)

@@ -15,7 +15,7 @@ INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(world_editor
 					NeL::misc
 					nelligo
-					nel3d
+					NeL::3d
 					nelgeorges
 					nelpacs)
 

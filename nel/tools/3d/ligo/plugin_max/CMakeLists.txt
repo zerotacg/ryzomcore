@@ -9,7 +9,7 @@ INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(ligoscape_utility
 							NeL::misc
 							nelligo
-							nel3d
+							NeL::3d
 							nelpacs
 							${MAXSDK_LIBRARIES}
 							nel_patch_lib

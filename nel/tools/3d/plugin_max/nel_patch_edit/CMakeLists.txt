@@ -7,7 +7,7 @@ ADD_LIBRARY(nel_patch_edit SHARED ${SRC})
 INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(nel_patch_edit
 							NeL::misc
-							nel3d
+							NeL::3d
 							nel_mesh_lib 
 							nel_patch_lib 
 							nel_3dsmax_shared

@@ -42,7 +42,7 @@ ADD_EXECUTABLE(ryzom_configuration_qt WIN32 ${SRC} ${CLIENT_CONFIG_MOC_SRC} ${CL
 NL_DEFAULT_PROPS(ryzom_configuration_qt "Ryzom, Tools: Ryzom Configuration Qt" )
 NL_ADD_RUNTIME_FLAGS( ryzom_configuration_qt )
 NL_ADD_LIB_SUFFIX( ryzom_configuration_qt )
-TARGET_LINK_LIBRARIES( ryzom_configuration_qt NeL::misc nel3d ${QT_LIBRARIES} ${OPENGL_gl_LIBRARY})
+TARGET_LINK_LIBRARIES( ryzom_configuration_qt NeL::misc NeL::3d ${QT_LIBRARIES} ${OPENGL_gl_LIBRARY})
 
 IF(WITH_PCH)
   target_precompile_headers(ryzom_configuration_qt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdpch.h)

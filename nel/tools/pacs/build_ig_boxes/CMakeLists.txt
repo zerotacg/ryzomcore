@@ -6,7 +6,7 @@ ADD_EXECUTABLE(build_ig_boxes ${SRC})
 
 ADD_DEFINITIONS(-DNL_BIB_CFG="${NL_ETC_PREFIX}/")
 
-TARGET_LINK_LIBRARIES(build_ig_boxes NeL::misc nelpacs nel3d)
+TARGET_LINK_LIBRARIES(build_ig_boxes NeL::misc nelpacs NeL::3d)
 NL_DEFAULT_PROPS(build_ig_boxes "NeL, Tools, PACS: build_ig_boxes")
 NL_ADD_RUNTIME_FLAGS(build_ig_boxes)
 

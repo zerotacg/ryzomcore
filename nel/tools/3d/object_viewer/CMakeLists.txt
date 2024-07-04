@@ -6,8 +6,8 @@ ADD_LIBRARY(object_viewer_dll SHARED ${SRC})
 
 TARGET_LINK_LIBRARIES(object_viewer_dll
 							NeL::misc
-							nel3d
-							nelsound
+							NeL::3d
+							NeL::sound
 							nelsnd_lowlevel
 							Version.lib)
 							

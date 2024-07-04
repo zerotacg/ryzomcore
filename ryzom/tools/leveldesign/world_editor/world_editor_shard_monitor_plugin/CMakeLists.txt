@@ -4,7 +4,7 @@ ADD_LIBRARY(world_editor_shard_monitor_plugin SHARED ${SRC})
 
 TARGET_LINK_LIBRARIES(world_editor_shard_monitor_plugin
 							NeL::misc
-							nel3d
+							NeL::3d
 							nelsound
 							nelsnd_lowlevel
 							ryzom_gameshare)

@@ -9,7 +9,7 @@ ADD_EXECUTABLE(object_viewer WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(	object_viewer
 						NeL::misc
-						nel3d
+						NeL::3d
 						nelsound
 						nelsnd_lowlevel
 						object_viewer_dll)

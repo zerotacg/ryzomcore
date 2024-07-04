@@ -4,7 +4,7 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_EXECUTABLE(unbuild_land ${SRC})
 
-TARGET_LINK_LIBRARIES(unbuild_land nel3d NeL::misc nelligo)
+TARGET_LINK_LIBRARIES(unbuild_land NeL::3d NeL::misc nelligo)
 NL_DEFAULT_PROPS(unbuild_land "NeL, Tools, Ligo: Unbuild Land")
 NL_ADD_RUNTIME_FLAGS(unbuild_land)
 

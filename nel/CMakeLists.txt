@@ -1,3 +1,12 @@
+IF (COMMAND cmake_policy)
+  IF (POLICY CMP0048)
+    cmake_policy(SET CMP0048 NEW)
+  ENDIF ()
+ENDIF ()
+
+project(NeL VERSION ${RyzomCore_VERSION} LANGUAGES CXX C)
+
+
 IF(WITH_STATIC_DRIVERS)
   ADD_DEFINITIONS(-DNL_STATIC)
 ENDIF()
@@ -75,14 +84,6 @@ ADD_SUBDIRECTORY(tools)
 
 
 # packaging
-IF (COMMAND cmake_policy)
-  IF (POLICY CMP0048)
-    cmake_policy(SET CMP0048 NEW)
-  ENDIF ()
-ENDIF ()
-
-project(NeL VERSION ${RyzomCore_VERSION} LANGUAGES CXX C)
-
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -91,11 +92,10 @@ set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
-set(package_components "sevenzip misc")
 
 set(targets_export_name "${PROJECT_NAME}-targets")
 
-install(TARGETS misc sevenzip
+install(TARGETS 3d misc sevenzip
         COMPONENT libraries
         EXPORT "${targets_export_name}"
         FILE_SET HEADERS

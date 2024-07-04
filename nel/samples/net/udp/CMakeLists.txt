@@ -13,7 +13,7 @@ TARGET_LINK_LIBRARIES(nl_sample_udpserver NeL::misc nelnet)
 
 IF(WITH_3D)
   ADD_DEFINITIONS(-DUSE_3D)
-  TARGET_LINK_LIBRARIES(nl_sample_udpclient nel3d)
+  TARGET_LINK_LIBRARIES(nl_sample_udpclient NeL::3d)
 ENDIF()
 
 NL_DEFAULT_PROPS(nl_sample_udpclient "NeL, Samples, Net, UDP: UDP Client")

@@ -219,7 +219,7 @@ IF(WITH_RYZOM_CLIENT)
               nelnet
               nelligo
               nelgeorges
-              nel3d
+              NeL::3d
               nelgui
               nelsound
               NeL::sevenzip

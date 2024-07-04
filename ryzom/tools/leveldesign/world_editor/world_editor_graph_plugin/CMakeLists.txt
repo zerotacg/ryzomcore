@@ -4,7 +4,7 @@ ADD_LIBRARY(world_editor_graph_plugin SHARED ${SRC})
 
 TARGET_LINK_LIBRARIES(world_editor_graph_plugin
 							NeL::misc
-							nel3d
+							NeL::3d
 							nelsound
 							nelsnd_lowlevel
 							ryzom_mission_compiler_lib)

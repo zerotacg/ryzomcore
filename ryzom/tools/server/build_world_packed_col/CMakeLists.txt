@@ -11,7 +11,7 @@ TARGET_LINK_LIBRARIES(build_world_packed_col
 					ryzom_servershare 
 					ryzom_aishare
 					NeL::misc
-					nel3d)
+					NeL::3d)
 
 NL_DEFAULT_PROPS(build_world_packed_col "Ryzom, Tools, Server: Build World Packed Collisions")
 NL_ADD_RUNTIME_FLAGS(build_world_packed_col)

@@ -31,7 +31,7 @@ ENDIF()
 
 TARGET_LINK_LIBRARIES(nl_panoply_preview
 	NeL::misc
-	nel3d
+	NeL::3d
 	shared_widgets
 	${PANOPLY_PREVIEW_QT_LIBRARIES})
 
