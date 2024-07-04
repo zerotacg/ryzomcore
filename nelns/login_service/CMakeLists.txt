@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(login_service
 						${MYSQL_LIBRARIES}
 						${ZLIB_LIBRARIES}
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(login_service "NelNS, Services: Login Service")
 NL_ADD_RUNTIME_FLAGS(login_service)

@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_pd_support_service
 						ryzom_gameshare
 						ryzom_servershare
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(ryzom_pd_support_service "Ryzom, Services: PD Support Service (PDSS)")
 NL_ADD_RUNTIME_FLAGS(ryzom_pd_support_service)

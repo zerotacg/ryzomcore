@@ -92,10 +92,11 @@ set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(package_components 3d misc net sevenzip)
 
 set(targets_export_name "${PROJECT_NAME}-targets")
 
-install(TARGETS 3d misc sevenzip
+install(TARGETS 3d misc net sevenzip
         COMPONENT libraries
         EXPORT "${targets_export_name}"
         FILE_SET HEADERS

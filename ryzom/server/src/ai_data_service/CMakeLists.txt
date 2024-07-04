@@ -12,7 +12,7 @@ TARGET_LINK_LIBRARIES(ai_data_service
 					server_share
 					ai_share
 					NeL::misc
-					nelnet
+					NeL::net
 					nelgeorges
 					nelpacs
 					nelligo)

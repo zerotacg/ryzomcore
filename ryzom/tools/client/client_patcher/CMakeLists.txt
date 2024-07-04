@@ -22,7 +22,7 @@ INCLUDE_DIRECTORIES(
 TARGET_LINK_LIBRARIES(ryzom_client_patcher
 				NeL::misc
 				nelweb
-				nelnet
+				NeL::net
 				ryzom_gameshare
 				NeL::sevenzip
 				${CURL_LIBRARIES})

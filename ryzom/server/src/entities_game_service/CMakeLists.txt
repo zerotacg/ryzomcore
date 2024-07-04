@@ -99,7 +99,7 @@ TARGET_LINK_LIBRARIES(ryzom_entities_game_service
 						ryzom_pd
 						ryzom_gameplaymodule
 						NeL::misc
-						nelnet
+						NeL::net
 						nelweb
 						nelgeorges
 						nelligo)

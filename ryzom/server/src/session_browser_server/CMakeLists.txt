@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_session_browser_service
 						ryzom_gameshare
 						ryzom_servershare
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges)
 
 NL_DEFAULT_PROPS(ryzom_session_browser_service "Ryzom, Services: Session Browser Service (SBS)")

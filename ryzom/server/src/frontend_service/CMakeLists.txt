@@ -19,7 +19,7 @@ TARGET_LINK_LIBRARIES(ryzom_frontend_service
 						ryzom_gameshare
 						${MYSQL_LIBRARIES}
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges
 						nelligo)
 

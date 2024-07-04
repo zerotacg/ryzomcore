@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_tick_service
 						ryzom_adminmodules
 						ryzom_gameshare
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges)
 
 NL_DEFAULT_PROPS(ryzom_tick_service "Ryzom, Services: Tick Service (TS)")

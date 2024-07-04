@@ -4,7 +4,7 @@ ADD_EXECUTABLE(snowballs_collision_service WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(snowballs_collision_service
 						NeL::misc
-						nelnet
+						NeL::net
 						nelpacs
 						NeL::3d)
 

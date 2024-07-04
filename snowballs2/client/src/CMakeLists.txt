@@ -5,7 +5,7 @@ ADD_EXECUTABLE(snowballs_client WIN32 ${SRC})
 TARGET_LINK_LIBRARIES(snowballs_client
 						NeL::misc
 						nelpacs
-						nelnet
+						NeL::net
 						NeL::3d)
 
 NL_DEFAULT_PROPS(snowballs_client "Snowballs, Client: Snowballs Client")

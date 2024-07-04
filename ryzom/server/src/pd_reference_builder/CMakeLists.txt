@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_reference_builder_service
 						ryzom_gameshare
 						ryzom_pd
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges)
 
 NL_DEFAULT_PROPS(ryzom_reference_builder_service "Ryzom, Services: Reference Builder Service (RBS)")

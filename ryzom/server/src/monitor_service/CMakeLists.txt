@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_monitor_service
 						ryzom_gameshare
 						${MYSQL_LIBRARIES}
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges)
 
 NL_DEFAULT_PROPS(ryzom_monitor_service "Ryzom, Services: Monitor Service (MOS)")

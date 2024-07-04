@@ -8,7 +8,7 @@ TARGET_LINK_LIBRARIES(ryzom_welcome_service
 						ryzom_adminmodules
 						ryzom_gameshare
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(ryzom_welcome_service "Ryzom, Services: Ryzom Welcome Service (WS)")
 NL_ADD_RUNTIME_FLAGS(ryzom_welcome_service)

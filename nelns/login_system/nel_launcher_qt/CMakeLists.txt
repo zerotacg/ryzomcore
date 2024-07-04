@@ -24,7 +24,7 @@ TARGET_LINK_LIBRARIES(nel_launcher_qt
 						${QT_LIBRARIES}
 						${QT_QTMAIN_LIBRARY}
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(nel_launcher_qt "NelNS, Launcher: NeL Launcher Qt")
 NL_ADD_RUNTIME_FLAGS(nel_launcher_qt)

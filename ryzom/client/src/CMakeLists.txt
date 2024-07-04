@@ -216,7 +216,7 @@ IF(WITH_RYZOM_CLIENT)
 
   TARGET_LINK_LIBRARIES(ryzom_client
               NeL::misc
-              nelnet
+              NeL::net
               nelligo
               nelgeorges
               NeL::3d

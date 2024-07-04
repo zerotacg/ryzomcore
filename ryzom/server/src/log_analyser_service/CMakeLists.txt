@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_log_analyser_service
 						ryzom_gameshare
 						ryzom_pd
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges)
 
 NL_DEFAULT_PROPS(ryzom_log_analyser_service "Ryzom, Services: Log Analyzer Service (LAS)")

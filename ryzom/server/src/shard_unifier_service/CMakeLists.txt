@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_shard_unifier_service
 						ryzom_gameshare
 						ryzom_servershare
 						NeL::misc
-						nelnet
+						NeL::net
 						nelgeorges)
 
 NL_DEFAULT_PROPS(ryzom_shard_unifier_service "Ryzom, Services: Shard Unifier Service (SUS)")

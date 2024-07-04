@@ -16,7 +16,7 @@ TARGET_LINK_LIBRARIES(ryzom_servershare
 						NeL::misc
 						nelpacs
 						nelgeorges
-						nelnet
+						NeL::net
 						ryzom_gameshare
 						${MYSQL_LIBRARIES}
 						${ZLIB_LIBRARIES})

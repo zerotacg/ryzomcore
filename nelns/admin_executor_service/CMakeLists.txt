@@ -4,7 +4,7 @@ ADD_EXECUTABLE(admin_executor_service WIN32 ${SRC})
 
 TARGET_LINK_LIBRARIES(admin_executor_service
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(admin_executor_service "NelNS, Services: Admin Executor Service")
 NL_ADD_RUNTIME_FLAGS(admin_executor_service)

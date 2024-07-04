@@ -10,7 +10,7 @@ target_include_directories(nelns_naming_service PUBLIC ${CMAKE_CURRENT_SOURCE_DI
 
 target_link_libraries(nelns_naming_service
         NeL::misc
-        nelnet
+        NeL::net
 )
 
 ADD_EXECUTABLE(naming_service WIN32

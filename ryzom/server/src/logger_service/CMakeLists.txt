@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_logger_service
 						ryzom_gameshare
 						ryzom_servershare
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(ryzom_logger_service "Ryzom, Services: Logger Service (LGS)")
 NL_ADD_RUNTIME_FLAGS(ryzom_logger_service)

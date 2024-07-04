@@ -15,7 +15,7 @@ TARGET_LINK_LIBRARIES(sheets_packer
 					ryzom_gameshare
 					NeL::misc
 					nelgeorges
-					nelnet
+					NeL::net
 					nelligo)
 
 ADD_DEFINITIONS(${LIBXML2_DEFINITIONS})

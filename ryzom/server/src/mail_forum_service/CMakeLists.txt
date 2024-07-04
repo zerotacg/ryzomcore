@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_mail_forum_service
 						ryzom_gameshare
 						ryzom_servershare
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(ryzom_mail_forum_service "Ryzom, Services: Mail Forum Service (MFS)")
 NL_ADD_RUNTIME_FLAGS(ryzom_mail_forum_service)

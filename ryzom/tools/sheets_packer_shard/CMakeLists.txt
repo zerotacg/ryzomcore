@@ -27,7 +27,7 @@ TARGET_LINK_LIBRARIES(sheets_packer_shard
 					ryzom_aishare
 					NeL::misc
 					nelgeorges
-					nelnet
+					NeL::net
 					nelligo)
 
 NL_DEFAULT_PROPS(sheets_packer_shard "Ryzom, Tools: Sheets Packer Shard")

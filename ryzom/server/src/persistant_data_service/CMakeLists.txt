@@ -9,7 +9,7 @@ TARGET_LINK_LIBRARIES(ryzom_persistant_data_service
 						ryzom_gameshare
 						ryzom_pd
 						NeL::misc
-						nelnet)
+						NeL::net)
 
 NL_DEFAULT_PROPS(ryzom_persistant_data_service "Ryzom, Services: Persistent Data Service (PDS)")
 NL_ADD_RUNTIME_FLAGS(ryzom_persistant_data_service)
