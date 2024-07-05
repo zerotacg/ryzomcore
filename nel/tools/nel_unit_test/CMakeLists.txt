@@ -8,6 +8,6 @@ TARGET_LINK_LIBRARIES(nel_unit_test ${CPPTEST_LIBRARIES} NeL::misc NeL::net nell
 NL_DEFAULT_PROPS(nel_unit_test "Unit Tests")
 NL_ADD_RUNTIME_FLAGS(nel_unit_test)
 
-ADD_DEFINITIONS(-DNEL_UNIT_BASE="${PROJECT_SOURCE_DIR}/nel/tools/nel_unit_test/")
+ADD_DEFINITIONS(-DNEL_UNIT_BASE="${PROJECT_SOURCE_DIR}/tools/nel_unit_test/")
 
 INSTALL(TARGETS nel_unit_test RUNTIME DESTINATION ${NL_BIN_PREFIX})
