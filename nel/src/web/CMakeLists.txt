@@ -4,6 +4,7 @@ FILE(GLOB HEADERS ../../include/nel/web/*.h)
 SOURCE_GROUP("" FILES ${SRC} ${HEADERS})
 
 NL_TARGET_LIB(nelweb ${HEADERS} ${SRC})
+add_library_project_alias(nelweb web)
 
 INCLUDE_DIRECTORIES(../../3rdparty)
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${CURL_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})

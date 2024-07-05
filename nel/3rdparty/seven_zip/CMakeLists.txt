@@ -5,11 +5,12 @@ FILE(GLOB LIB_SRC *.cpp *.c *.h)
 LIST(REMOVE_ITEM LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/LzmaUtil.c)
 
 NL_TARGET_LIB(nel_sevenzip ${LIB_SRC})
+add_library_project_alias(nel_sevenzip sevenzip)
+
 # TARGET_LINK_LIBRARIES(nel_sevenzip ${PLATFORM_LINKFLAGS})
 NL_DEFAULT_PROPS(nel_sevenzip "NeL, 3rd Party: Seven Zip")
 NL_ADD_RUNTIME_FLAGS(nel_sevenzip)
 NL_ADD_LIB_SUFFIX(nel_sevenzip)
-add_library_project_alias(nel_sevenzip sevenzip)
 
 TARGET_COMPILE_DEFINITIONS(nel_sevenzip PUBLIC _7ZIP_ST)
 

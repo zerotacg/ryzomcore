@@ -4,6 +4,7 @@ FILE(GLOB HEADERS ../../include/nel/gui/*.h)
 SOURCE_GROUP("" FILES ${HEADERS} ${SRC})
 
 NL_TARGET_LIB(nelgui ${SRC} ${HEADERS})
+add_library_project_alias(nelgui gui)
 
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${LUA_INCLUDE_DIR} ${LUABIND_INCLUDE_DIR} ${CURL_INCLUDE_DIRS})
 
