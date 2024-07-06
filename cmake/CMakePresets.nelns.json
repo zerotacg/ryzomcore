@@ -1,0 +1,60 @@
+{
+  "version": 6,
+  "include": [
+    "CMakePresets.base.json",
+    "CMakePresets.os.json"
+  ],
+  "configurePresets": [
+    {
+      "binaryDir": "${sourceDir}/build/nelns",
+      "installDir": "${sourceDir}/build/install",
+      "name": "nelns",
+      "cacheVariables": {
+        "WITH_NELNS": true,
+        "WITH_NEL_TESTS": true,
+        "WITH_NEL": false,
+        "WITH_RYZOM": false,
+        "WITH_SNOWBALLS": false,
+        "WITH_STUDIO": false,
+        "WITH_TOOLS": false,
+        "WITH_QT5": true,
+        "CPACK_PACKAGE_NAME": "snowballs",
+        "CMAKE_PREFIX_PATH": "${sourceDir}/build/install"
+      }
+    },
+    {
+      "inherits": [
+        "linux",
+        "nelns"
+      ],
+      "name": "linux-nelns"
+    },
+    {
+      "inherits": [
+        "windows",
+        "nelns"
+      ],
+      "name": "windows-nelns"
+    }
+  ],
+  "buildPresets": [
+    {
+      "inherits": "release",
+      "name": "nelns",
+      "configurePreset": "nelns"
+    }
+  ],
+  "testPresets": [
+    {
+      "inherits": "default",
+      "name": "nelns",
+      "configurePreset": "nelns"
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "nelns",
+      "configurePreset": "nelns"
+    }
+  ]
+}
