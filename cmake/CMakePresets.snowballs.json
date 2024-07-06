@@ -10,6 +10,7 @@
       "name": "snowballs",
       "cacheVariables": {
         "WITH_SNOWBALLS": true,
+        "WITH_SNOWBALLS_PACKAGE": true,
         "WITH_NEL": false,
         "WITH_NELNS": false,
         "WITH_RYZOM": false,
