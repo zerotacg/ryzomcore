@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.27)
 
-project(nelns VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
+project(NeLNS VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
 
 find_package(NeL ${RyzomCore_VERSION} REQUIRED COMPONENTS misc net)
 
