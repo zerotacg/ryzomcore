@@ -4,6 +4,6 @@
     "cmake/CMakePresets.base.json",
     "cmake/CMakePresets.nel.json",
     "cmake/CMakePresets.nelns.json",
-    "cmake/CMakePresets.snowballs.json"
+    "snowballs2/CMakePresets.json"
   ]
 }

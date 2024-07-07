@@ -154,11 +154,7 @@ Thumbs.db
 .SyncArchive
 
 # build
-nel/build/*
-nelns/build/*
-snowballs/build/*
-ryzom/build/*
-build/*
+build/
 build-2010/*
 install/*
 build_*
