@@ -24,7 +24,8 @@
         "WITH_STUDIO": false,
         "WITH_TOOLS": false,
         "WITH_QT5": true,
-        "WITH_LIBGSF": true
+        "WITH_LIBGSF": true,
+        "CPACK_PACKAGE_NAME": "nel"
       }
     },
     {

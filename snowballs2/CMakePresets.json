@@ -19,6 +19,7 @@
         "WITH_STUDIO": false,
         "WITH_TOOLS": false,
         "WITH_QT5": true,
+        "CPACK_PACKAGE_NAME": "snowballs",
         "CMAKE_PREFIX_PATH": "${sourceDir}/build/install"
       }
     },
