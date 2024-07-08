@@ -1,8 +1,8 @@
 {
   "version": 6,
   "include": [
-    "CMakePresets.base.json",
-    "CMakePresets.os.json"
+    "../cmake/CMakePresets.base.json",
+    "../cmake/CMakePresets.os.json"
   ],
   "configurePresets": [
     {
@@ -31,6 +31,7 @@
     {
       "inherits": [
         "linux",
+        "vcpkg",
         "nel"
       ],
       "name": "linux-nel"

@@ -53,6 +53,10 @@ RUN apt install --yes \
         libxrandr-dev \
         wget
 
+# vcpkg
+RUN apt install --yes \
+        curl zip unzip tar
+
 # work arround as there is no debug version available
 RUN cp /lib/x86_64-linux-gnu/libcpptest.so /lib/x86_64-linux-gnu/libcpptestd.so
 
@@ -76,3 +80,9 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 USER $USERNAME
+
+ENV VCPKG_ROOT="/home/$USERNAME/vcpkg"
+ENV PATH="$PATH:$VCPKG_ROOT"
+
+RUN git clone https://github.com/microsoft/vcpkg.git $VCPKG_ROOT
+RUN $VCPKG_ROOT/bootstrap-vcpkg.sh --disableMetrics
