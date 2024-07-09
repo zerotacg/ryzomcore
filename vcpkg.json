@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "gtest",
+    "libxml2",
     "openssl"
   ]
 }
