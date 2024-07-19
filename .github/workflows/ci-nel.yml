@@ -92,5 +92,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: package-${{ needs.strings.outputs.project-name }}-${{ matrix.os }}-${{ needs.strings.outputs.build-version }}
-          path: ${{ needs.strings.outputs.build-output-dir }}/${{ needs.strings.outputs.project-name }}/${{ needs.strings.outputs.project-name }}-*
+          path: ${{ needs.strings.outputs.build-output-dir }}/${{ needs.strings.outputs.project-name }}-*
 
