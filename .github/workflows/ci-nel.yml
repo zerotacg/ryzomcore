@@ -51,9 +51,12 @@ jobs:
             preset: linux-${{ needs.strings.outputs.project-name }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - uses: lukka/get-cmake@latest
 
-      - uses: actions/checkout@v4
+      - uses: lukka/run-vcpkg@v11.5
+
       - name: Dependencies Linux
         if: runner.os == 'Linux'
         run: |
