@@ -406,43 +406,6 @@ void cbACKUnregistration(CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 }
 
 /**
- * Callback for service registration when the naming service goes down and up (don't need to broadcast)
- */
-void cbResendRegisteration(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	string name;
-	vector<CInetAddress> addr;
-	TServiceId sid;
-	msgin.serial(name);
-	msgin.serialCont(addr);
-	msgin.serial(sid);
-
-	doRegister(name, addr, sid, from, netbase, true);
-}
-
-/**
- * Callback for service registration.
- *
- * Message expected : RG
- * - Name of service to register (string)
- * - Address of service (CInetAddress)
- *
- * Message emitted : RG
- * - Allocated service identifier (TServiceId) or 0 if failed
- */
-void cbRegister(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	string name;
-	vector<CInetAddress> addr;
-	TServiceId sid;
-	msgin.serial(name);
-	msgin.serialCont(addr);
-	msgin.serial(sid);
-
-	doRegister(name, addr, sid, from, netbase);
-}
-
-/**
  * Callback for service unregistration.
  *
  * Message expected : UNI
@@ -487,31 +450,6 @@ uint16 doAllocatePort(const CInetAddress &addr)
 	} while (!ok);
 
 	return nextAvailablePort++;
-}
-
-/**
- * Callback for port allocation
- * Note: if a service queries a port but does not register itself to the naming service, the
- * port will remain allocated and unused.
- *
- * Message expected : QP
- * - Name of service to register (string)
- * - Address of service (CInetAddress) (its port can be 0)
- *
- * Message emitted : QP
- * - Allocated port number (uint16)
- */
-void cbQueryPort(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	// Allocate port
-	uint16 port = doAllocatePort(netbase.hostAddress(from));
-
-	// Send port back
-	CMessage msgout("QP");
-	msgout.serial(port);
-	netbase.send(msgout, from);
-
-	nlinfo("The service got port %hu", port);
 }
 
 /*
