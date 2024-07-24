@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <libgltf/ChannelTargetPath.h>
 #include <libgltf/JsonWriter.h>
 
 namespace gltf {
@@ -10,12 +11,12 @@ namespace gltf {
 struct ChannelTarget
 {
 	std::optional<size_t> node;
-	std::string path;
+	ChannelTargetPath path;
 
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("node", node);
-		writer.writeProperty("path", path);
+		writer.writeProperty("path", ChannelTargetPathNames[static_cast<int>(path)]);
 	}
 };
 

@@ -2,7 +2,17 @@ FILE(GLOB SRC *.cpp *.h)
 
 SOURCE_GROUP("" FILES ${SRC})
 
-ADD_EXECUTABLE(anim_to_gltf ${SRC})
+ADD_EXECUTABLE(anim_to_gltf)
+target_sources(anim_to_gltf
+        PRIVATE
+        main.cpp
+)
+target_sources(anim_to_gltf
+        PRIVATE
+        FILE_SET HEADERS
+        FILES
+        common.h
+)
 
 TARGET_LINK_LIBRARIES(anim_to_gltf nel3d nelmisc gltf::common)
 NL_DEFAULT_PROPS(anim_to_gltf "NeL, Tools, 3D: anim_to_gltf")

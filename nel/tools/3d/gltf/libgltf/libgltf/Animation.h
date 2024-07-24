@@ -19,7 +19,8 @@ struct Animation
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("name", name);
-		writer.writeProperty("channels", samplers);
+		writer.writeProperty("channels", channels);
+		writer.writeProperty("samplers", samplers);
 	}
 };
 

@@ -50,6 +50,8 @@ int main(int argc, char **argv)
 
 		nldebug("Time Begin %f End %f", input.getBeginTime(), input.getEndTime());
 		std::set<std::string> trackNames;
+		std::vector<gltf::Channel> channels;
+		std::vector<gltf::Sampler> samplers;
 		input.getTrackNames(trackNames);
 		for (auto &name : trackNames)
 		{
@@ -59,11 +61,42 @@ int main(int argc, char **argv)
 			{
 				auto track = input.getTrack(trackId);
 				nldebug("track is %s", track->getClassName().c_str());
+				if (name == "pos")
+				{
+					channels.push_back({ .sampler = samplers.size(),
+					    .target = {
+					        .node = 0,
+					        .path = gltf::ChannelTargetPath::TRANSLATION } });
+					samplers.push_back({
+					    .input = 0,
+					    .interpolation = gltf::Interpolation::LINEAR,
+					    .output = 0,
+					});
+				}
+				else if (name == "rotquat")
+				{
+					channels.push_back({ .sampler = samplers.size(),
+					    .target = {
+					        .node = 0,
+					        .path = gltf::ChannelTargetPath::ROTATION } });
+					samplers.push_back({
+					    .input = 0,
+					    .interpolation = gltf::Interpolation::LINEAR,
+					    .output = 0,
+					});
+				}
+				else
+				{
+					nlwarning("Can't determine channel target for track: %s", name.c_str());
+				}
 			}
 		}
 
 		gltf::Asset asset = {
-			.animations = {}
+			.animations = {
+			    { .name = baseFileName,
+			        .channels = channels,
+			        .samplers = samplers } }
 		};
 
 		FILE *fp = nlfopen(outputFilePath, "w");
