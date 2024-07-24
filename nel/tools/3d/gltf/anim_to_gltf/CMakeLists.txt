@@ -1,17 +1,15 @@
-FILE(GLOB SRC *.cpp *.h)
-
-SOURCE_GROUP("" FILES ${SRC})
-
 ADD_EXECUTABLE(anim_to_gltf)
 target_sources(anim_to_gltf
         PRIVATE
         main.cpp
+        mapper/TrackMapper.cpp
 )
 target_sources(anim_to_gltf
         PRIVATE
         FILE_SET HEADERS
         FILES
         common.h
+        mapper/TrackMapper.h
 )
 
 TARGET_LINK_LIBRARIES(anim_to_gltf nel3d nelmisc gltf::common)
