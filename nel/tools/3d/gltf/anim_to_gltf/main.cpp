@@ -13,8 +13,8 @@
 
 #include <libgltf/gltf.h>
 
-#include "common.h"
-#include "mapper/TrackMapper.h"
+#include <common.h>
+#include <mapper/TrackMapper.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -62,6 +62,8 @@ int main(int argc, char **argv)
 			{
 				auto track = input.getTrack(trackId);
 				nldebug("track is %s", track->getClassName().c_str());
+				SampleData data;
+				TrackMapper::map(track, data);
 				if (name == "pos")
 				{
 					channels.push_back({ .sampler = samplers.size(),

@@ -9,12 +9,21 @@ using namespace std;
 
 unique_ptr<TrackMapper> TrackMapper::from(ITrack *track)
 {
-	nlinfo("File is a '%s''", track->getClassName().c_str());
+	nldebug("Track is a '%s'", track->getClassName().c_str());
 
 	if (dynamic_cast<CTrackSampledVector *>(track))
 	{
 		return std::make_unique<TrackSampledVectorMapper>(dynamic_cast<CTrackSampledVector *>(track));
 	}
 
-	return std::unique_ptr<TrackMapper>{};
+	return std::unique_ptr<TrackMapper> {};
+}
+
+void TrackMapper::map(ITrack *source, SampleData &target)
+{
+	auto mapper = from(source);
+	if (mapper)
+	{
+		mapper->map(target);
+	}
 }

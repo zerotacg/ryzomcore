@@ -15,6 +15,8 @@ public:
 	virtual void map(SampleData& target) = 0;
 
 	static std::unique_ptr<TrackMapper> from(NL3D::ITrack *track);
+
+	static void map(NL3D::ITrack *source, SampleData& target);
 };
 
 #endif // TRACK_MAPPER_H
