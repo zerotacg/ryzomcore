@@ -3,13 +3,16 @@ target_sources(anim_to_gltf
         PRIVATE
         main.cpp
         mapper/TrackMapper.cpp
+        mapper/TrackSampledVectorMapper.cpp
 )
 target_sources(anim_to_gltf
         PRIVATE
         FILE_SET HEADERS
         FILES
         common.h
+        SampleData.h
         mapper/TrackMapper.h
+        mapper/TrackSampledVectorMapper.h
 )
 
 TARGET_LINK_LIBRARIES(anim_to_gltf nel3d nelmisc gltf::common)

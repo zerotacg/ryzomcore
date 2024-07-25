@@ -14,6 +14,7 @@
 #include <libgltf/gltf.h>
 
 #include "common.h"
+#include "mapper/TrackMapper.h"
 
 using namespace NL3D;
 using namespace NLMISC;
