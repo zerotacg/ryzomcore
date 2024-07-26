@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 					    .byteOffset = outputData.getPos(),
 					    .componentType = gltf::ComponentType::FLOAT,
 					    .count = data.time.size(),
-					    .type = data.type });
+					    .type = gltf::AccessorType::SCALAR });
 					for (auto value : data.time)
 					{
 						outputData.serial(value);
