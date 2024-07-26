@@ -38,15 +38,6 @@ int main(int argc, char **argv)
 		std::string inputFilePath = args.getAdditionalArg("input").front();
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
-		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
-		std::string positionFileName = fileName + ".position.bin";
-		std::string positionFilePath = outputDirectory + "/" + positionFileName;
-		std::string indicesFileName = fileName + ".indices.bin";
-		std::string indicesFilePath = outputDirectory + "/" + indicesFileName;
-		std::string normalsFileName = fileName + ".normal.bin";
-		std::string normalsFilePath = outputDirectory + "/" + normalsFileName;
-		std::string textureCoordinatesFileName = fileName + ".texcoord_0.bin";
-		std::string textureCoordinatesFilePath = outputDirectory + "/" + textureCoordinatesFileName;
 
 		registerSerial3d();
 		CScene::registerBasics();
