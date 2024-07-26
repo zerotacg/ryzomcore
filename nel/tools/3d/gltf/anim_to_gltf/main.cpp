@@ -40,6 +40,8 @@ int main(int argc, char **argv)
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
 		std::string baseFileName = CFile::getFilenameWithoutExtension(outputFilePath);
+		std::string dataFileName = baseFileName + ".bin";
+		std::string dataFilePath = outputDirectory + "/" + dataFileName;
 
 		registerSerial3d();
 		CScene::registerBasics();
@@ -49,10 +51,18 @@ int main(int argc, char **argv)
 		input.serial(inputFile);
 		inputFile.close();
 
+		COFile outputData;
+		if (!outputData.open(dataFilePath, false, false, false))
+		{
+			nlwarning("Can't open the file for writing: %s", dataFilePath.c_str());
+			return EXIT_FAILURE;
+		}
+
 		nldebug("Time Begin %f End %f", input.getBeginTime(), input.getEndTime());
 		std::set<std::string> trackNames;
 		std::vector<gltf::Channel> channels;
 		std::vector<gltf::Sampler> samplers;
+		std::vector<gltf::Accessor> accessors;
 		input.getTrackNames(trackNames);
 		for (auto &name : trackNames)
 		{
@@ -64,33 +74,63 @@ int main(int argc, char **argv)
 				nldebug("track is %s", track->getClassName().c_str());
 				SampleData data;
 				TrackMapper::map(track, data);
+				auto path = gltf::ChannelTargetPath::WEIGHTS;
 				if (name == "pos")
 				{
-					channels.push_back({ .sampler = samplers.size(),
-					    .target = {
-					        .node = 0,
-					        .path = gltf::ChannelTargetPath::TRANSLATION } });
-					samplers.push_back({
-					    .input = 0,
-					    .interpolation = gltf::Interpolation::LINEAR,
-					    .output = 0,
-					});
+					path = gltf::ChannelTargetPath::TRANSLATION;
 				}
 				else if (name == "rotquat")
 				{
-					channels.push_back({ .sampler = samplers.size(),
-					    .target = {
-					        .node = 0,
-					        .path = gltf::ChannelTargetPath::ROTATION } });
-					samplers.push_back({
-					    .input = 0,
-					    .interpolation = gltf::Interpolation::LINEAR,
-					    .output = 0,
-					});
+					path = gltf::ChannelTargetPath::ROTATION;
 				}
 				else
 				{
 					nlwarning("Can't determine channel target for track: %s", name.c_str());
+				}
+				if (path != gltf::ChannelTargetPath::WEIGHTS)
+				{
+					auto input = accessors.size();
+					accessors.push_back({ .bufferView = 0,
+					    .byteOffset = outputData.getPos(),
+					    .componentType = gltf::ComponentType::FLOAT,
+					    .count = data.time.size(),
+					    .type = data.type });
+					for (auto value : data.time)
+					{
+						outputData.serial(value);
+					}
+					auto output = accessors.size();
+					if (data.type == gltf::AccessorType::VEC3)
+					{
+						accessors.push_back({ .bufferView = 0,
+						    .byteOffset = outputData.getPos(),
+						    .componentType = gltf::ComponentType::FLOAT,
+						    .count = data.vector.size(),
+						    .type = data.type });
+						for (auto value : data.vector)
+						{
+							outputData.serial(value);
+						}
+					}
+					if (data.type == gltf::AccessorType::VEC4)
+					{
+						accessors.push_back({ .bufferView = 0,
+						    .byteOffset = outputData.getPos(),
+						    .componentType = gltf::ComponentType::FLOAT,
+						    .count = data.quaternion.size(),
+						    .type = data.type });
+						for (auto value : data.quaternion)
+						{
+							outputData.serial(value);
+						}
+					}
+					channels.push_back({ .sampler = samplers.size(),
+					    .target = {
+					        .node = 0,
+					        .path = path } });
+					samplers.push_back({ .input = input,
+					    .interpolation = data.interpolation,
+					    .output = output });
 				}
 			}
 		}
@@ -99,7 +139,10 @@ int main(int argc, char **argv)
 			.animations = {
 			    { .name = baseFileName,
 			        .channels = channels,
-			        .samplers = samplers } }
+			        .samplers = samplers } },
+			.accessors = accessors,
+			.bufferViews = { { .buffer = 0, .byteLength = outputData.getPos() } },
+			.buffers = { { .uri = dataFileName, .byteLength = outputData.getPos() } }
 		};
 
 		FILE *fp = nlfopen(outputFilePath, "w");
@@ -111,6 +154,8 @@ int main(int argc, char **argv)
 		gltf::JsonWriter gltfWriter = { .file = fp };
 		gltfWriter.write(asset);
 		fclose(fp);
+
+		outputData.close();
 
 		return EXIT_SUCCESS;
 	}
