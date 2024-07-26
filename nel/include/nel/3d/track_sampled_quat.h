@@ -120,6 +120,8 @@ public:
 	virtual ITrack	*applyTrackQuatHeaderCompressionPass1(uint &globalKeyOffset, CTrackSamplePack &quatPacker);
 	// @}
 
+	void	fill(std::vector<CQuat>  &keys);
+
 // **********************
 protected:
 

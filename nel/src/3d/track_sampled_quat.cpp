@@ -171,6 +171,17 @@ void	CTrackSampledQuat::build(const std::vector<uint16> &timeList, const std::ve
 }
 
 // ***************************************************************************
+void	CTrackSampledQuat::fill(std::vector<CQuat>  &keys)
+{
+	CQuat unpacked;
+	for(uint i=0;i<_Keys.size();i++)
+	{
+		_Keys[i].unpack(unpacked);
+		keys.push_back(unpacked);
+	}
+}
+
+// ***************************************************************************
 const IAnimatedValue	&CTrackSampledQuat::eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock)
 {
 	/* IF YOU CHANGE THIS CODE, CHANGE too CTrackSampledQuatSmallHeader

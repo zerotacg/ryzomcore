@@ -13,7 +13,7 @@
 
 struct SampleData
 {
-	std::vector<float> input;
+	std::vector<float> time;
 	gltf::Interpolation interpolation;
 	gltf::AccessorType type;
 

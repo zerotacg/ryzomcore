@@ -4,6 +4,7 @@ target_sources(anim_to_gltf
         main.cpp
         mapper/TrackMapper.cpp
         mapper/TrackSampledVectorMapper.cpp
+        mapper/TrackSampledQuatMapper.cpp
 )
 target_sources(anim_to_gltf
         PRIVATE
@@ -12,6 +13,7 @@ target_sources(anim_to_gltf
         common.h
         SampleData.h
         mapper/TrackMapper.h
+        mapper/TrackSampledVectorMapper.h
         mapper/TrackSampledVectorMapper.h
 )
 

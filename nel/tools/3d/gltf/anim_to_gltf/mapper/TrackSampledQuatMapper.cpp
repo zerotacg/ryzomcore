@@ -1,14 +1,14 @@
-#include <mapper/TrackSampledVectorMapper.h>
+#include <mapper/TrackSampledQuatMapper.h>
 
 using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-void TrackSampledVectorMapper::map(SampleData &output)
+void TrackSampledQuatMapper::map(SampleData &output)
 {
-	output.type = gltf::AccessorType::VEC3;
+	output.type = gltf::AccessorType::VEC4;
 	output.interpolation = gltf::Interpolation::LINEAR;
-	track->fill(output.vector);
+	track->fill(output.quaternion);
 
 	auto count = output.vector.size();
 	auto begin = track->getBeginTime();

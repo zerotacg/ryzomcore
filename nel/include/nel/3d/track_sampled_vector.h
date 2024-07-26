@@ -67,6 +67,8 @@ public:
 	void	build(const std::vector<uint16> &timeList, const std::vector<CVector> &keyList,
 		float beginTime, float endTime);
 
+	void fill(std::vector<CVector>  &keys);
+
 // **********************
 protected:
 
