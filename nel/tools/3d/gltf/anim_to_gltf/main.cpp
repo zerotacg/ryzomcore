@@ -74,6 +74,9 @@ int main(int argc, char **argv)
 				nldebug("track is %s", track->getClassName().c_str());
 				SampleData data;
 				TrackMapper::map(track, data);
+				if(data.time.empty()) {
+					continue;
+				}
 				auto path = gltf::ChannelTargetPath::WEIGHTS;
 				if (endsWith(name, "pos"))
 				{
