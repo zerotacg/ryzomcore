@@ -1,8 +1,10 @@
 #include <mapper/TrackMapper.h>
 
+#include <nel/3d/track.h>
 #include <nel/3d/track_sampled_vector.h>
 #include <nel/3d/track_sampled_quat.h>
 
+#include <mapper/TrackDefaultQuatMapper.h>
 #include <mapper/TrackSampledVectorMapper.h>
 #include <mapper/TrackSampledQuatMapper.h>
 
@@ -13,7 +15,11 @@ unique_ptr<TrackMapper> TrackMapper::from(ITrack *track)
 {
 	nldebug("Track is a '%s'", track->getClassName().c_str());
 
-	if (dynamic_cast<CTrackSampledVector *>(track))
+	if (dynamic_cast<CTrackDefaultQuat *>(track))
+	{
+		return std::make_unique<TrackDefaultQuatMapper>(dynamic_cast<CTrackDefaultQuat *>(track));
+	}
+	else if (dynamic_cast<CTrackSampledVector *>(track))
 	{
 		return std::make_unique<TrackSampledVectorMapper>(dynamic_cast<CTrackSampledVector *>(track));
 	}

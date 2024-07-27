@@ -3,6 +3,7 @@ target_sources(anim_to_gltf
         PRIVATE
         main.cpp
         mapper/TrackMapper.cpp
+        mapper/TrackDefaultQuatMapper.cpp
         mapper/TrackSampledVectorMapper.cpp
         mapper/TrackSampledQuatMapper.cpp
 )
@@ -13,8 +14,9 @@ target_sources(anim_to_gltf
         common.h
         SampleData.h
         mapper/TrackMapper.h
+        mapper/TrackDefaultQuatMapper.h
         mapper/TrackSampledVectorMapper.h
-        mapper/TrackSampledVectorMapper.h
+        mapper/TrackSampledQuatMapper.h
 )
 
 TARGET_LINK_LIBRARIES(anim_to_gltf nel3d nelmisc gltf::common)

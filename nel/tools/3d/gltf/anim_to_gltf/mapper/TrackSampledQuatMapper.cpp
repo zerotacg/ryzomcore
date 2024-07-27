@@ -10,7 +10,7 @@ void TrackSampledQuatMapper::map(SampleData &output)
 	output.interpolation = gltf::Interpolation::LINEAR;
 	track->fill(output.quaternion);
 
-	auto count = output.vector.size();
+	auto count = output.quaternion.size();
 	auto begin = track->getBeginTime();
 	auto end = track->getEndTime();
 	auto delta = (end - begin) / count;
