@@ -5,18 +5,18 @@
 
 #include <nel/3d/track.h>
 
-#include <SampleData.h>
+#include <ChannelData.h>
 
 class TrackMapper
 {
 public:
 	virtual ~TrackMapper() = default;
 
-	virtual void map(SampleData& target) = 0;
+	virtual void map(ChannelData & target) = 0;
 
 	static std::unique_ptr<TrackMapper> from(NL3D::ITrack *track);
 
-	static void map(NL3D::ITrack *source, SampleData& target);
+	static void map(NL3D::ITrack *source, ChannelData & target);
 };
 
 #endif // TRACK_MAPPER_H

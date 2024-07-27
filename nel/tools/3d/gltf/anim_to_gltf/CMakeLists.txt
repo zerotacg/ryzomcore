@@ -13,7 +13,7 @@ target_sources(anim_to_gltf
         FILE_SET HEADERS
         FILES
         common.h
-        SampleData.h
+        ChannelData.h
         mapper/TrackMapper.h
         mapper/TrackDefaultQuatMapper.h
         mapper/TrackDefaultVectorMapper.h

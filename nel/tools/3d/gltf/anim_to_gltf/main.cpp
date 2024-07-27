@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 			{
 				auto track = input.getTrack(trackId);
 				nldebug("track is %s", track->getClassName().c_str());
-				SampleData data;
+				ChannelData data;
 				TrackMapper::map(track, data);
 				auto path = gltf::ChannelTargetPath::WEIGHTS;
 				if (endsWith(name, "pos"))

@@ -13,7 +13,7 @@ public:
 	{
 	}
 
-	void map(SampleData& target) override;
+	void map(ChannelData & target) override;
 
 private:
 	NL3D::CTrackSampledVector *track;

@@ -11,7 +11,7 @@
 #include <libgltf/Interpolation.h>
 #include <libgltf/other.h>
 
-struct SampleData
+struct ChannelData
 {
 	std::vector<float> time;
 	gltf::Interpolation interpolation;

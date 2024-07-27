@@ -4,7 +4,7 @@ using namespace NL3D;
 using namespace NLMISC;
 using namespace std;
 
-void TrackSampledVectorMapper::map(SampleData &output)
+void TrackSampledVectorMapper::map(ChannelData &output)
 {
 	output.type = gltf::AccessorType::VEC3;
 	output.interpolation = gltf::Interpolation::LINEAR;

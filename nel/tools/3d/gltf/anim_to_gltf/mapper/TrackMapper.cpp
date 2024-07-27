@@ -36,7 +36,7 @@ unique_ptr<TrackMapper> TrackMapper::from(ITrack *track)
 	return std::unique_ptr<TrackMapper> {};
 }
 
-void TrackMapper::map(ITrack *source, SampleData &target)
+void TrackMapper::map(ITrack *source, ChannelData &target)
 {
 	auto mapper = from(source);
 	if (mapper)
