@@ -75,11 +75,11 @@ int main(int argc, char **argv)
 				SampleData data;
 				TrackMapper::map(track, data);
 				auto path = gltf::ChannelTargetPath::WEIGHTS;
-				if (name == "pos")
+				if (endsWith(name, "pos"))
 				{
 					path = gltf::ChannelTargetPath::TRANSLATION;
 				}
-				else if (name == "rotquat")
+				else if (endsWith(name, "rotquat"))
 				{
 					path = gltf::ChannelTargetPath::ROTATION;
 				}
@@ -127,7 +127,9 @@ int main(int argc, char **argv)
 					channels.push_back({ .sampler = samplers.size(),
 					    .target = {
 					        .node = 0,
-					        .path = path } });
+					        .path = path,
+					        .extras = name
+					    } });
 					samplers.push_back({ .input = input,
 					    .interpolation = data.interpolation,
 					    .output = output });

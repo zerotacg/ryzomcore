@@ -12,11 +12,16 @@ struct ChannelTarget
 {
 	std::optional<size_t> node;
 	ChannelTargetPath path;
+	std::string extras;
 
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("node", node);
 		writer.writeProperty("path", ChannelTargetPathNames[static_cast<int>(path)]);
+		if (!extras.empty())
+		{
+			writer.writeProperty("extras", extras);
+		}
 	}
 };
 
