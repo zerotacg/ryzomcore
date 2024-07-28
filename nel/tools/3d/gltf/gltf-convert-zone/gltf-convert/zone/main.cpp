@@ -21,11 +21,18 @@ using namespace NLMISC;
 using namespace NLLIGO;
 using namespace std;
 
-struct OutputData {
+struct OutputData
+{
 	std::vector<NLMISC::CVector> vertices;
 	std::vector<NLMISC::CVector> normals;
 	std::vector<NLMISC::CUV> uvs;
+	std::vector<uint16> tileIds;
 };
+
+uint8 getPatchTileIndex(const CPatch &patch, const uint8 s, const uint8 t)
+{
+	return t * patch.getOrderS() + s;
+}
 
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output)
 {
@@ -37,6 +44,7 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	nlassert(patch >= 0);
 	nlassert(patch < N);
 	const CPatch *pa = const_cast<const CZone *>(pZone)->getPatch(patch);
+	const auto &tiles = pa->Tiles;
 
 	// Build the faces.
 	//=================
@@ -49,6 +57,12 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	{
 		for (x = 0; x < ordS; x++)
 		{
+			auto tileIndex = getPatchTileIndex(*pa, x, y);
+			auto tileId = tiles[tileIndex].Tile[0];
+			if (tileId == NL_TILE_ELM_LAYER_EMPTY)
+			{
+				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
+			}
 			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
 			// CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
@@ -58,24 +72,25 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 			output.vertices.push_back(va);
 			output.uvs.push_back(a);
+			output.tileIds.push_back(tileId);
 			output.vertices.push_back(vb);
 			output.uvs.push_back(b);
+			output.tileIds.push_back(tileId);
 			output.vertices.push_back(vc);
 			output.uvs.push_back(c);
+			output.tileIds.push_back(tileId);
 
 			output.vertices.push_back(va);
 			output.uvs.push_back(a);
+			output.tileIds.push_back(tileId);
 			output.vertices.push_back(vc);
 			output.uvs.push_back(c);
+			output.tileIds.push_back(tileId);
 			output.vertices.push_back(vd);
 			output.uvs.push_back(d);
+			output.tileIds.push_back(tileId);
 		}
 	}
-}
-
-uint8 getPatchTileIndex(const CPatch & patch, const uint8 s, const uint8 t)
-{
-	return t*patch.getOrderS() + s;
 }
 
 std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string &argName)
@@ -219,6 +234,7 @@ int main(int argc, char **argv)
 		args.addAdditionalArg("output", "Output gltf file");
 		args.addArg("", "tile-bank", "[name.smallbank]", "TileBank to load");
 		args.addArg("", "use-relative-position", "", "Use position relative to zone, not global world position");
+		args.addArg("", "use-vertex-colors", "", "Use vertex colors for tile ids instead of materials");
 		args.addArg("", "image-prefix", "path", "prefix to add for image uris");
 		args.addArg("", "image-extension", "ext", "file extension to use for images");
 
@@ -236,11 +252,14 @@ int main(int argc, char **argv)
 		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
 		std::string positionFileName = fileName + ".position.bin";
 		std::string positionFilePath = outputDirectory + "/" + positionFileName;
-		std::string textureCordinateFileName = fileName + ".texcoord.bin";
-		std::string textureCordinateFilePath = outputDirectory + "/" + textureCordinateFileName;
+		std::string textureCoordinateFileName = fileName + ".texcoord.bin";
+		std::string textureCoordinateFilePath = outputDirectory + "/" + textureCoordinateFileName;
+		std::string colorFileName = fileName + ".color_0.bin";
+		std::string colorFilePath = outputDirectory + "/" + colorFileName;
 		std::string imageUriPrefix = getLongArgFirstValue(args, "image-prefix");
 		std::string imageFileExtension = getLongArgFirstValue(args, "image-extension");
-		bool useRelativePosion = args.haveLongArg("use-relative-position");
+		bool useRelativePosition = args.haveLongArg("use-relative-position");
+		bool useVertexColors = args.haveLongArg("use-vertex-colors");
 
 		CIFile zoneFile;
 		if (!zoneFile.open(inputFilePath))
@@ -259,7 +278,7 @@ int main(int argc, char **argv)
 		// add neighbor zones to get the same border vertices
 		addNeighborZones(landscape, zoneId, zoneSearchDirectory);
 		auto zone = landscape.getZone(zoneId);
-		if(zone == nullptr)
+		if (zone == nullptr)
 		{
 			nlerror("Can't finde zone with id: %i", zoneId);
 			return EXIT_FAILURE;
@@ -285,7 +304,7 @@ int main(int argc, char **argv)
 					auto tile = tileBank.getTile(tileId);
 					std::string imageUri = tile->getFileName(CTile::diffuse);
 					auto foundImage = filenameToTextureIndex.find(imageUri);
-					if(tile->isFree())
+					if (tile->isFree())
 					{
 						continue;
 					}
@@ -323,10 +342,16 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", positionFilePath.c_str());
 			return EXIT_FAILURE;
 		}
-		COFile outputTextureCordinate;
-		if (!outputTextureCordinate.open(textureCordinateFilePath, false, false, false))
+		COFile outputTextureCoordinate;
+		if (!outputTextureCoordinate.open(textureCoordinateFilePath, false, false, false))
 		{
-			nlwarning("Can't open the file for writing: %s", textureCordinateFilePath.c_str());
+			nlwarning("Can't open the file for writing: %s", textureCoordinateFilePath.c_str());
+			return EXIT_FAILURE;
+		}
+		COFile outputColor;
+		if (useVertexColors && !outputColor.open(colorFilePath, false, false, false))
+		{
+			nlwarning("Can't open the file for writing: %s", colorFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 
@@ -335,7 +360,7 @@ int main(int argc, char **argv)
 		CVector zoneOffset(160.0f * zoneX, -160.0f * zoneY, 0.0f);
 		gltf::Mesh mesh = { .name = zoneName(zoneX, zoneY) };
 		gltf::Node node = { .name = mesh.name, .mesh = 0, .translation = { zoneOffset.x, zoneOffset.y, zoneOffset.z } };
-		if (useRelativePosion)
+		if (useRelativePosition)
 		{
 			node.translation.clear();
 		}
@@ -355,59 +380,77 @@ int main(int argc, char **argv)
 
 			size_t verticesPerTile = 6;
 
-			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1 } };
+			gltf::Primitive primitive = { .attributes = {} };
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
-			gltf::Accessor texcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
+			gltf::Accessor texcoord0 = { .bufferView = 1, .byteOffset = outputTextureCoordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
+			gltf::Accessor color0 = { .bufferView = 2, .byteOffset = outputColor.getPos(), .componentType = gltf::ComponentType::UNSIGNED_SHORT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
 			auto vertex = output.vertices.begin();
 			auto uv = output.uvs.begin();
+			auto tileIds = output.tileIds.begin();
 			for (auto &texture : patch->Tiles)
 			{
 				auto tileId = texture.Tile[0];
-				if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+				if (!useVertexColors && tileId != NL_TILE_ELM_LAYER_EMPTY)
 				{
 					const auto name = materialName(tileId);
 					if (!bankFilePath.empty())
 					{
 						for (auto i = 0; i < asset.materials.size(); ++i)
 						{
-							auto& material(asset.materials[i]);
+							auto &material(asset.materials[i]);
 							if (material.name == name)
 							{
 								primitive.material = i;
 							}
 						}
-					} else
+					}
+					else
 					{
 						primitive.material = asset.materials.size();
-						for( auto i = 0; i < asset.materials.size(); ++i )
+						for (auto i = 0; i < asset.materials.size(); ++i)
 						{
-							if ( asset.materials[i].name == name )
+							if (asset.materials[i].name == name)
 							{
 								primitive.material = i;
 							}
 						}
-						if ( primitive.material == asset.materials.size())
+						if (primitive.material == asset.materials.size())
 						{
 							asset.materials.push_back({ .name = name });
 						}
 					}
 				}
 				primitive.attributes.position = asset.accessors.size();
+				position.byteOffset = outputPosition.getPos();
 				asset.accessors.push_back(position);
+
 				primitive.attributes.texcoord0 = asset.accessors.size();
+				texcoord0.byteOffset = outputTextureCoordinate.getPos();
 				asset.accessors.push_back(texcoord0);
-				mesh.primitives.push_back(primitive);
-				for( auto i = 0; i < verticesPerTile && vertex != output.vertices.end(); ++i, ++vertex)
+
+				for (auto i = 0; i < verticesPerTile && vertex != output.vertices.end(); ++i, ++vertex)
 				{
 					*vertex -= zoneOffset;
 					vertex->serial(outputPosition);
 				}
-				for( auto i = 0; i < verticesPerTile && uv != output.uvs.end(); ++i, ++uv)
+				for (auto i = 0; i < verticesPerTile && uv != output.uvs.end(); ++i, ++uv)
 				{
-					uv->serial(outputTextureCordinate);
+					uv->serial(outputTextureCoordinate);
 				}
-				position.byteOffset = outputPosition.getPos();
-				texcoord0.byteOffset = outputTextureCordinate.getPos();
+				if (useVertexColors)
+				{
+					primitive.attributes.color0 = asset.accessors.size();
+					color0.byteOffset = outputColor.getPos();
+					asset.accessors.push_back(color0);
+					for (auto i = 0; i < verticesPerTile && tileIds != output.tileIds.end(); ++i, ++tileIds)
+					{
+						uint16 dummy(0);
+						outputColor.serial(*tileIds); // R
+						outputColor.serial(dummy); // G
+						outputColor.serial(dummy); // B
+					}
+				}
+				mesh.primitives.push_back(primitive);
 			}
 		}
 		asset.meshes.push_back(mesh);
@@ -421,12 +464,18 @@ int main(int argc, char **argv)
 		gltf::JsonWriter gltfWriter = { .file = fp };
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
 		asset.buffers.push_back({ .uri = positionFileName, .byteLength = outputPosition.getPos() });
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCordinate.getPos() });
-		asset.buffers.push_back({ .uri = textureCordinateFileName, .byteLength = outputTextureCordinate.getPos() });
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCoordinate.getPos() });
+		asset.buffers.push_back({ .uri = textureCoordinateFileName, .byteLength = outputTextureCoordinate.getPos() });
+		if (useVertexColors)
+		{
+			asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputColor.getPos() });
+			asset.buffers.push_back({ .uri = colorFileName, .byteLength = outputColor.getPos() });
+		}
 		gltfWriter.write(asset);
 		fclose(fp);
 		outputPosition.close();
-		outputTextureCordinate.close();
+		outputTextureCoordinate.close();
+		outputColor.close();
 
 		return EXIT_SUCCESS;
 	}
