@@ -16,6 +16,8 @@
 
 #include <libgltf/gltf.h>
 
+#include <gltf-convert/zone/utils.h>
+
 using namespace NL3D;
 using namespace NLMISC;
 using namespace NLLIGO;
@@ -102,33 +104,6 @@ std::string getLongArgFirstValue(const NLMISC::CCmdArgs &args, const std::string
 		firstValue = values.front();
 	}
 	return firstValue;
-}
-
-std::string zoneName(const sint x, const sint y)
-{
-	std::ostringstream name;
-
-	name << y + 1 << "_" << static_cast<char>('A' + (x / 26)) << static_cast<char>('A' + (x % 26));
-
-	return name.str();
-}
-
-std::string zoneNameLowerCase(const sint x, const sint y)
-{
-	std::ostringstream name;
-
-	name << y + 1 << "_" << static_cast<char>('a' + (x / 26)) << static_cast<char>('a' + (x % 26));
-
-	return name.str();
-}
-
-std::string materialName(const uint16 tileId)
-{
-	std::ostringstream name;
-
-	name << "M_tile_id_" << tileId;
-
-	return name.str();
 }
 
 void addZone(CLandscape &landscape, const std::string &zoneSearchDirectory, const sint x, const sint y)
