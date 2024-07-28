@@ -65,6 +65,9 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
+			else {
+				nldebug("TileId %d", tileId);
+			}
 			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
 			// CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
@@ -358,7 +361,7 @@ int main(int argc, char **argv)
 			gltf::Primitive primitive = { .attributes = {} };
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
 			gltf::Accessor texcoord0 = { .bufferView = 1, .byteOffset = outputTextureCoordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
-			gltf::Accessor color0 = { .bufferView = 2, .byteOffset = outputColor.getPos(), .componentType = gltf::ComponentType::UNSIGNED_SHORT, .normalized = true, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
+			gltf::Accessor color0 = { .bufferView = 2, .byteOffset = outputColor.getPos(), .componentType = gltf::ComponentType::UNSIGNED_BYTE, .normalized = true, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
 			auto vertex = output.vertices.begin();
 			auto uv = output.uvs.begin();
 			auto tileIds = output.tileIds.begin();
@@ -419,9 +422,8 @@ int main(int argc, char **argv)
 					asset.accessors.push_back(color0);
 					for (auto i = 0; i < verticesPerTile && tileIds != output.tileIds.end(); ++i, ++tileIds)
 					{
-						uint16 dummy(0);
-						outputColor.serial(*tileIds); // R
-						outputColor.serial(dummy); // G
+						uint8 dummy(0);
+						outputColor.serial(*tileIds); // RG
 						outputColor.serial(dummy); // B
 					}
 				}
