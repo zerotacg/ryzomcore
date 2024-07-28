@@ -85,6 +85,7 @@ int main(int argc, char **argv)
 				nlinfo("Tile is free %i %s", tileId, imageUri.c_str());
 				continue;
 			}
+			nldebug("Tile %d has diffuse texture %s", tileId, imageUri.c_str());
 			auto foundImage = filenameToTextureIndex.find(imageUri);
 			if (foundImage == filenameToTextureIndex.end())
 			{
