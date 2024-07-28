@@ -358,7 +358,7 @@ int main(int argc, char **argv)
 			gltf::Primitive primitive = { .attributes = {} };
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
 			gltf::Accessor texcoord0 = { .bufferView = 1, .byteOffset = outputTextureCoordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
-			gltf::Accessor color0 = { .bufferView = 2, .byteOffset = outputColor.getPos(), .componentType = gltf::ComponentType::UNSIGNED_SHORT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
+			gltf::Accessor color0 = { .bufferView = 2, .byteOffset = outputColor.getPos(), .componentType = gltf::ComponentType::UNSIGNED_SHORT, .normalized = true, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
 			auto vertex = output.vertices.begin();
 			auto uv = output.uvs.begin();
 			auto tileIds = output.tileIds.begin();

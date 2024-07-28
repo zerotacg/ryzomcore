@@ -63,6 +63,18 @@ struct JsonWriter
 		fprintf(file, "%f", value);
 	}
 
+	void write(const bool &value)
+	{
+		if (value)
+		{
+			fprintf(file, "true");
+		}
+		else
+		{
+			fprintf(file, "false");
+		}
+	}
+
 	template <class T>
 	void writeProperty(const std::string &key, const T &value)
 	{
@@ -86,7 +98,7 @@ struct JsonWriter
 	template <class T>
 	void writeProperty(const std::string &key, const std::vector<T> &value)
 	{
-		if(!value.empty())
+		if (!value.empty())
 		{
 			writePropertyVector(key, value);
 		}
@@ -95,7 +107,7 @@ struct JsonWriter
 	template <class T>
 	void writeProperty(const std::string &key, const std::optional<T> &value)
 	{
-		if(value.has_value())
+		if (value.has_value())
 		{
 			writeProperty(key, value.value());
 		}

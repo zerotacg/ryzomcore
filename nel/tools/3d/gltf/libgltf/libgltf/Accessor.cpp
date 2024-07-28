@@ -10,6 +10,9 @@ void Accessor::write(JsonWriter &writer) const
 		writer.writeProperty("byteOffset", byteOffset);
 	}
 	writer.writeProperty("componentType", static_cast<uint32>(componentType));
+	if (normalized) {
+		writer.writeProperty("normalized", normalized);
+	}
 	writer.writeProperty("count", count);
 	writer.writeProperty("type", AccessorTypeNames[static_cast<int>(type)]);
 }

@@ -13,6 +13,7 @@ struct Accessor
 	size_t bufferView;
 	sint32 byteOffset;
 	ComponentType componentType;
+	bool normalized;
 	size_t count;
 	AccessorType type;
 
