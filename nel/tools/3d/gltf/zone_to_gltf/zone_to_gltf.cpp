@@ -21,9 +21,15 @@ using namespace NLMISC;
 using namespace NLLIGO;
 using namespace std;
 
-void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CVector> &vertices, std::vector<CUV> &textureCordinates)
+struct OutputData {
+	std::vector<NLMISC::CVector> vertices;
+	std::vector<NLMISC::CVector> normals;
+	std::vector<NLMISC::CUV> uvs;
+};
+
+void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output)
 {
-	vertices.clear();
+	output.vertices.clear();
 	CZone *pZone = landscape.getZone(zoneId);
 
 	// Then trace all patch.
@@ -50,19 +56,19 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, std::vector<CVec
 			CVector vc(pa->computeContinousVertex((x + 1) * OOS, (y + 1) * OOT));
 			CVector vd(pa->computeContinousVertex((x + 1) * OOS, y * OOT));
 
-			vertices.push_back(va);
-			textureCordinates.push_back(a);
-			vertices.push_back(vb);
-			textureCordinates.push_back(b);
-			vertices.push_back(vc);
-			textureCordinates.push_back(c);
+			output.vertices.push_back(va);
+			output.uvs.push_back(a);
+			output.vertices.push_back(vb);
+			output.uvs.push_back(b);
+			output.vertices.push_back(vc);
+			output.uvs.push_back(c);
 
-			vertices.push_back(va);
-			textureCordinates.push_back(a);
-			vertices.push_back(vc);
-			textureCordinates.push_back(c);
-			vertices.push_back(vd);
-			textureCordinates.push_back(d);
+			output.vertices.push_back(va);
+			output.uvs.push_back(a);
+			output.vertices.push_back(vc);
+			output.uvs.push_back(c);
+			output.vertices.push_back(vd);
+			output.uvs.push_back(d);
 		}
 	}
 }
@@ -343,18 +349,17 @@ int main(int argc, char **argv)
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
 			const CPatch *patch = static_cast<const CZone *>(zone)->getPatch(patchIndex);
-			std::vector<CVector> vertices;
-			std::vector<CUV> textureCordinates;
+			OutputData output;
 
-			buildFaces(landscape, zoneId, patchIndex, vertices, textureCordinates);
+			buildFaces(landscape, zoneId, patchIndex, output);
 
 			size_t verticesPerTile = 6;
 
 			gltf::Primitive primitive = { .attributes = { .position = 0, .texcoord0 = 1 } };
 			gltf::Accessor position = { .bufferView = 0, .byteOffset = outputPosition.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
-			gltf::Accessor textcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
-			auto vertex = vertices.begin();
-			auto uv = textureCordinates.begin();
+			gltf::Accessor texcoord0 = { .bufferView = 1, .byteOffset = outputTextureCordinate.getPos(), .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
+			auto vertex = output.vertices.begin();
+			auto uv = output.uvs.begin();
 			for (auto &texture : patch->Tiles)
 			{
 				auto tileId = texture.Tile[0];
@@ -390,19 +395,19 @@ int main(int argc, char **argv)
 				primitive.attributes.position = asset.accessors.size();
 				asset.accessors.push_back(position);
 				primitive.attributes.texcoord0 = asset.accessors.size();
-				asset.accessors.push_back(textcoord0);
+				asset.accessors.push_back(texcoord0);
 				mesh.primitives.push_back(primitive);
-				for( auto i = 0; i < verticesPerTile && vertex != vertices.end(); ++i, ++vertex)
+				for( auto i = 0; i < verticesPerTile && vertex != output.vertices.end(); ++i, ++vertex)
 				{
 					*vertex -= zoneOffset;
 					vertex->serial(outputPosition);
 				}
-				for( auto i = 0; i < verticesPerTile && uv != textureCordinates.end(); ++i, ++uv)
+				for( auto i = 0; i < verticesPerTile && uv != output.uvs.end(); ++i, ++uv)
 				{
 					uv->serial(outputTextureCordinate);
 				}
 				position.byteOffset = outputPosition.getPos();
-				textcoord0.byteOffset = outputTextureCordinate.getPos();
+				texcoord0.byteOffset = outputTextureCordinate.getPos();
 			}
 		}
 		asset.meshes.push_back(mesh);
