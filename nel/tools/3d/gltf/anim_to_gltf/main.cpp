@@ -59,6 +59,8 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
+		// reading creature.packed_sheets should be able to tell us which animations belong to a creature
+
 		nlinfo("Time Begin %f End %f", input.getBeginTime(), input.getEndTime());
 		std::set<std::string> trackNames;
 		std::vector<gltf::Channel> channels;
