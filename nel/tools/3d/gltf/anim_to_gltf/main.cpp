@@ -38,6 +38,7 @@ int main(int argc, char **argv)
 
 		std::string inputFilePath = args.getAdditionalArg("input").front();
 		std::string outputFilePath = args.getAdditionalArg("output").front();
+		std::string creatureSheetsFilePath = args.getAdditionalArg("creature-sheets").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
 		std::string baseFileName = CFile::getFilenameWithoutExtension(outputFilePath);
 		std::string dataFileName = baseFileName + ".bin";
@@ -58,7 +59,7 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		nldebug("Time Begin %f End %f", input.getBeginTime(), input.getEndTime());
+		nlinfo("Time Begin %f End %f", input.getBeginTime(), input.getEndTime());
 		std::set<std::string> trackNames;
 		std::vector<gltf::Channel> channels;
 		std::vector<gltf::Sampler> samplers;
@@ -67,11 +68,11 @@ int main(int argc, char **argv)
 		for (auto &name : trackNames)
 		{
 			auto trackId = input.getIdTrackByName(name);
-			nldebug("track name %s id %i", name.c_str(), trackId);
+			nlinfo("track name %s id %i", name.c_str(), trackId);
 			if (trackId != CAnimation::NotFound)
 			{
 				auto track = input.getTrack(trackId);
-				nldebug("track is %s", track->getClassName().c_str());
+				nlinfo("track is %s", track->getClassName().c_str());
 				ChannelData data;
 				TrackMapper::map(track, data);
 				auto path = gltf::ChannelTargetPath::WEIGHTS;

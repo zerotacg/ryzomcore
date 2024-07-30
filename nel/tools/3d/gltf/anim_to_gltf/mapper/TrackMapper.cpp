@@ -14,7 +14,7 @@ using namespace std;
 
 unique_ptr<TrackMapper> TrackMapper::from(ITrack *track)
 {
-	nldebug("Track is a '%s'", track->getClassName().c_str());
+	nlinfo("Track is a '%s'", track->getClassName().c_str());
 
 	if (dynamic_cast<CTrackDefaultQuat *>(track))
 	{
