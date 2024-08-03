@@ -67,16 +67,15 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 		for (x = 0; x < ordS; x++)
 		{
 			auto tileIndex = getPatchTileIndex(*pa, x, y);
-			auto tileId = tiles[tileIndex].Tile[0];
+			const auto &tile = tiles[tileIndex];
+			auto tileId = tile.Tile[0];
 			if (tileId == NL_TILE_ELM_LAYER_EMPTY)
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
-			else {
-				nldebug("TileId %d", tileId);
-			}
-//			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
-			 CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			// check CTessFace::initTileUvRGBA for correct calculation
+			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
+//		 	CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
 			CVector vb(pa->computeContinousVertex(x * OOS, (y + 1) * OOT));
 			CVector vc(pa->computeContinousVertex((x + 1) * OOS, (y + 1) * OOT));
