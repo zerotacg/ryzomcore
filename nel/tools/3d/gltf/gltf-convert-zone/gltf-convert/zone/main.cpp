@@ -41,6 +41,56 @@ uint8 getPatchTileIndex(const CPatch &patch, const uint8 s, const uint8 t)
 	return t * patch.getOrderS() + s;
 }
 
+CUV tileOrienation(CUV in, uint8 orientation)
+{
+	switch (orientation)
+	{
+	default:
+	case 0:
+		return { in.U, in.V };
+	case 1:
+		return { 1 - in.V, in.U };
+	case 2:
+		return { 1 - in.U, 1 - in.V };
+	case 3:
+		return { in.V, 1 - in.U };
+	}
+}
+
+CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
+{
+	CUV out(tileOrienation(in, orientation));
+	if (is256)
+	{
+		out *= 0.5;
+		if (uvOff == 2 || uvOff == 3)
+			out.U += 0.5;
+		if (uvOff == 1 || uvOff == 2)
+			out.V += 0.5;
+	}
+	// Do the HalfPixel scale bias.
+	float	hBiasXY, hBiasZ;
+	if(is256)
+	{
+		hBiasXY= CLandscapeGlobals::TilePixelBias256;
+		hBiasZ = CLandscapeGlobals::TilePixelScale256;
+	}
+	else
+	{
+		hBiasXY= CLandscapeGlobals::TilePixelBias128;
+		hBiasZ = CLandscapeGlobals::TilePixelScale128;
+	}
+
+
+	// Scale the UV.
+	out.U*= hBiasZ;
+	out.V*= hBiasZ;
+	out.U+= hBiasXY;
+	out.V+= hBiasXY;
+
+	return out;
+}
+
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output)
 {
 	output.vertices.clear();
@@ -74,8 +124,19 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
 			// check CTessFace::initTileUvRGBA for correct calculation
-			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
-//		 	CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			uint8 orientation = tile.getTileOrient(0);
+			CVector uvScaleBias;
+			bool is256;
+			uint8 uvOff;
+			tile.getTile256Info(is256, uvOff);
+//			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
+//			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			a = tileUV(a, orientation, is256, uvOff);
+			b = tileUV(b, orientation, is256, uvOff);
+			c = tileUV(c, orientation, is256, uvOff);
+			d = tileUV(d, orientation, is256, uvOff);
+
 			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
 			CVector vb(pa->computeContinousVertex(x * OOS, (y + 1) * OOT));
 			CVector vc(pa->computeContinousVertex((x + 1) * OOS, (y + 1) * OOT));
@@ -85,43 +146,31 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			CVector nc(bezierPatch.evalNormal((x + 1) * OOS, (y + 1) * OOT));
 			CVector nd(bezierPatch.evalNormal((x + 1) * OOS, y * OOT));
 
-			output.vertices.push_back({
-			    .position = va,
+			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .uv = a,
-			    .tileId = tileId
-			});
-			output.vertices.push_back({
-			    .position = vb,
+			    .tileId = tileId });
+			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
 			    .uv = b,
-			    .tileId = tileId
-			});
-			output.vertices.push_back({
-			    .position = vc,
+			    .tileId = tileId });
+			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .uv = c,
-			    .tileId = tileId
-			});
+			    .tileId = tileId });
 
-			output.vertices.push_back({
-			    .position = va,
+			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .uv = a,
-			    .tileId = tileId
-			});
-			output.vertices.push_back({
-			    .position = vc,
+			    .tileId = tileId });
+			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .uv = c,
-			    .tileId = tileId
-			});
-			output.vertices.push_back({
-			    .position = vd,
+			    .tileId = tileId });
+			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
 			    .uv = d,
-			    .tileId = tileId
-			});
+			    .tileId = tileId });
 		}
 	}
 }
