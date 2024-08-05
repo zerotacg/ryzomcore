@@ -69,24 +69,23 @@ CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
 			out.V += 0.5;
 	}
 	// Do the HalfPixel scale bias.
-	float	hBiasXY, hBiasZ;
-	if(is256)
+	float hBiasXY, hBiasZ;
+	if (is256)
 	{
-		hBiasXY= CLandscapeGlobals::TilePixelBias256;
+		hBiasXY = CLandscapeGlobals::TilePixelBias256;
 		hBiasZ = CLandscapeGlobals::TilePixelScale256;
 	}
 	else
 	{
-		hBiasXY= CLandscapeGlobals::TilePixelBias128;
+		hBiasXY = CLandscapeGlobals::TilePixelBias128;
 		hBiasZ = CLandscapeGlobals::TilePixelScale128;
 	}
 
-
 	// Scale the UV.
-	out.U*= hBiasZ;
-	out.V*= hBiasZ;
-	out.U+= hBiasXY;
-	out.V+= hBiasXY;
+	out.U *= hBiasZ;
+	out.V *= hBiasZ;
+	out.U += hBiasXY;
+	out.V += hBiasXY;
 
 	return out;
 }
@@ -129,8 +128,8 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			bool is256;
 			uint8 uvOff;
 			tile.getTile256Info(is256, uvOff);
-//			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
-//			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
+			//			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
+			//			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			a = tileUV(a, orientation, is256, uvOff);
 			b = tileUV(b, orientation, is256, uvOff);
@@ -232,52 +231,6 @@ void addNeighborZones(CLandscape &landscape, const uint16 &zoneId, const std::st
 	addZone(landscape, zoneSearchDirectory, x + 1, y + 1);
 }
 
-void validatePatchVertice(const CVector &vertex, const float scale, const CVector &zoneOffset)
-{
-	auto normalized = vertex - zoneOffset;
-	const float delta = 0.5f;
-	if (normalized.x < -delta || 160.0f + delta < normalized.x)
-	{
-		nlwarning("vertex is outside of zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
-	}
-	// else if (normalized.x < scale || (160.0f - scale) < normalized.x)
-	// {
-	// 	nlwarning("vertex is close to zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
-	// }
-	else if (normalized.y < -160.0f - delta || delta < normalized.y)
-	{
-		nlwarning("vertex is outside of zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
-	}
-	// else if (normalized.y < (-160.0f + scale) || -scale < normalized.y)
-	// {
-	// 	nlwarning("vertex is close to zone grid %f %f %f", normalized.x, normalized.y, normalized.z);
-	// }
-}
-
-void clampVertice(CVector &vertex)
-{
-	const float delta(0.125);
-	vertex.x = std::clamp(vertex.x, 0.0f, 160.f);
-	if (vertex.x < delta)
-	{
-		vertex.x = 0.0f;
-	}
-	else if (vertex.x > (160.0f - delta))
-	{
-		vertex.x = 160.0f;
-	}
-
-	vertex.y = std::clamp(vertex.y, -160.0f, 0.f);
-	if (vertex.y > -delta)
-	{
-		vertex.y = 0.0f;
-	}
-	else if (vertex.y < (-160.0f + delta))
-	{
-		vertex.y = -160.0f;
-	}
-}
-
 int main(int argc, char **argv)
 {
 	try
@@ -325,7 +278,6 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		CLandscape landscape;
-		bool firstVertex = true;
 		CAABBox bbox;
 		CZone loadingZone;
 		loadingZone.serial(zoneFile);
@@ -356,36 +308,39 @@ int main(int argc, char **argv)
 				nldebug("TileBank land count %i", tileBank.getLandCount());
 				nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
 				nldebug("TileBank tile count %i", tileBank.getTileCount());
-				for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
+				if (!useTileIdChannel)
 				{
-					auto tile = tileBank.getTile(tileId);
-					std::string imageUri = tile->getFileName(CTile::diffuse);
-					auto foundImage = filenameToTextureIndex.find(imageUri);
-					if (tile->isFree())
+					for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
 					{
-						continue;
-					}
-					if (foundImage == filenameToTextureIndex.end())
-					{
-						gltf::Texture texture = { .source = images.size() };
-						filenameToTextureIndex[imageUri] = tileIdToTexture[tileId] = textures.size();
-						if (!imageFileExtension.empty())
+						auto tile = tileBank.getTile(tileId);
+						std::string imageUri = tile->getFileName(CTile::diffuse);
+						auto foundImage = filenameToTextureIndex.find(imageUri);
+						if (tile->isFree())
 						{
-							auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
-							imageFileName += ".";
-							imageFileName += imageFileExtension;
-							imageUri = CFile::getPath(imageUri);
-							imageUri += imageFileName;
+							continue;
 						}
-						std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
-						images.push_back({ .uri = imageUriPrefix + imageUri });
-						textures.push_back(texture);
+						if (foundImage == filenameToTextureIndex.end())
+						{
+							gltf::Texture texture = { .source = images.size() };
+							filenameToTextureIndex[imageUri] = tileIdToTexture[tileId] = textures.size();
+							if (!imageFileExtension.empty())
+							{
+								auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
+								imageFileName += ".";
+								imageFileName += imageFileExtension;
+								imageUri = CFile::getPath(imageUri);
+								imageUri += imageFileName;
+							}
+							std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
+							images.push_back({ .uri = imageUriPrefix + imageUri });
+							textures.push_back(texture);
+						}
+						else
+						{
+							tileIdToTexture[tileId] = foundImage->second;
+						}
+						materials.push_back(gltf::Material { .name = materialName(tileId), .pbrMetallicRoughness = gltf::MetallicRoughness { tileIdToTexture[tileId] } });
 					}
-					else
-					{
-						tileIdToTexture[tileId] = foundImage->second;
-					}
-					materials.push_back(gltf::Material { .name = materialName(tileId), .pbrMetallicRoughness = gltf::MetallicRoughness { tileIdToTexture[tileId] } });
 				}
 			}
 		}
