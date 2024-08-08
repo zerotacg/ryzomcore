@@ -19,6 +19,8 @@ QJsonObject toJson( const CZone& source );
 QJsonArray toJson( const CVector& source );
 QJsonArray toJson( const std::vector<CBorderVertex>& source );
 QJsonObject toJson( const CBorderVertex& source );
+QJsonObject toJson( const CAABBoxExt& source );
+
 
 int main(int argc, char **argv)
 {
@@ -45,7 +47,6 @@ int main(int argc, char **argv)
 	zone.serial(zoneFile);
 	zoneFile.close();
 	zone.retrieve(zoneInfo);
-	auto &patchBias(zone.getPatchBias());
 	auto zoneName(QFileInfo(inputFilePath).baseName());
 
 	QJsonObject json(toJson(zone));
@@ -64,8 +65,19 @@ QJsonObject toJson( const CZone& source )
 	QJsonObject json;
 
 	json["zoneId"] = source.getZoneId();
-	json["patchScale"] = source.getPatchScale();
+	json["bbox"] = toJson(source.getZoneBB());
 	json["patchBias"] = toJson(source.getPatchBias());
+	json["patchScale"] = source.getPatchScale();
+
+	return json;
+}
+
+QJsonObject toJson( const CAABBoxExt& source )
+{
+	QJsonObject json;
+
+	json["center"] = toJson(source.getCenter());
+	json["halfSize"] = toJson(source.getHalfSize());
 
 	return json;
 }

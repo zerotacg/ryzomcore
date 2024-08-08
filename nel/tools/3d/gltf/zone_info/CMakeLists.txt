@@ -12,4 +12,4 @@ qt_add_executable(zone_info
         zone_info.cpp
 )
 
-target_link_libraries(zone_info PUBLIC Qt6::Core nel3d nelmisc)
+target_link_libraries(zone_info PRIVATE Qt6::Core nel3d nelmisc)
