@@ -30,6 +30,7 @@ struct VertexData
 	CVector normal;
 	CUV uv;
 	uint16 tileId;
+	uint16 tileId1;
 };
 struct OutputData
 {
@@ -118,6 +119,7 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			auto tileIndex = getPatchTileIndex(*pa, x, y);
 			const auto &tile = tiles[tileIndex];
 			auto tileId = tile.Tile[0];
+			auto tileId1 = tile.Tile[1];
 			if (tileId == NL_TILE_ELM_LAYER_EMPTY)
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
@@ -148,28 +150,28 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .uv = a,
-			    .tileId = tileId });
+			    .tileId = tileId, .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
 			    .uv = b,
-			    .tileId = tileId });
+			    .tileId = tileId, .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .uv = c,
-			    .tileId = tileId });
+			    .tileId = tileId, .tileId1 = tileId1 });
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .uv = a,
-			    .tileId = tileId });
+			    .tileId = tileId, .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .uv = c,
-			    .tileId = tileId });
+			    .tileId = tileId, .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
 			    .uv = d,
-			    .tileId = tileId });
+			    .tileId = tileId, .tileId1 = tileId1 });
 		}
 	}
 }
@@ -463,7 +465,7 @@ int main(int argc, char **argv)
 					vertex->uv.serial(outputTextureCoordinate);
 
 					float u(vertex->tileId);
-					float v(0);
+					float v(vertex->tileId1);
 					outputTileId.serial(u);
 					outputTileId.serial(v);
 				}
