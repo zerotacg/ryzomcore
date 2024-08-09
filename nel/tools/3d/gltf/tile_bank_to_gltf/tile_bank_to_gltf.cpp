@@ -73,34 +73,36 @@ int main(int argc, char **argv)
 		std::map<uint16, size_t> tileIdToTexture;
 		CTileBank tileBank;
 		tileBank.serial(bankFile);
-		nldebug("TileBank land count %i", tileBank.getLandCount());
-		nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
-		nldebug("TileBank tile count %i", tileBank.getTileCount());
+		nlinfo("TileBank land count %i", tileBank.getLandCount());
+		nlinfo("TileBank tileSet count %i", tileBank.getTileSetCount());
+		nlinfo("TileBank tile count %i", tileBank.getTileCount());
 		for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
 		{
 			auto tile = tileBank.getTile(tileId);
-			std::string imageUri = tile->getFileName(CTile::diffuse);
+			std::string diffuseImageUri = tile->getFileName(CTile::diffuse);
+			std::string alphaImageUri = tile->getFileName(CTile::alpha);
+			std::string additiveImageUri = tile->getFileName(CTile::additive);
 			if (tile->isFree())
 			{
-				nlinfo("Tile is free %i %s", tileId, imageUri.c_str());
+//				nldebug("Tile is free %i %s", tileId, diffuseImageUri.c_str());
 				continue;
 			}
-			nldebug("Tile %d has diffuse texture %s", tileId, imageUri.c_str());
-			auto foundImage = filenameToTextureIndex.find(imageUri);
+			nlinfo("Tile %d has diffuse texture %s", tileId, diffuseImageUri.c_str());
+			auto foundImage = filenameToTextureIndex.find(diffuseImageUri);
 			if (foundImage == filenameToTextureIndex.end())
 			{
 				gltf::Texture texture = { .source = images.size() };
-				filenameToTextureIndex[imageUri] = tileIdToTexture[tileId] = textures.size();
+				filenameToTextureIndex[diffuseImageUri] = tileIdToTexture[tileId] = textures.size();
 				if (!imageFileExtension.empty())
 				{
-					auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
+					auto imageFileName = CFile::getFilenameWithoutExtension(diffuseImageUri);
 					imageFileName += ".";
 					imageFileName += imageFileExtension;
-					imageUri = CFile::getPath(imageUri);
-					imageUri += imageFileName;
+					diffuseImageUri = CFile::getPath(diffuseImageUri);
+					diffuseImageUri += imageFileName;
 				}
-				std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
-				images.push_back({ .uri = imageUriPrefix + imageUri });
+				std::replace(diffuseImageUri.begin(), diffuseImageUri.end(), '\\', '/');
+				images.push_back({ .uri = imageUriPrefix + diffuseImageUri });
 				textures.push_back(texture);
 			}
 			else
