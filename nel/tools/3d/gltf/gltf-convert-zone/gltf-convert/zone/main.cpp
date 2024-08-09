@@ -42,7 +42,7 @@ uint8 getPatchTileIndex(const CPatch &patch, const uint8 s, const uint8 t)
 	return t * patch.getOrderS() + s;
 }
 
-CUV tileOrienation(CUV in, uint8 orientation)
+CUV tileOrientation(CUV in, uint8 orientation)
 {
 	switch (orientation)
 	{
@@ -60,7 +60,7 @@ CUV tileOrienation(CUV in, uint8 orientation)
 
 CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
 {
-	CUV out(tileOrienation(in, orientation));
+	CUV out(tileOrientation(in, orientation));
 	if (is256)
 	{
 		out *= 0.5;
