@@ -129,8 +129,6 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			bool is256;
 			uint8 uvOff;
 			tile.getTile256Info(is256, uvOff);
-			//			CUV a(x * OOS, y * OOT), b(x * OOS, (y + 1) * OOT), c((x + 1) * OOS, (y + 1) * OOT), d((x + 1) * OOS, y * OOT);
-			//			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
 			a = tileUV(a, orientation, is256, uvOff);
 			b = tileUV(b, orientation, is256, uvOff);
@@ -149,28 +147,34 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .uv = a,
-			    .tileId = tileId, .tileId1 = tileId1 });
+			    .tileId = tileId,
+			    .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
 			    .uv = b,
-			    .tileId = tileId, .tileId1 = tileId1 });
+			    .tileId = tileId,
+			    .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .uv = c,
-			    .tileId = tileId, .tileId1 = tileId1 });
+			    .tileId = tileId,
+			    .tileId1 = tileId1 });
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .uv = a,
-			    .tileId = tileId, .tileId1 = tileId1 });
+			    .tileId = tileId,
+			    .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .uv = c,
-			    .tileId = tileId, .tileId1 = tileId1 });
+			    .tileId = tileId,
+			    .tileId1 = tileId1 });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
 			    .uv = d,
-			    .tileId = tileId, .tileId1 = tileId1 });
+			    .tileId = tileId,
+			    .tileId1 = tileId1 });
 		}
 	}
 }
@@ -294,11 +298,6 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		COFile outputPosition;
-		std::vector<gltf::Image> images;
-		std::vector<gltf::Texture> textures;
-		std::vector<gltf::Material> materials;
-		std::map<std::string, size_t> filenameToTextureIndex;
-		std::map<uint16, size_t> tileIdToTexture;
 		try
 		{
 			if (!bankFilePath.empty())
@@ -350,9 +349,6 @@ int main(int argc, char **argv)
 			node.translation.clear();
 		}
 		gltf::Asset asset = {
-			.materials = materials,
-			.textures = textures,
-			.images = images,
 			.nodes = { node },
 			.scenes = { { .nodes = { 0 } } }
 		};
@@ -379,9 +375,9 @@ int main(int argc, char **argv)
 		}
 		gltf::Primitive primitive = { .attributes = {} };
 		gltf::Accessor position = { .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC3 };
-		gltf::Accessor normal = { .bufferView = 1,  .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(),.type = gltf::AccessorType::VEC3 };
-		gltf::Accessor texcoord0 = { .bufferView = 2,  .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT,.count = output.vertices.size(),.type = gltf::AccessorType::VEC2 };
-		gltf::Accessor texcoord1 = { .bufferView = 3,  .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT,.count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
+		gltf::Accessor normal = { .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC3 };
+		gltf::Accessor texcoord0 = { .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
+		gltf::Accessor texcoord1 = { .bufferView = 3, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
 		primitive.attributes.position = asset.accessors.size();
 		asset.accessors.push_back(position);
 
