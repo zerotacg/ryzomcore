@@ -93,7 +93,6 @@ CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
 
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output)
 {
-	output.vertices.clear();
 	CZone *pZone = landscape.getZone(zoneId);
 
 	// Then trace all patch.
@@ -310,40 +309,6 @@ int main(int argc, char **argv)
 				nldebug("TileBank land count %i", tileBank.getLandCount());
 				nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
 				nldebug("TileBank tile count %i", tileBank.getTileCount());
-				if (!useTileIdChannel)
-				{
-					for (auto tileId = 0; tileId < tileBank.getTileCount(); ++tileId)
-					{
-						auto tile = tileBank.getTile(tileId);
-						std::string imageUri = tile->getFileName(CTile::diffuse);
-						auto foundImage = filenameToTextureIndex.find(imageUri);
-						if (tile->isFree())
-						{
-							continue;
-						}
-						if (foundImage == filenameToTextureIndex.end())
-						{
-							gltf::Texture texture = { .source = images.size() };
-							filenameToTextureIndex[imageUri] = tileIdToTexture[tileId] = textures.size();
-							if (!imageFileExtension.empty())
-							{
-								auto imageFileName = CFile::getFilenameWithoutExtension(imageUri);
-								imageFileName += ".";
-								imageFileName += imageFileExtension;
-								imageUri = CFile::getPath(imageUri);
-								imageUri += imageFileName;
-							}
-							std::replace(imageUri.begin(), imageUri.end(), '\\', '/');
-							images.push_back({ .uri = imageUriPrefix + imageUri });
-							textures.push_back(texture);
-						}
-						else
-						{
-							tileIdToTexture[tileId] = foundImage->second;
-						}
-						materials.push_back(gltf::Material { .name = materialName(tileId), .pbrMetallicRoughness = gltf::MetallicRoughness { tileIdToTexture[tileId] } });
-					}
-				}
 			}
 		}
 		catch (const Exception &)
@@ -391,87 +356,45 @@ int main(int argc, char **argv)
 			.nodes = { node },
 			.scenes = { { .nodes = { 0 } } }
 		};
+		OutputData output;
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
 			const CPatch *patch = static_cast<const CZone *>(zone)->getPatch(patchIndex);
-			OutputData output;
 
 			buildFaces(landscape, zoneId, patchIndex, output);
-
-			size_t verticesPerTile = 6;
-
-			gltf::Primitive primitive = { .attributes = {} };
-			gltf::Accessor position = { .bufferView = 0, .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
-			gltf::Accessor normal = { .bufferView = 1, .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC3 };
-			gltf::Accessor texcoord0 = { .bufferView = 2, .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
-			gltf::Accessor texcoord1 = { .bufferView = 3, .componentType = gltf::ComponentType::FLOAT, .count = verticesPerTile, .type = gltf::AccessorType::VEC2 };
-			auto vertex = output.vertices.begin();
-			for (auto &texture : patch->Tiles)
-			{
-				auto tileId = texture.Tile[0];
-				if (!useTileIdChannel && tileId != NL_TILE_ELM_LAYER_EMPTY)
-				{
-					const auto name = materialName(tileId);
-					if (!bankFilePath.empty())
-					{
-						for (auto i = 0; i < asset.materials.size(); ++i)
-						{
-							auto &material(asset.materials[i]);
-							if (material.name == name)
-							{
-								primitive.material = i;
-							}
-						}
-					}
-					else
-					{
-						primitive.material = asset.materials.size();
-						for (auto i = 0; i < asset.materials.size(); ++i)
-						{
-							if (asset.materials[i].name == name)
-							{
-								primitive.material = i;
-							}
-						}
-						if (primitive.material == asset.materials.size())
-						{
-							asset.materials.push_back({ .name = name });
-						}
-					}
-				}
-				primitive.attributes.position = asset.accessors.size();
-				position.byteOffset = outputPosition.getPos();
-				asset.accessors.push_back(position);
-
-				primitive.attributes.normal = asset.accessors.size();
-				normal.byteOffset = outputNormal.getPos();
-				asset.accessors.push_back(normal);
-
-				primitive.attributes.texcoord0 = asset.accessors.size();
-				texcoord0.byteOffset = outputTextureCoordinate.getPos();
-				asset.accessors.push_back(texcoord0);
-
-				primitive.attributes.texcoord1 = asset.accessors.size();
-				texcoord1.byteOffset = outputTileId.getPos();
-				asset.accessors.push_back(texcoord1);
-
-				for (auto i = 0; i < verticesPerTile && vertex != output.vertices.end(); ++i, ++vertex)
-				{
-					vertex->position -= zoneOffset;
-					vertex->position.serial(outputPosition);
-
-					vertex->normal.serial(outputNormal);
-
-					vertex->uv.serial(outputTextureCoordinate);
-
-					float u(vertex->tileId);
-					float v(vertex->tileId1);
-					outputTileId.serial(u);
-					outputTileId.serial(v);
-				}
-				mesh.primitives.push_back(primitive);
-			}
 		}
+		for (auto &vertex : output.vertices)
+		{
+			vertex.position -= zoneOffset;
+			vertex.position.serial(outputPosition);
+
+			vertex.normal.serial(outputNormal);
+
+			vertex.uv.serial(outputTextureCoordinate);
+
+			float u(vertex.tileId);
+			float v(vertex.tileId1);
+			outputTileId.serial(u);
+			outputTileId.serial(v);
+		}
+		gltf::Primitive primitive = { .attributes = {} };
+		gltf::Accessor position = { .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC3 };
+		gltf::Accessor normal = { .bufferView = 1,  .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(),.type = gltf::AccessorType::VEC3 };
+		gltf::Accessor texcoord0 = { .bufferView = 2,  .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT,.count = output.vertices.size(),.type = gltf::AccessorType::VEC2 };
+		gltf::Accessor texcoord1 = { .bufferView = 3,  .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT,.count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
+		primitive.attributes.position = asset.accessors.size();
+		asset.accessors.push_back(position);
+
+		primitive.attributes.normal = asset.accessors.size();
+		asset.accessors.push_back(normal);
+
+		primitive.attributes.texcoord0 = asset.accessors.size();
+		asset.accessors.push_back(texcoord0);
+
+		primitive.attributes.texcoord1 = asset.accessors.size();
+		asset.accessors.push_back(texcoord1);
+
+		mesh.primitives.push_back(primitive);
 		asset.meshes.push_back(mesh);
 
 		FILE *fp = nlfopen(outputFilePath, "w");
