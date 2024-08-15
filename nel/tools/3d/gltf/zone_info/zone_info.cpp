@@ -20,6 +20,8 @@ QJsonArray toJson( const CVector& source );
 QJsonArray toJson( const std::vector<CBorderVertex>& source );
 QJsonObject toJson( const CBorderVertex& source );
 QJsonObject toJson( const CAABBoxExt& source );
+QJsonObject toJson( const CPatch& source );
+QJsonArray patchesToJson( const CZone& source );
 
 
 int main(int argc, char **argv)
@@ -68,6 +70,27 @@ QJsonObject toJson( const CZone& source )
 	json["bbox"] = toJson(source.getZoneBB());
 	json["patchBias"] = toJson(source.getPatchBias());
 	json["patchScale"] = source.getPatchScale();
+	json["patches"] = patchesToJson( source );
+
+	return json;
+}
+
+QJsonArray patchesToJson( const CZone& source )
+{
+	QJsonArray json;
+	for(auto i = 0; i < source.getNumPatchs(); ++i) {
+		json.append(toJson(*source.getPatch(i)));
+	}
+
+	return json;
+}
+
+QJsonObject toJson(const CPatch &source )
+{
+	QJsonObject json;
+
+	json["orderS"] = source.getOrderS();
+	json["orderT"] = source.getOrderT();
 
 	return json;
 }
