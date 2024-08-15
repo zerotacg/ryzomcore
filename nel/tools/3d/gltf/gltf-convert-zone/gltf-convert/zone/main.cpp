@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <QImage>
 
 #include <nel/misc/types_nl.h>
 #include <nel/misc/file.h>
@@ -98,15 +99,14 @@ CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
 	return out;
 }
 
-void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output)
+void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *image)
 {
 	CUV A(0, 0), B(0, 1), C(1, 1), D(1, 0);
 	CZone *pZone = landscape.getZone(zoneId);
 
 	// Then trace all patch.
-	sint N = pZone->getNumPatchs();
 	nlassert(patch >= 0);
-	nlassert(patch < N);
+	nlassert(patch < pZone->getNumPatchs());
 	const CPatch *pa = const_cast<const CZone *>(pZone)->getPatch(patch);
 	const auto &tiles = pa->Tiles;
 	CBezierPatch bezierPatch;
@@ -116,6 +116,8 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	//=================
 	sint ordS = pa->getOrderS();
 	sint ordT = pa->getOrderT();
+	uint16 offset_x((patch * 16) % image[0].width()), offset_y((patch / image[0].width()) * 16);
+	nlassert(offset_y < image[0].height());
 	sint x, y;
 	float OOS = 1.0f / ordS;
 	float OOT = 1.0f / ordT;
@@ -129,6 +131,9 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
+			image[0].setPixel(offset_x + x, offset_y + y, tile.Tile[0]);
+			image[1].setPixel(offset_x + x, offset_y + y, tile.Tile[1]);
+			image[2].setPixel(offset_x + x, offset_y + y, tile.Tile[2]);
 			CVector uvScaleBias;
 			bool is256;
 			uint8 uvOff;
@@ -259,6 +264,14 @@ int main(int argc, char **argv)
 	{
 		NLMISC::CApplicationContext myApplicationContext;
 		NLMISC::CCmdArgs args;
+		QImage tileInfo[TILE_LAYER_COUNT]= {
+			{256, 256, QImage::Format_Grayscale16},
+			{256, 256, QImage::Format_Grayscale16},
+			{256, 256, QImage::Format_Grayscale16}
+		};
+		tileInfo[0].fill(0);
+		tileInfo[1].fill(0);
+		tileInfo[2].fill(0);
 
 		args.addAdditionalArg("input", ".zonel Input zone file");
 		args.addAdditionalArg("output", "Output gltf file");
@@ -278,10 +291,10 @@ int main(int argc, char **argv)
 		std::string bankFilePath = getLongArgFirstValue(args, "tile-bank");
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
-		std::string baseName = CFile::getFilenameWithoutExtension(outputFilePath);
-		std::string positionFilename = baseName + ".position.bin";
+		std::string basename = CFile::getFilenameWithoutExtension(outputFilePath);
+		std::string positionFilename = basename + ".position.bin";
 		std::string positionFilePath = outputDirectory + "/" + positionFilename;
-		std::string normalFilename = baseName + ".normal.bin";
+		std::string normalFilename = basename + ".normal.bin";
 		std::string normalFilePath = outputDirectory + "/" + normalFilename;
 		std::string imageUriPrefix = getLongArgFirstValue(args, "image-prefix");
 		std::string imageFileExtension = getLongArgFirstValue(args, "image-extension");
@@ -338,13 +351,13 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 		COFile textCoord0Output;
-		auto textCoord0Filename = openFile(textCoord0Output, outputDirectory, baseName, ".texcoord_0.bin");
+		auto textCoord0Filename = openFile(textCoord0Output, outputDirectory, basename, ".texcoord_0.bin");
 		if (!textCoord0Filename)
 		{
 			return EXIT_FAILURE;
 		}
 		COFile outputTileId;
-		auto tileIdFilename = openFile(outputTileId, outputDirectory, baseName, ".tile-id.bin");
+		auto tileIdFilename = openFile(outputTileId, outputDirectory, basename, ".tile-id.bin");
 		if (!tileIdFilename)
 		{
 			return EXIT_FAILURE;
@@ -366,8 +379,11 @@ int main(int argc, char **argv)
 		OutputData output;
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
-			buildFaces(landscape, zoneId, patchIndex, output);
+			buildFaces(landscape, zoneId, patchIndex, output, tileInfo);
 		}
+		tileInfo[0].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-0.png"));
+		tileInfo[1].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-1.png"));
+		tileInfo[2].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-2.png"));
 		for (auto &vertex : output.vertices)
 		{
 			vertex.position -= zoneOffset;
