@@ -24,13 +24,19 @@ using namespace NLMISC;
 using namespace NLLIGO;
 using namespace std;
 
+const uint8 TILE_LAYER_COUNT = 3;
+
+struct TileData
+{
+	uint16 tileId;
+	CUV uv;
+};
+
 struct VertexData
 {
 	CVector position;
 	CVector normal;
-	CUV uv;
-	uint16 tileId;
-	uint16 tileId1;
+	TileData tile[TILE_LAYER_COUNT];
 };
 struct OutputData
 {
@@ -42,6 +48,7 @@ uint8 getPatchTileIndex(const CPatch &patch, const uint8 s, const uint8 t)
 	return t * patch.getOrderS() + s;
 }
 
+// check CTessFace::initTileUvRGBA for correct calculation
 CUV tileOrientation(CUV in, uint8 orientation)
 {
 	switch (orientation)
@@ -93,6 +100,7 @@ CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
 
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output)
 {
+	CUV A(0, 0), B(0, 1), C(1, 1), D(1, 0);
 	CZone *pZone = landscape.getZone(zoneId);
 
 	// Then trace all patch.
@@ -117,23 +125,14 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 		{
 			auto tileIndex = getPatchTileIndex(*pa, x, y);
 			const auto &tile = tiles[tileIndex];
-			auto tileId = tile.Tile[0];
-			auto tileId1 = tile.Tile[1];
-			if (tileId == NL_TILE_ELM_LAYER_EMPTY)
+			if (tile.Tile[0] == NL_TILE_ELM_LAYER_EMPTY)
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
-			// check CTessFace::initTileUvRGBA for correct calculation
-			uint8 orientation = tile.getTileOrient(0);
 			CVector uvScaleBias;
 			bool is256;
 			uint8 uvOff;
 			tile.getTile256Info(is256, uvOff);
-			CUV a(0, 0), b(0, 1), c(1, 1), d(1, 0);
-			a = tileUV(a, orientation, is256, uvOff);
-			b = tileUV(b, orientation, is256, uvOff);
-			c = tileUV(c, orientation, is256, uvOff);
-			d = tileUV(d, orientation, is256, uvOff);
 
 			CVector va(pa->computeContinousVertex(x * OOS, y * OOT));
 			CVector vb(pa->computeContinousVertex(x * OOS, (y + 1) * OOT));
@@ -146,35 +145,41 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
-			    .uv = a,
-			    .tileId = tileId,
-			    .tileId1 = tileId1 });
+			    .tile = {
+			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
-			    .uv = b,
-			    .tileId = tileId,
-			    .tileId1 = tileId1 });
+			    .tile = {
+			        { .tileId = tile.Tile[0], .uv = tileUV(B, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(B, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(B, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
-			    .uv = c,
-			    .tileId = tileId,
-			    .tileId1 = tileId1 });
+			    .tile = {
+			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
-			    .uv = a,
-			    .tileId = tileId,
-			    .tileId1 = tileId1 });
+			    .tile = {
+			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
-			    .uv = c,
-			    .tileId = tileId,
-			    .tileId1 = tileId1 });
+			    .tile = {
+			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
-			    .uv = d,
-			    .tileId = tileId,
-			    .tileId1 = tileId1 });
+			    .tile = {
+			        { .tileId = tile.Tile[0], .uv = tileUV(D, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(D, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(D, tile.getTileOrient(2), is256, uvOff) } } });
 		}
 	}
 }
@@ -236,6 +241,18 @@ void addNeighborZones(CLandscape &landscape, const uint16 &zoneId, const std::st
 	addZone(landscape, zoneSearchDirectory, x + 1, y + 1);
 }
 
+std::optional<std::string> openFile(COFile &file, const std::string &directory, const std::string &basename, const std::string &suffix)
+{
+	std::string fileName = basename + suffix;
+	std::string filePath = directory + "/" + fileName;
+	if (!file.open(filePath, false, false, false))
+	{
+		nlwarning("Can't open the file for writing: %s", filePath.c_str());
+	}
+
+	return fileName;
+}
+
 int main(int argc, char **argv)
 {
 	try
@@ -247,7 +264,6 @@ int main(int argc, char **argv)
 		args.addAdditionalArg("output", "Output gltf file");
 		args.addArg("", "tile-bank", "[name.smallbank]", "TileBank to load");
 		args.addArg("", "use-relative-position", "", "Use position relative to zone, not global world position");
-		args.addArg("", "use-tile-id-channel", "", "Use texture channel for tile ids instead of materials");
 		args.addArg("", "image-prefix", "path", "prefix to add for image uris");
 		args.addArg("", "image-extension", "ext", "file extension to use for images");
 
@@ -262,19 +278,14 @@ int main(int argc, char **argv)
 		std::string bankFilePath = getLongArgFirstValue(args, "tile-bank");
 		std::string outputFilePath = args.getAdditionalArg("output").front();
 		std::string outputDirectory = CFile::getPath(outputFilePath);
-		std::string fileName = CFile::getFilenameWithoutExtension(outputFilePath);
-		std::string positionFileName = fileName + ".position.bin";
-		std::string positionFilePath = outputDirectory + "/" + positionFileName;
-		std::string normalFileName = fileName + ".normal.bin";
-		std::string normalFilePath = outputDirectory + "/" + normalFileName;
-		std::string textureCoordinateFileName = fileName + ".texcoord.bin";
-		std::string textureCoordinateFilePath = outputDirectory + "/" + textureCoordinateFileName;
-		std::string tileIdFileName = fileName + ".tile-id.bin";
-		std::string tileIdFilePath = outputDirectory + "/" + tileIdFileName;
+		std::string baseName = CFile::getFilenameWithoutExtension(outputFilePath);
+		std::string positionFilename = baseName + ".position.bin";
+		std::string positionFilePath = outputDirectory + "/" + positionFilename;
+		std::string normalFilename = baseName + ".normal.bin";
+		std::string normalFilePath = outputDirectory + "/" + normalFilename;
 		std::string imageUriPrefix = getLongArgFirstValue(args, "image-prefix");
 		std::string imageFileExtension = getLongArgFirstValue(args, "image-extension");
 		bool useRelativePosition = args.haveLongArg("use-relative-position");
-		bool useTileIdChannel = args.haveLongArg("use-tile-id-channel");
 
 		CIFile zoneFile;
 		if (!zoneFile.open(inputFilePath))
@@ -326,16 +337,16 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", normalFilePath.c_str());
 			return EXIT_FAILURE;
 		}
-		COFile outputTextureCoordinate;
-		if (!outputTextureCoordinate.open(textureCoordinateFilePath, false, false, false))
+		COFile textCoord0Output;
+		auto textCoord0Filename = openFile(textCoord0Output, outputDirectory, baseName, ".texcoord_0.bin");
+		if (!textCoord0Filename)
 		{
-			nlwarning("Can't open the file for writing: %s", textureCoordinateFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 		COFile outputTileId;
-		if (!outputTileId.open(tileIdFilePath, false, false, false))
+		auto tileIdFilename = openFile(outputTileId, outputDirectory, baseName, ".tile-id.bin");
+		if (!tileIdFilename)
 		{
-			nlwarning("Can't open the file for writing: %s", tileIdFilePath.c_str());
 			return EXIT_FAILURE;
 		}
 
@@ -355,8 +366,6 @@ int main(int argc, char **argv)
 		OutputData output;
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
-			const CPatch *patch = static_cast<const CZone *>(zone)->getPatch(patchIndex);
-
 			buildFaces(landscape, zoneId, patchIndex, output);
 		}
 		for (auto &vertex : output.vertices)
@@ -366,18 +375,16 @@ int main(int argc, char **argv)
 
 			vertex.normal.serial(outputNormal);
 
-			vertex.uv.serial(outputTextureCoordinate);
+			vertex.tile[0].uv.serial(textCoord0Output);
 
-			float u(vertex.tileId);
-			float v(vertex.tileId1);
-			outputTileId.serial(u);
-			outputTileId.serial(v);
+			CUV tileIds(vertex.tile[0].tileId, vertex.tile[1].tileId);
+			tileIds.serial(outputTileId);
 		}
 		gltf::Primitive primitive = { .attributes = {} };
-		gltf::Accessor position = { .bufferView = 0, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC3 };
-		gltf::Accessor normal = { .bufferView = 1, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC3 };
+		gltf::Accessor position = gltf::Accessor::position( 0, 0, output.vertices.size() );
+		gltf::Accessor normal = gltf::Accessor::normal( 1, 0, output.vertices.size() );
 		gltf::Accessor texcoord0 = { .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
-		gltf::Accessor texcoord1 = { .bufferView = 3, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
+		gltf::Accessor tileId = { .bufferView = 3, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
 		primitive.attributes.position = asset.accessors.size();
 		asset.accessors.push_back(position);
 
@@ -388,7 +395,7 @@ int main(int argc, char **argv)
 		asset.accessors.push_back(texcoord0);
 
 		primitive.attributes.texcoord1 = asset.accessors.size();
-		asset.accessors.push_back(texcoord1);
+		asset.accessors.push_back(tileId);
 
 		mesh.primitives.push_back(primitive);
 		asset.meshes.push_back(mesh);
@@ -401,21 +408,18 @@ int main(int argc, char **argv)
 		}
 		gltf::JsonWriter gltfWriter = { .file = fp };
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputPosition.getPos() });
-		asset.buffers.push_back({ .uri = positionFileName, .byteLength = outputPosition.getPos() });
+		asset.buffers.push_back({ .uri = positionFilename, .byteLength = outputPosition.getPos() });
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputNormal.getPos() });
-		asset.buffers.push_back({ .uri = normalFileName, .byteLength = outputNormal.getPos() });
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTextureCoordinate.getPos() });
-		asset.buffers.push_back({ .uri = textureCoordinateFileName, .byteLength = outputTextureCoordinate.getPos() });
-		if (useTileIdChannel)
-		{
-			asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTileId.getPos() });
-			asset.buffers.push_back({ .uri = tileIdFileName, .byteLength = outputTileId.getPos() });
-		}
+		asset.buffers.push_back({ .uri = normalFilename, .byteLength = outputNormal.getPos() });
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = textCoord0Output.getPos() });
+		asset.buffers.push_back({ .uri = textCoord0Filename.value(), .byteLength = textCoord0Output.getPos() });
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTileId.getPos() });
+		asset.buffers.push_back({ .uri = tileIdFilename.value(), .byteLength = outputTileId.getPos() });
 		gltfWriter.write(asset);
 		fclose(fp);
 		outputPosition.close();
 		outputNormal.close();
-		outputTextureCoordinate.close();
+		textCoord0Output.close();
 		outputTileId.close();
 
 		return EXIT_SUCCESS;

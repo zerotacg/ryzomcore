@@ -19,6 +19,28 @@ struct Accessor
 
 	void write(JsonWriter &writer) const;
 
+	static Accessor position(uint32 bufferView, sint32 byteOffset, size_t count)
+	{
+		return Accessor {
+			.bufferView = bufferView,
+			.byteOffset = byteOffset,
+			.componentType = ComponentType::FLOAT,
+			.count = count,
+			.type = AccessorType::VEC3
+		};
+	}
+
+	static Accessor normal(uint32 bufferView, sint32 byteOffset, size_t count)
+	{
+		return Accessor {
+			.bufferView = bufferView,
+			.byteOffset = byteOffset,
+			.componentType = ComponentType::FLOAT,
+			.count = count,
+			.type = AccessorType::VEC3
+		};
+	}
+
 	static Accessor weight(uint32 bufferView, sint32 byteOffset, size_t count)
 	{
 		return Accessor {
