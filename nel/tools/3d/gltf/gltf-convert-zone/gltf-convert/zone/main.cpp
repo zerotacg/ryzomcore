@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <QImage>
+#include <QPainter>
 
 #include <nel/misc/types_nl.h>
 #include <nel/misc/file.h>
@@ -28,6 +29,7 @@ using namespace std;
 const uint8 TILE_LAYER_COUNT = 3;
 const uint16 TILE_INFO_SIZE = 256;
 const uint16 PATCH_SIZE = 16;
+const uint16 NORMAL_MAP_SIZE = 1024;
 
 struct TileData
 {
@@ -107,7 +109,32 @@ void setPixel(QImage &image, int x, int y, uint16 grayscale) {
 	((uint16 *)image.scanLine(y))[x] = grayscale;
 }
 
-void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *image)
+QImage createNormalMap(int width, int height){
+	QImage normalMap(NORMAL_MAP_SIZE, NORMAL_MAP_SIZE, QImage::Format_RGB32);
+	normalMap.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
+	return normalMap;
+}
+
+void drawNormalMap(const CPatch &patch, QImage &normalMap) {
+	CBezierPatch bezierPatch;
+	patch.unpack(bezierPatch);
+	uint8 ordS = patch.getOrderS();
+	uint8 ordT = patch.getOrderT();
+	float resolution = 1.0f;
+	float OOS = resolution / ordS;
+	float OOT = resolution / ordT;
+	for (uint8 y = 0; y < ordT; y++)
+	{
+		for (uint8 x = 0; x < ordS; x++)
+		{
+			CVector normal(bezierPatch.evalNormal(x * OOS, y * OOT));
+			normalMap.setPixelColor(x, y, QColor::fromRgbF(normal.x, normal.y, normal.z));
+		}
+	}
+
+}
+
+void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *image, QImage &normalMap)
 {
 	CUV A(0, 0), B(0, 1), C(1, 1), D(1, 0);
 	CZone *pZone = landscape.getZone(zoneId);
@@ -125,12 +152,18 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	uint8 ordS = pa->getOrderS();
 	uint8 ordT = pa->getOrderT();
 	uint16 patchOffset(patch * PATCH_SIZE);
-	uint16 offset_x(patchOffset % TILE_INFO_SIZE), offset_y((patchOffset / TILE_INFO_SIZE) * PATCH_SIZE);
-	nlassert(offset_y < image[0].height());
 	uint8 x, y;
 	float pixelOffset = 0.125f / TILE_INFO_SIZE;
 	float OOS = 1.0f / ordS;
 	float OOT = 1.0f / ordT;
+	uint16 normal_offset_x(patchOffset % normalMap.width()), normal_offset_y((patchOffset / normalMap.height()) * PATCH_SIZE);
+	QImage normalMapPatch = createNormalMap(PATCH_SIZE, PATCH_SIZE);
+	drawNormalMap(*pa, normalMapPatch);
+	QPainter painter(&normalMap);
+	painter.drawImage(QPoint(normal_offset_x,normal_offset_y), normalMapPatch);
+
+	uint16 offset_x(patchOffset % TILE_INFO_SIZE), offset_y((patchOffset / TILE_INFO_SIZE) * PATCH_SIZE);
+	nlassert(offset_y < image[0].height());
 	for (y = 0; y < ordT; y++)
 	{
 		for (x = 0; x < ordS; x++)
@@ -141,15 +174,17 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
-			CUV tileInfo(offset_x + x, offset_y + y);
+			uint16 imageX = offset_x + x;
+			uint16 imageY = offset_y + y;
+			CUV tileInfo(imageX, imageY);
 			tileInfo.U /= TILE_INFO_SIZE;
 			tileInfo.V /= TILE_INFO_SIZE;
 			tileInfo.U += pixelOffset;
 			tileInfo.V += pixelOffset;
 			CUV a(tileInfo.U, tileInfo.V), b(tileInfo.U, tileInfo.V + pixelOffset), c(tileInfo.U + pixelOffset, tileInfo.V + pixelOffset), d(tileInfo.U + pixelOffset, tileInfo.V);
-			setPixel(image[0], offset_x + x, offset_y + y, tile.Tile[0]);
-			setPixel(image[1], offset_x + x, offset_y + y, tile.Tile[1]);
-			setPixel(image[2], offset_x + x, offset_y + y, tile.Tile[2]);
+			setPixel(image[0], imageX, imageY, tile.Tile[0]);
+			setPixel(image[1], imageX, imageY, tile.Tile[1]);
+			setPixel(image[2], imageX, imageY, tile.Tile[2]);
 			CVector uvScaleBias;
 			bool is256;
 			uint8 uvOff;
@@ -399,13 +434,16 @@ int main(int argc, char **argv)
 			.scenes = { { .nodes = { 0 } } }
 		};
 		OutputData output;
+		QImage normalMap(NORMAL_MAP_SIZE, NORMAL_MAP_SIZE, QImage::Format_RGB32);
+		normalMap.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
-			buildFaces(landscape, zoneId, patchIndex, output, tileInfo);
+			buildFaces(landscape, zoneId, patchIndex, output, tileInfo, normalMap);
 		}
 		tileInfo[0].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-0.png"));
 		tileInfo[1].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-1.png"));
 		tileInfo[2].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-2.png"));
+		normalMap.save(QString::fromStdString(outputDirectory + "/" + basename + ".normal.png"));
 		for (auto &vertex : output.vertices)
 		{
 			vertex.position -= zoneOffset;
