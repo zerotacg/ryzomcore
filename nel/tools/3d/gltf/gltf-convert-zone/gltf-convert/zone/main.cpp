@@ -26,6 +26,8 @@ using namespace NLLIGO;
 using namespace std;
 
 const uint8 TILE_LAYER_COUNT = 3;
+const uint16 TILE_INFO_SIZE = 256;
+const uint16 PATCH_SIZE = 16;
 
 struct TileData
 {
@@ -37,6 +39,7 @@ struct VertexData
 {
 	CVector position;
 	CVector normal;
+	CUV tileInfo;
 	TileData tile[TILE_LAYER_COUNT];
 };
 struct OutputData
@@ -66,7 +69,7 @@ CUV tileOrientation(CUV in, uint8 orientation)
 	}
 }
 
-CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
+CUV tileUV(const CUV &in, uint8 orientation, bool is256, uint8 uvOff)
 {
 	CUV out(tileOrientation(in, orientation));
 	if (is256)
@@ -99,6 +102,16 @@ CUV tileUV(CUV in, uint8 orientation, bool is256, uint8 uvOff)
 	return out;
 }
 
+uint16 endianSwap(uint16 src)
+{
+	return (((src) >> 8) & 0xFF) | (((src) & 0xFF) << 8);
+}
+
+void setPixel(QImage &image, int x, int y, uint16 grayscale) {
+	nlassert(image.format() == QImage::Format_Grayscale16);
+	((uint16 *)image.scanLine(y))[x] = grayscale;
+}
+
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *image)
 {
 	CUV A(0, 0), B(0, 1), C(1, 1), D(1, 0);
@@ -114,11 +127,13 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 	// Build the faces.
 	//=================
-	sint ordS = pa->getOrderS();
-	sint ordT = pa->getOrderT();
-	uint16 offset_x((patch * 16) % image[0].width()), offset_y((patch / image[0].width()) * 16);
+	uint8 ordS = pa->getOrderS();
+	uint8 ordT = pa->getOrderT();
+	uint16 patchOffset(patch * PATCH_SIZE);
+	uint16 offset_x(patchOffset % TILE_INFO_SIZE), offset_y((patchOffset / TILE_INFO_SIZE) * PATCH_SIZE);
 	nlassert(offset_y < image[0].height());
-	sint x, y;
+	uint8 x, y;
+	float pixelOffset = 0.125f / TILE_INFO_SIZE;
 	float OOS = 1.0f / ordS;
 	float OOT = 1.0f / ordT;
 	for (y = 0; y < ordT; y++)
@@ -131,9 +146,15 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			{
 				nlwarning("tile base layer not defined patch %d x %d y %d tileIndex %d", patch, x, y, tileIndex);
 			}
-			image[0].setPixel(offset_x + x, offset_y + y, tile.Tile[0]);
-			image[1].setPixel(offset_x + x, offset_y + y, tile.Tile[1]);
-			image[2].setPixel(offset_x + x, offset_y + y, tile.Tile[2]);
+			CUV tileInfo(offset_x + x, offset_y + y);
+			tileInfo.U /= TILE_INFO_SIZE;
+			tileInfo.V /= TILE_INFO_SIZE;
+			tileInfo.U += pixelOffset;
+			tileInfo.V += pixelOffset;
+			CUV a(tileInfo.U, tileInfo.V), b(tileInfo.U, tileInfo.V + pixelOffset), c(tileInfo.U + pixelOffset, tileInfo.V + pixelOffset), d(tileInfo.U + pixelOffset, tileInfo.V);
+			((uint16 *)image[0].scanLine(y))[x] = tile.Tile[0];
+			((uint16 *)image[1].scanLine(y))[x] = tile.Tile[1];
+			((uint16 *)image[2].scanLine(y))[x] = tile.Tile[2];
 			CVector uvScaleBias;
 			bool is256;
 			uint8 uvOff;
@@ -150,18 +171,21 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
+			    .tileInfo = a,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
+			    .tileInfo = b,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(B, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(B, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(B, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
+			    .tileInfo = c,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
@@ -169,18 +193,21 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
+			    .tileInfo = a,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
+			    .tileInfo = c,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
+			    .tileInfo = d,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(D, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(D, tile.getTileOrient(1), is256, uvOff) },
@@ -264,14 +291,14 @@ int main(int argc, char **argv)
 	{
 		NLMISC::CApplicationContext myApplicationContext;
 		NLMISC::CCmdArgs args;
-		QImage tileInfo[TILE_LAYER_COUNT]= {
-			{256, 256, QImage::Format_Grayscale16},
-			{256, 256, QImage::Format_Grayscale16},
-			{256, 256, QImage::Format_Grayscale16}
+		QImage tileInfo[TILE_LAYER_COUNT] = {
+			{ TILE_INFO_SIZE, TILE_INFO_SIZE, QImage::Format_Grayscale16 },
+			{ TILE_INFO_SIZE, TILE_INFO_SIZE, QImage::Format_Grayscale16 },
+			{ TILE_INFO_SIZE, TILE_INFO_SIZE, QImage::Format_Grayscale16 }
 		};
-		tileInfo[0].fill(0);
-		tileInfo[1].fill(0);
-		tileInfo[2].fill(0);
+		tileInfo[0].fill(NL_TILE_ELM_LAYER_EMPTY);
+		tileInfo[1].fill(NL_TILE_ELM_LAYER_EMPTY);
+		tileInfo[2].fill(NL_TILE_ELM_LAYER_EMPTY);
 
 		args.addAdditionalArg("input", ".zonel Input zone file");
 		args.addAdditionalArg("output", "Output gltf file");
@@ -350,15 +377,15 @@ int main(int argc, char **argv)
 			nlwarning("Can't open the file for writing: %s", normalFilePath.c_str());
 			return EXIT_FAILURE;
 		}
-		COFile textCoord0Output;
-		auto textCoord0Filename = openFile(textCoord0Output, outputDirectory, basename, ".texcoord_0.bin");
+		COFile texCoord0Output;
+		auto textCoord0Filename = openFile(texCoord0Output, outputDirectory, basename, ".texcoord_0.bin");
 		if (!textCoord0Filename)
 		{
 			return EXIT_FAILURE;
 		}
-		COFile outputTileId;
-		auto tileIdFilename = openFile(outputTileId, outputDirectory, basename, ".tile-id.bin");
-		if (!tileIdFilename)
+		COFile texCoord1Output;
+		auto texCoord1Filename = openFile(texCoord1Output, outputDirectory, basename, ".texcoord_1.bin");
+		if (!texCoord1Filename)
 		{
 			return EXIT_FAILURE;
 		}
@@ -391,14 +418,15 @@ int main(int argc, char **argv)
 
 			vertex.normal.serial(outputNormal);
 
-			vertex.tile[0].uv.serial(textCoord0Output);
+			vertex.tile[0].uv.serial(texCoord0Output);
 
-			CUV tileIds(vertex.tile[0].tileId, vertex.tile[1].tileId);
-			tileIds.serial(outputTileId);
+			vertex.tileInfo.serial(texCoord1Output);
+			//			CUV tileIds(vertex.tile[0].tileId, vertex.tile[1].tileId);
+			//			tileIds.serial(texCoord1Output);
 		}
 		gltf::Primitive primitive = { .attributes = {} };
-		gltf::Accessor position = gltf::Accessor::position( 0, 0, output.vertices.size() );
-		gltf::Accessor normal = gltf::Accessor::normal( 1, 0, output.vertices.size() );
+		gltf::Accessor position = gltf::Accessor::position(0, 0, output.vertices.size());
+		gltf::Accessor normal = gltf::Accessor::normal(1, 0, output.vertices.size());
 		gltf::Accessor texcoord0 = { .bufferView = 2, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
 		gltf::Accessor tileId = { .bufferView = 3, .byteOffset = 0, .componentType = gltf::ComponentType::FLOAT, .count = output.vertices.size(), .type = gltf::AccessorType::VEC2 };
 		primitive.attributes.position = asset.accessors.size();
@@ -427,16 +455,16 @@ int main(int argc, char **argv)
 		asset.buffers.push_back({ .uri = positionFilename, .byteLength = outputPosition.getPos() });
 		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputNormal.getPos() });
 		asset.buffers.push_back({ .uri = normalFilename, .byteLength = outputNormal.getPos() });
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = textCoord0Output.getPos() });
-		asset.buffers.push_back({ .uri = textCoord0Filename.value(), .byteLength = textCoord0Output.getPos() });
-		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = outputTileId.getPos() });
-		asset.buffers.push_back({ .uri = tileIdFilename.value(), .byteLength = outputTileId.getPos() });
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = texCoord0Output.getPos() });
+		asset.buffers.push_back({ .uri = textCoord0Filename.value(), .byteLength = texCoord0Output.getPos() });
+		asset.bufferViews.push_back({ .buffer = asset.buffers.size(), .byteLength = texCoord1Output.getPos() });
+		asset.buffers.push_back({ .uri = texCoord1Filename.value(), .byteLength = texCoord1Output.getPos() });
 		gltfWriter.write(asset);
 		fclose(fp);
 		outputPosition.close();
 		outputNormal.close();
-		textCoord0Output.close();
-		outputTileId.close();
+		texCoord0Output.close();
+		texCoord1Output.close();
 
 		return EXIT_SUCCESS;
 	}
