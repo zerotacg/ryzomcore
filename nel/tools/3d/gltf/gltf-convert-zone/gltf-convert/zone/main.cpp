@@ -102,11 +102,6 @@ CUV tileUV(const CUV &in, uint8 orientation, bool is256, uint8 uvOff)
 	return out;
 }
 
-uint16 endianSwap(uint16 src)
-{
-	return (((src) >> 8) & 0xFF) | (((src) & 0xFF) << 8);
-}
-
 void setPixel(QImage &image, int x, int y, uint16 grayscale) {
 	nlassert(image.format() == QImage::Format_Grayscale16);
 	((uint16 *)image.scanLine(y))[x] = grayscale;
@@ -152,9 +147,9 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			tileInfo.U += pixelOffset;
 			tileInfo.V += pixelOffset;
 			CUV a(tileInfo.U, tileInfo.V), b(tileInfo.U, tileInfo.V + pixelOffset), c(tileInfo.U + pixelOffset, tileInfo.V + pixelOffset), d(tileInfo.U + pixelOffset, tileInfo.V);
-			((uint16 *)image[0].scanLine(y))[x] = tile.Tile[0];
-			((uint16 *)image[1].scanLine(y))[x] = tile.Tile[1];
-			((uint16 *)image[2].scanLine(y))[x] = tile.Tile[2];
+			setPixel(image[0], offset_x + x, offset_y + y, tile.Tile[0]);
+			setPixel(image[1], offset_x + x, offset_y + y, tile.Tile[1]);
+			setPixel(image[2], offset_x + x, offset_y + y, tile.Tile[2]);
 			CVector uvScaleBias;
 			bool is256;
 			uint8 uvOff;
