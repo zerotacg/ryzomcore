@@ -113,16 +113,16 @@ void setPixel(QImage &image, int x, int y, uint16 grayscale)
 
 QImage createNormalMap(int width, int height)
 {
-	QImage normalMap(width, height, QImage::Format_RGB32);
-	normalMap.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
-	return normalMap;
+	QImage image(width, height, QImage::Format_RGB32);
+	image.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
+	return image;
 }
 
-void drawNormalMap(const CPatch &patch, QImage &normalMap)
+void drawNormalMap(const CPatch &patch, QImage &image)
 {
 	CBezierPatch bezierPatch;
 	patch.unpack(bezierPatch);
-	auto scale = normalMap.width() / PATCH_SIZE;
+	auto scale = image.width() / PATCH_SIZE;
 	auto orderS = patch.getOrderS() * scale;
 	auto orderT = patch.getOrderT() * scale;
 	float OOS = 1.0f / (orderS - 1);
@@ -132,7 +132,7 @@ void drawNormalMap(const CPatch &patch, QImage &normalMap)
 		for (auto x = 0; x < orderS; x++)
 		{
 			CVector normal(bezierPatch.evalNormal(x * OOS, y * OOT));
-			normalMap.setPixelColor(x, y, QColor::fromRgbF(normal.x, normal.y, normal.z));
+			image.setPixelColor(x, y, QColor::fromRgbF(normal.x, normal.y, normal.z));
 		}
 	}
 }
