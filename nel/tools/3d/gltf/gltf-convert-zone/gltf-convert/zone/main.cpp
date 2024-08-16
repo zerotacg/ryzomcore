@@ -29,7 +29,8 @@ using namespace std;
 const uint8 TILE_LAYER_COUNT = 3;
 const uint16 TILE_INFO_SIZE = 256;
 const uint16 PATCH_SIZE = 16;
-const uint16 NORMAL_MAP_SIZE = 1024;
+const uint16 NORMAL_SIZE = PATCH_SIZE*4;
+const uint16 NORMAL_MAP_SIZE = TILE_INFO_SIZE*4;
 
 struct TileData
 {
@@ -104,34 +105,36 @@ CUV tileUV(const CUV &in, uint8 orientation, bool is256, uint8 uvOff)
 	return out;
 }
 
-void setPixel(QImage &image, int x, int y, uint16 grayscale) {
+void setPixel(QImage &image, int x, int y, uint16 grayscale)
+{
 	nlassert(image.format() == QImage::Format_Grayscale16);
 	((uint16 *)image.scanLine(y))[x] = grayscale;
 }
 
-QImage createNormalMap(int width, int height){
-	QImage normalMap(NORMAL_MAP_SIZE, NORMAL_MAP_SIZE, QImage::Format_RGB32);
+QImage createNormalMap(int width, int height)
+{
+	QImage normalMap(width, height, QImage::Format_RGB32);
 	normalMap.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
 	return normalMap;
 }
 
-void drawNormalMap(const CPatch &patch, QImage &normalMap) {
+void drawNormalMap(const CPatch &patch, QImage &normalMap)
+{
 	CBezierPatch bezierPatch;
 	patch.unpack(bezierPatch);
-	uint8 ordS = patch.getOrderS();
-	uint8 ordT = patch.getOrderT();
-	float resolution = 1.0f;
-	float OOS = resolution / ordS;
-	float OOT = resolution / ordT;
-	for (uint8 y = 0; y < ordT; y++)
+	auto scale = normalMap.width() / PATCH_SIZE;
+	auto orderS = patch.getOrderS() * scale;
+	auto orderT = patch.getOrderT() * scale;
+	float OOS = 1.0f / (orderS - 1);
+	float OOT = 1.0f / (orderT - 1);
+	for (auto y = 0; y < orderT; y++)
 	{
-		for (uint8 x = 0; x < ordS; x++)
+		for (auto x = 0; x < orderS; x++)
 		{
 			CVector normal(bezierPatch.evalNormal(x * OOS, y * OOT));
 			normalMap.setPixelColor(x, y, QColor::fromRgbF(normal.x, normal.y, normal.z));
 		}
 	}
-
 }
 
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *image, QImage &normalMap)
@@ -156,11 +159,12 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	float pixelOffset = 0.125f / TILE_INFO_SIZE;
 	float OOS = 1.0f / ordS;
 	float OOT = 1.0f / ordT;
-	uint16 normal_offset_x(patchOffset % normalMap.width()), normal_offset_y((patchOffset / normalMap.height()) * PATCH_SIZE);
-	QImage normalMapPatch = createNormalMap(PATCH_SIZE, PATCH_SIZE);
+
+	uint16 normal_offset_x((patch * NORMAL_SIZE) % normalMap.width()), normal_offset_y(((patch * NORMAL_SIZE) / normalMap.height()) * NORMAL_SIZE);
+	QImage normalMapPatch = createNormalMap(NORMAL_SIZE, NORMAL_SIZE);
 	drawNormalMap(*pa, normalMapPatch);
 	QPainter painter(&normalMap);
-	painter.drawImage(QPoint(normal_offset_x,normal_offset_y), normalMapPatch);
+	painter.drawImage(QPoint(normal_offset_x, normal_offset_y), normalMapPatch);
 
 	uint16 offset_x(patchOffset % TILE_INFO_SIZE), offset_y((patchOffset / TILE_INFO_SIZE) * PATCH_SIZE);
 	nlassert(offset_y < image[0].height());
