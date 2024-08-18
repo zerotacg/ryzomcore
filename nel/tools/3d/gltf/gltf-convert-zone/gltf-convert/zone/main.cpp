@@ -145,12 +145,12 @@ void drawImage(QImage &target, int x, int y, QImage &part)
 
 QImage createTileIdMap(int width, int height)
 {
-	QImage image(width, height, QImage::Format_RGBA64);
-	image.fill(-1);
+	QImage image(width, height, QImage::Format_Grayscale16);
+	image.fill(NL_TILE_ELM_LAYER_EMPTY);
 	return image;
 }
 
-void drawTileInfoMap(const CPatch &patch, QImage &image)
+void drawTileInfoMap(const CPatch &patch, QImage &image, uint8 layer)
 {
 	const auto &tiles = patch.Tiles;
 	for (auto y = 0; y < patch.getOrderT(); y++)
@@ -159,12 +159,12 @@ void drawTileInfoMap(const CPatch &patch, QImage &image)
 		{
 			auto tileIndex = getPatchTileIndex(patch, x, y);
 			const auto &tile = tiles[tileIndex];
-			image.setPixelColor(x, y, QColor::fromRgba64(qRgba64(tile.Tile[0], tile.Tile[1], tile.Tile[2], 0xFFFF)));
+			setPixel(image, x, y, tile.Tile[layer]);
 		}
 	}
 }
 
-void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage &image, QImage &normalMap)
+void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *tileIdMap, QImage &normalMap)
 {
 	CUV A(0, 0), B(0, 1), C(1, 1), D(1, 0);
 	CZone *pZone = landscape.getZone(zoneId);
@@ -193,9 +193,13 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	drawImage(normalMap, normal_offset_x, normal_offset_y, normalMapPatch);
 
 	uint16 offset_x(patchOffset % TILE_ID_MAP_SIZE), offset_y((patchOffset / TILE_ID_MAP_SIZE) * PATCH_SIZE);
-	QImage tileInfoMapPatch = createTileIdMap(TILE_ID_MAP_SIZE, TILE_ID_MAP_SIZE);
-	drawTileInfoMap(*pa, tileInfoMapPatch);
-	drawImage(image, offset_x, offset_y, tileInfoMapPatch);
+	QImage tileInfoMapPatch = createTileIdMap(PATCH_SIZE, PATCH_SIZE);
+	drawTileInfoMap(*pa, tileInfoMapPatch, 0);
+	drawImage(tileIdMap[0], offset_x, offset_y, tileInfoMapPatch);
+	drawTileInfoMap(*pa, tileInfoMapPatch, 1);
+	drawImage(tileIdMap[1], offset_x, offset_y, tileInfoMapPatch);
+	drawTileInfoMap(*pa, tileInfoMapPatch, 2);
+	drawImage(tileIdMap[2], offset_x, offset_y, tileInfoMapPatch);
 
 	for (y = 0; y < ordT; y++)
 	{
@@ -457,12 +461,18 @@ int main(int argc, char **argv)
 		};
 		OutputData output;
 		QImage normalMap = createNormalMap(NORMAL_MAP_SIZE, NORMAL_MAP_SIZE);
-		QImage tileIdMap = createTileIdMap(TILE_ID_MAP_SIZE, TILE_ID_MAP_SIZE);
+		QImage tileIdMaps[TILE_LAYER_COUNT] = {
+			createTileIdMap(TILE_ID_MAP_SIZE, TILE_ID_MAP_SIZE),
+			createTileIdMap(TILE_ID_MAP_SIZE, TILE_ID_MAP_SIZE),
+			createTileIdMap(TILE_ID_MAP_SIZE, TILE_ID_MAP_SIZE)
+		};
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
-			buildFaces(landscape, zoneId, patchIndex, output, tileIdMap, normalMap);
+			buildFaces(landscape, zoneId, patchIndex, output, tileIdMaps, normalMap);
 		}
-		tileIdMap.save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id.png"));
+		tileIdMaps[0].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-0.png"));
+		tileIdMaps[1].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-1.png"));
+		tileIdMaps[2].save(QString::fromStdString(outputDirectory + "/" + basename + ".tile-id-2.png"));
 		normalMap.save(QString::fromStdString(outputDirectory + "/" + basename + ".normal.png"));
 		for (auto &vertex : output.vertices)
 		{
