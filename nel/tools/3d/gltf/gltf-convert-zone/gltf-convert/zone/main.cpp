@@ -137,6 +137,31 @@ void drawNormalMap(const CPatch &patch, QImage &image)
 	}
 }
 
+void drawImage(QImage &target, int x, int y, QImage &part) {
+	QPainter painter(&target);
+	painter.drawImage(QPoint(x, y), part);
+}
+
+QImage createTileInfoMap(int width, int height)
+{
+	QImage image(width, height, QImage::Format_Grayscale16);
+	image.fill(NL_TILE_ELM_LAYER_EMPTY);
+	return image;
+}
+
+void drawTileInfoMap(const CPatch &patch, QImage &image, uint8 layer)
+{
+	const auto &tiles = patch.Tiles;
+	for (auto y = 0; y < patch.getOrderT(); y++)
+	{
+		for (auto x = 0; x < patch.getOrderS(); x++)
+		{
+			auto tileIndex = getPatchTileIndex(patch, x, y);
+			const auto &tile = tiles[tileIndex];
+			setPixel(image, x, y, tile.Tile[layer]);
+		}
+	}
+}
 void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &output, QImage *image, QImage &normalMap)
 {
 	CUV A(0, 0), B(0, 1), C(1, 1), D(1, 0);
@@ -163,11 +188,17 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 	uint16 normal_offset_x((patch * NORMAL_SIZE) % normalMap.width()), normal_offset_y(((patch * NORMAL_SIZE) / normalMap.height()) * NORMAL_SIZE);
 	QImage normalMapPatch = createNormalMap(NORMAL_SIZE, NORMAL_SIZE);
 	drawNormalMap(*pa, normalMapPatch);
-	QPainter painter(&normalMap);
-	painter.drawImage(QPoint(normal_offset_x, normal_offset_y), normalMapPatch);
+	drawImage(normalMap, normal_offset_x, normal_offset_y, normalMapPatch);
 
 	uint16 offset_x(patchOffset % TILE_INFO_SIZE), offset_y((patchOffset / TILE_INFO_SIZE) * PATCH_SIZE);
-	nlassert(offset_y < image[0].height());
+	QImage tileInfoMapPatch = createTileInfoMap(TILE_INFO_SIZE, TILE_INFO_SIZE);
+	drawTileInfoMap(*pa, tileInfoMapPatch, 0);
+	drawImage(image[0], offset_x, offset_y, tileInfoMapPatch);
+	drawTileInfoMap(*pa, tileInfoMapPatch, 1);
+	drawImage(image[1], offset_x, offset_y, tileInfoMapPatch);
+	drawTileInfoMap(*pa, tileInfoMapPatch, 2);
+	drawImage(image[2], offset_x, offset_y, tileInfoMapPatch);
+
 	for (y = 0; y < ordT; y++)
 	{
 		for (x = 0; x < ordS; x++)
@@ -186,9 +217,6 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			tileInfo.U += pixelOffset;
 			tileInfo.V += pixelOffset;
 			CUV a(tileInfo.U, tileInfo.V), b(tileInfo.U, tileInfo.V + pixelOffset), c(tileInfo.U + pixelOffset, tileInfo.V + pixelOffset), d(tileInfo.U + pixelOffset, tileInfo.V);
-			setPixel(image[0], imageX, imageY, tile.Tile[0]);
-			setPixel(image[1], imageX, imageY, tile.Tile[1]);
-			setPixel(image[2], imageX, imageY, tile.Tile[2]);
 			CVector uvScaleBias;
 			bool is256;
 			uint8 uvOff;
@@ -326,13 +354,10 @@ int main(int argc, char **argv)
 		NLMISC::CApplicationContext myApplicationContext;
 		NLMISC::CCmdArgs args;
 		QImage tileInfo[TILE_LAYER_COUNT] = {
-			{ TILE_INFO_SIZE, TILE_INFO_SIZE, QImage::Format_Grayscale16 },
-			{ TILE_INFO_SIZE, TILE_INFO_SIZE, QImage::Format_Grayscale16 },
-			{ TILE_INFO_SIZE, TILE_INFO_SIZE, QImage::Format_Grayscale16 }
+			createTileInfoMap(TILE_INFO_SIZE, TILE_INFO_SIZE),
+			createTileInfoMap(TILE_INFO_SIZE, TILE_INFO_SIZE),
+			createTileInfoMap(TILE_INFO_SIZE, TILE_INFO_SIZE)
 		};
-		tileInfo[0].fill(NL_TILE_ELM_LAYER_EMPTY);
-		tileInfo[1].fill(NL_TILE_ELM_LAYER_EMPTY);
-		tileInfo[2].fill(NL_TILE_ELM_LAYER_EMPTY);
 
 		args.addAdditionalArg("input", ".zonel Input zone file");
 		args.addAdditionalArg("output", "Output gltf file");
