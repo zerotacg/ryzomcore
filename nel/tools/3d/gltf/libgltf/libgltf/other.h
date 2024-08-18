@@ -31,10 +31,15 @@ const std::string AccessorTypeNames[] = { "SCALAR", "VEC2", "VEC3", "VEC4", "MAT
 struct TextureInfo
 {
 	size_t index;
+	uint32 texCoord;
 
 	void write(JsonWriter &writer) const
 	{
 		writer.writeProperty("index", index);
+		if (texCoord != 0)
+		{
+			writer.writeProperty("texCoord", texCoord);
+		}
 	}
 };
 
