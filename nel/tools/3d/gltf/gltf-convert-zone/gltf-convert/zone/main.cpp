@@ -29,8 +29,8 @@ using namespace std;
 const uint8 TILE_LAYER_COUNT = 3;
 const uint16 TILE_INFO_SIZE = 256;
 const uint16 PATCH_SIZE = 16;
-const uint16 NORMAL_SIZE = PATCH_SIZE*4;
-const uint16 NORMAL_MAP_SIZE = TILE_INFO_SIZE*4;
+const uint16 NORMAL_SIZE = PATCH_SIZE * 4;
+const uint16 NORMAL_MAP_SIZE = TILE_INFO_SIZE * 4;
 
 struct TileData
 {
@@ -42,7 +42,7 @@ struct VertexData
 {
 	CVector position;
 	CVector normal;
-	CUV tileInfo;
+	CUV tileInfoUv;
 	TileData tile[TILE_LAYER_COUNT];
 };
 struct OutputData
@@ -205,21 +205,21 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
-			    .tileInfo = a,
+			    .tileInfoUv = a,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
-			    .tileInfo = b,
+			    .tileInfoUv = b,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(B, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(B, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(B, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
-			    .tileInfo = c,
+			    .tileInfoUv = c,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
@@ -227,21 +227,21 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
-			    .tileInfo = a,
+			    .tileInfoUv = a,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
-			    .tileInfo = c,
+			    .tileInfoUv = c,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
 			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
-			    .tileInfo = d,
+			    .tileInfoUv = d,
 			    .tile = {
 			        { .tileId = tile.Tile[0], .uv = tileUV(D, tile.getTileOrient(0), is256, uvOff) },
 			        { .tileId = tile.Tile[1], .uv = tileUV(D, tile.getTileOrient(1), is256, uvOff) },
@@ -438,8 +438,7 @@ int main(int argc, char **argv)
 			.scenes = { { .nodes = { 0 } } }
 		};
 		OutputData output;
-		QImage normalMap(NORMAL_MAP_SIZE, NORMAL_MAP_SIZE, QImage::Format_RGB32);
-		normalMap.fill(QColor::fromRgbF(0.0f, 0.0f, 1.0f));
+		QImage normalMap = createNormalMap(NORMAL_MAP_SIZE, NORMAL_MAP_SIZE);
 		for (sint patchIndex = 0; patchIndex < zone->getNumPatchs(); patchIndex++)
 		{
 			buildFaces(landscape, zoneId, patchIndex, output, tileInfo, normalMap);
@@ -457,9 +456,11 @@ int main(int argc, char **argv)
 
 			vertex.tile[0].uv.serial(texCoord0Output);
 
-			vertex.tileInfo.serial(texCoord1Output);
-			//			CUV tileIds(vertex.tile[0].tileId, vertex.tile[1].tileId);
-			//			tileIds.serial(texCoord1Output);
+			// use texture for tile ids
+			 vertex.tileInfoUv.serial(texCoord1Output);
+			// use UV for tile ids
+//			CUV tileIds(vertex.tile[0].tileId, vertex.tile[1].tileId);
+//			tileIds.serial(texCoord1Output);
 		}
 		gltf::Primitive primitive = { .attributes = {} };
 		gltf::Accessor position = gltf::Accessor::position(0, 0, output.vertices.size());
