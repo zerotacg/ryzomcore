@@ -540,6 +540,7 @@ public:
 	}
 	CTile* getTile (int tileIndex)
 	{
+		nlassert(tileIndex < _TileVector.size());
 		return &_TileVector[tileIndex];
 	}
 	sint addLand (const std::string& name);
