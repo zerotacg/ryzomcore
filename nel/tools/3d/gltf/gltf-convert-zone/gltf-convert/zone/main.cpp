@@ -165,6 +165,9 @@ uint8 getTileOrientation(const CPatch &patch, const CTileElement &tile, const ui
 		tileBank.getTileXRef(tileId, tileSet, number, type);
 		if (tileBank.getTileSet(tileSet)->getOriented())
 		{
+			if ( orientation != 0) {
+				nlwarning("tile %d is oriented %d", tileId, orientation);
+			}
 			orientation = 0;
 		}
 	}
@@ -183,20 +186,12 @@ void drawTileInfoMap(const CPatch &patch, QImage &image, uint8 layer)
 		{
 			auto tileIndex = getPatchTileIndex(patch, x, y);
 			const auto &tile = tiles[tileIndex];
-			const auto tileId = tile.Tile[layer];
 			const auto orientation = getTileOrientation(patch, tile, layer);
+			const auto tileId = tile.Tile[layer];
 			uint8 rotAlpha = 0;
 			if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 			{
 				rotAlpha = tileBank.getTile(tileId)->getRotAlpha();
-				int tileSet;
-				int number;
-				CTileBank::TTileType type;
-				tileBank.getTileXRef(tileId, tileSet, number, type);
-				if (tileBank.getTileSet(tileSet)->getOriented())
-				{
-					rotAlpha = 0;
-				}
 			}
 			image.setPixelColor(x, y, QColor::fromRgba64(qRgba64(tileId, 0, rotAlpha, NL_TILE_ELM_LAYER_EMPTY)));
 		}
