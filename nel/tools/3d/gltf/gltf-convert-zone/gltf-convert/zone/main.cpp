@@ -75,6 +75,7 @@ CUV tileOrientation(CUV in, uint8 orientation)
 CUV tileUV(const CUV &in, uint8 orientation, bool is256, uint8 uvOff)
 {
 	CUV out(tileOrientation(in, orientation));
+	//	CUV out(in);
 	if (is256)
 	{
 		out *= 0.5;
@@ -145,21 +146,59 @@ void drawImage(QImage &target, int x, int y, QImage &part)
 
 QImage createTileIdMap(int width, int height)
 {
-	QImage image(width, height, QImage::Format_Grayscale16);
-	image.fill(NL_TILE_ELM_LAYER_EMPTY);
+	QImage image(width, height, QImage::Format_RGBA64);
+	image.fill(QColor::fromRgba64(qRgba64(NL_TILE_ELM_LAYER_EMPTY, 0, 0, NL_TILE_ELM_LAYER_EMPTY)));
 	return image;
+}
+
+uint8 getTileOrientation(const CPatch &patch, const CTileElement &tile, const uint8 layer)
+{
+	nlassert(layer < TILE_LAYER_COUNT);
+	auto &tileBank = patch.getLandscape()->TileBank;
+	auto orientation = tile.getTileOrient(layer);
+	const auto &tileId = tile.Tile[layer];
+	if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+	{
+		int tileSet;
+		int number;
+		CTileBank::TTileType type;
+		tileBank.getTileXRef(tileId, tileSet, number, type);
+		if (tileBank.getTileSet(tileSet)->getOriented())
+		{
+			orientation = 0;
+		}
+	}
+
+	return orientation;
 }
 
 void drawTileInfoMap(const CPatch &patch, QImage &image, uint8 layer)
 {
 	const auto &tiles = patch.Tiles;
+	auto &tileBank = patch.getLandscape()->TileBank;
+
 	for (auto y = 0; y < patch.getOrderT(); y++)
 	{
 		for (auto x = 0; x < patch.getOrderS(); x++)
 		{
 			auto tileIndex = getPatchTileIndex(patch, x, y);
 			const auto &tile = tiles[tileIndex];
-			setPixel(image, x, y, tile.Tile[layer]);
+			const auto tileId = tile.Tile[layer];
+			const auto orientation = getTileOrientation(patch, tile, layer);
+			uint8 rotAlpha = 0;
+			if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+			{
+				rotAlpha = tileBank.getTile(tileId)->getRotAlpha();
+				int tileSet;
+				int number;
+				CTileBank::TTileType type;
+				tileBank.getTileXRef(tileId, tileSet, number, type);
+				if (tileBank.getTileSet(tileSet)->getOriented())
+				{
+					rotAlpha = 0;
+				}
+			}
+			image.setPixelColor(x, y, QColor::fromRgba64(qRgba64(tileId, 0, rotAlpha, NL_TILE_ELM_LAYER_EMPTY)));
 		}
 	}
 }
@@ -237,45 +276,45 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			    .normal = na,
 			    .tileInfoUv = a,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(A, getTileOrientation(*pa, tile, 0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(A, getTileOrientation(*pa, tile, 1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(A, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
 			    .tileInfoUv = b,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(B, tile.getTileOrient(0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(B, tile.getTileOrient(1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(B, tile.getTileOrient(2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(B, getTileOrientation(*pa, tile, 0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(B, getTileOrientation(*pa, tile, 1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(B, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .tileInfoUv = c,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(C, getTileOrientation(*pa, tile, 0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(C, getTileOrientation(*pa, tile, 1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(C, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .tileInfoUv = a,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(A, getTileOrientation(*pa, tile, 0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(A, getTileOrientation(*pa, tile, 1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(A, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .tileInfoUv = c,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(C, getTileOrientation(*pa, tile, 0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(C, getTileOrientation(*pa, tile, 1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(C, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
 			    .tileInfoUv = d,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(D, tile.getTileOrient(0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(D, tile.getTileOrient(1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(D, tile.getTileOrient(2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(D, getTileOrientation(*pa, tile, 0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(D, getTileOrientation(*pa, tile, 1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(D, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
 		}
 	}
 }
