@@ -383,6 +383,18 @@ std::optional<std::string> openFile(COFile &file, const std::string &directory, 
 	return fileName;
 }
 
+void loadTileBank(CLandscape &landscape, const std::string &bankFilePath) {
+	if (!bankFilePath.empty())
+	{
+		CIFile bankFile(bankFilePath);
+		auto &tileBank = landscape.TileBank;
+		tileBank.serial(bankFile);
+		nldebug("TileBank land count %i", tileBank.getLandCount());
+		nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
+		nldebug("TileBank tile count %i", tileBank.getTileCount());
+	}
+}
+
 int main(int argc, char **argv)
 {
 	try
@@ -438,24 +450,16 @@ int main(int argc, char **argv)
 			nlerror("Can't finde zone with id: %i", zoneId);
 			return EXIT_FAILURE;
 		}
-		COFile outputPosition;
 		try
 		{
-			if (!bankFilePath.empty())
-			{
-				CIFile bankFile(bankFilePath);
-				auto &tileBank = landscape.TileBank;
-				tileBank.serial(bankFile);
-				nldebug("TileBank land count %i", tileBank.getLandCount());
-				nldebug("TileBank tileSet count %i", tileBank.getTileSetCount());
-				nldebug("TileBank tile count %i", tileBank.getTileCount());
-			}
+			loadTileBank(landscape, bankFilePath);
 		}
 		catch (const Exception &)
 		{
 			nlerror("Can't load bankfile: %s", bankFilePath.c_str());
 			return EXIT_FAILURE;
 		}
+		COFile outputPosition;
 		if (!outputPosition.open(positionFilePath, false, false, false))
 		{
 			nlwarning("Can't open the file for writing: %s", positionFilePath.c_str());
