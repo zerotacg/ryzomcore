@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 	zone_info["name"] = zoneName;
 	zone_info["borderVertices"] = toJson(zoneInfo.BorderVertices);
 
-	QByteArray byteArray(QJsonDocument(zone_info).toJson(QJsonDocument::Compact));
+	QByteArray byteArray(QJsonDocument(zone_info).toJson(QJsonDocument::Indented));
 	QTextStream textStream(stdout);
 	textStream << byteArray << Qt::endl;
 
