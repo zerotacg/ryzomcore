@@ -74,11 +74,13 @@ CUV tileOrientation(CUV in, uint8 orientation)
 
 CUV tileUV(const CUV &in, uint8 orientation, bool is256, uint8 uvOff)
 {
-	CUV out(tileOrientation(in, orientation));
-	//	CUV out(in);
+	//	CUV out(tileOrientation(in, orientation));
+	CUV out(in);
 	if (is256)
 	{
 		out *= 0.5;
+		// with rotation applied afterward we need to reverse the already applied rotation in uvOff
+		uvOff = (uvOff + orientation) & 3;
 		if (uvOff == 2 || uvOff == 3)
 			out.U += 0.5;
 		if (uvOff == 1 || uvOff == 2)
@@ -96,6 +98,9 @@ CUV tileUV(const CUV &in, uint8 orientation, bool is256, uint8 uvOff)
 		hBiasXY = CLandscapeGlobals::TilePixelBias128;
 		hBiasZ = CLandscapeGlobals::TilePixelScale128;
 	}
+
+	hBiasXY = 0.0f;
+	hBiasZ = 1.0f;
 
 	// Scale the UV.
 	out.U *= hBiasZ;
@@ -153,26 +158,8 @@ QImage createTileIdMap(int width, int height)
 
 uint8 getTileOrientation(const CPatch &patch, const CTileElement &tile, const uint8 layer)
 {
-	nlassert(layer < TILE_LAYER_COUNT);
-	auto &tileBank = patch.getLandscape()->TileBank;
-	auto orientation = tile.getTileOrient(layer);
-	const auto &tileId = tile.Tile[layer];
-	if (tileId != NL_TILE_ELM_LAYER_EMPTY)
-	{
-		int tileSet;
-		int number;
-		CTileBank::TTileType type;
-		tileBank.getTileXRef(tileId, tileSet, number, type);
-		if (tileBank.getTileSet(tileSet)->getOriented())
-		{
-			if ( orientation != 0) {
-				nlwarning("tile %d is oriented %d", tileId, orientation);
-			}
-			orientation = 0;
-		}
-	}
 
-	return orientation;
+	return tile.getTileOrient(layer);
 }
 
 void drawTileInfoMap(const CPatch &patch, QImage &image, uint8 layer)
@@ -186,14 +173,14 @@ void drawTileInfoMap(const CPatch &patch, QImage &image, uint8 layer)
 		{
 			auto tileIndex = getPatchTileIndex(patch, x, y);
 			const auto &tile = tiles[tileIndex];
-			const auto orientation = getTileOrientation(patch, tile, layer);
+			const auto orientation = tile.getTileOrient(layer);
 			const auto tileId = tile.Tile[layer];
 			uint8 rotAlpha = 0;
 			if (tileId != NL_TILE_ELM_LAYER_EMPTY)
 			{
 				rotAlpha = tileBank.getTile(tileId)->getRotAlpha();
 			}
-			image.setPixelColor(x, y, QColor::fromRgba64(qRgba64(tileId, 0, rotAlpha, NL_TILE_ELM_LAYER_EMPTY)));
+			image.setPixelColor(x, y, QColor::fromRgba64(qRgba64(tileId, orientation, rotAlpha, NL_TILE_ELM_LAYER_EMPTY)));
 		}
 	}
 }
@@ -271,45 +258,45 @@ void buildFaces(CLandscape &landscape, sint zoneId, sint patch, OutputData &outp
 			    .normal = na,
 			    .tileInfoUv = a,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(A, getTileOrientation(*pa, tile, 0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(A, getTileOrientation(*pa, tile, 1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(A, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vb,
 			    .normal = nb,
 			    .tileInfoUv = b,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(B, getTileOrientation(*pa, tile, 0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(B, getTileOrientation(*pa, tile, 1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(B, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(B, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(B, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(B, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .tileInfoUv = c,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(C, getTileOrientation(*pa, tile, 0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(C, getTileOrientation(*pa, tile, 1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(C, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
 
 			output.vertices.push_back({ .position = va,
 			    .normal = na,
 			    .tileInfoUv = a,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(A, getTileOrientation(*pa, tile, 0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(A, getTileOrientation(*pa, tile, 1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(A, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(A, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(A, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(A, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vc,
 			    .normal = nc,
 			    .tileInfoUv = c,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(C, getTileOrientation(*pa, tile, 0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(C, getTileOrientation(*pa, tile, 1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(C, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(C, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(C, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(C, tile.getTileOrient(2), is256, uvOff) } } });
 			output.vertices.push_back({ .position = vd,
 			    .normal = nd,
 			    .tileInfoUv = d,
 			    .tile = {
-			        { .tileId = tile.Tile[0], .uv = tileUV(D, getTileOrientation(*pa, tile, 0), is256, uvOff) },
-			        { .tileId = tile.Tile[1], .uv = tileUV(D, getTileOrientation(*pa, tile, 1), is256, uvOff) },
-			        { .tileId = tile.Tile[2], .uv = tileUV(D, getTileOrientation(*pa, tile, 2), is256, uvOff) } } });
+			        { .tileId = tile.Tile[0], .uv = tileUV(D, tile.getTileOrient(0), is256, uvOff) },
+			        { .tileId = tile.Tile[1], .uv = tileUV(D, tile.getTileOrient(1), is256, uvOff) },
+			        { .tileId = tile.Tile[2], .uv = tileUV(D, tile.getTileOrient(2), is256, uvOff) } } });
 		}
 	}
 }
@@ -383,7 +370,8 @@ std::optional<std::string> openFile(COFile &file, const std::string &directory, 
 	return fileName;
 }
 
-void loadTileBank(CLandscape &landscape, const std::string &bankFilePath) {
+void loadTileBank(CLandscape &landscape, const std::string &bankFilePath)
+{
 	if (!bankFilePath.empty())
 	{
 		CIFile bankFile(bankFilePath);
