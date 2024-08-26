@@ -26,7 +26,7 @@ class CTile_rotation_dlg : public QDialog
 	Q_OBJECT
 
 public:
-	static int getRotation(QWidget *parent, bool *ok = 0,Qt::WindowFlags f = 0);
+	static int getRotation(QWidget *parent, bool *ok = 0);
 
 	enum TileRotation
 	{ 
@@ -39,7 +39,7 @@ public:
 	int getCheckedRotation() const {	return rotationButtonGroup->checkedId();	}
 
 private:
-	CTile_rotation_dlg(QWidget *parent = 0, Qt::WindowFlags f = 0);
+	CTile_rotation_dlg(QWidget *parent = 0);
 	Ui::TileRotationDialog ui;
 	QButtonGroup* rotationButtonGroup;
 };

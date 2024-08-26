@@ -17,8 +17,8 @@
 #include "common.h"
 #include "tile_rotation_dlg.h"
 
-CTile_rotation_dlg::CTile_rotation_dlg(QWidget *parent, Qt::WindowFlags flags)
-     : QDialog(parent, flags)
+CTile_rotation_dlg::CTile_rotation_dlg(QWidget *parent)
+     : QDialog(parent)
 
 {
 	ui.setupUi(this);
@@ -32,9 +32,9 @@ CTile_rotation_dlg::CTile_rotation_dlg(QWidget *parent, Qt::WindowFlags flags)
 }
 
 
-int CTile_rotation_dlg::getRotation(QWidget *parent, bool *ok, Qt::WindowFlags f)
+int CTile_rotation_dlg::getRotation(QWidget *parent, bool *ok)
 {
-    CTile_rotation_dlg dlg(parent, f);
+    CTile_rotation_dlg dlg(parent);
     bool accepted = (dlg.exec() == QDialog::Accepted);
     if (ok)
         *ok = accepted;

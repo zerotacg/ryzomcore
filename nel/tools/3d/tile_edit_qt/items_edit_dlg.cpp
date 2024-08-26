@@ -5,8 +5,8 @@
 
 
 
-CItems_edit_dlg::CItems_edit_dlg(QWidget *parent, Qt::WindowFlags flags)
-     : QDialog(parent, flags)
+CItems_edit_dlg::CItems_edit_dlg(QWidget *parent)
+     : QDialog(parent)
  {
 	 ui.setupUi(this);
  }
@@ -51,9 +51,9 @@ QStringList CItems_edit_dlg::currentItems()
 	return allSelected;
 }
 
-QStringList CItems_edit_dlg::getItems(QWidget *parent, const QString &title, const QString &label, const QStringList &availableList, const QStringList &selectedList, bool *ok, Qt::WindowFlags f)
+QStringList CItems_edit_dlg::getItems(QWidget *parent, const QString &title, const QString &label, const QStringList &availableList, const QStringList &selectedList, bool *ok)
 {
-    CItems_edit_dlg dlg(parent, f);
+    CItems_edit_dlg dlg(parent);
 	dlg.initDialog(title, label, availableList, selectedList);
     bool accepted = (dlg.exec() == QDialog::Accepted);
     if (ok)
