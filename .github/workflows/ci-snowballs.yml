@@ -102,7 +102,7 @@ jobs:
 
       - name: Install Dependency
         run: >
-          sh ${{ needs.strings.outputs.build-output-dir }}/project-nel-*/project-nel-*.sh
+          sh ${{ needs.strings.outputs.build-output-dir }}/package-nel-*/nel-*.sh
           --skip-license
           --include-subdir
           --prefix=${{ needs.strings.outputs.build-output-dir }}
