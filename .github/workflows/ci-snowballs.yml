@@ -94,11 +94,18 @@ jobs:
         with:
           workflow: ci-nel.yml
           workflow_conclusion: success
-          branch: "main"
+          branch: "core4"
           event: push
           name: package-nel-.*
           name_is_regexp: true
           path: build
+
+      - name: Install Dependency
+        run: >
+          sh ${{ needs.strings.outputs.build-output-dir }}/project-nel-*/project-nel-*.sh
+          --skip-license
+          --include-subdir
+          --prefix=${{ needs.strings.outputs.build-output-dir }}
 
       - name: Configure CMake
         run: cmake --preset ${{ matrix.preset }}
