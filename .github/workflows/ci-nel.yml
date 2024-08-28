@@ -7,7 +7,7 @@ on:
       - .github/workflows/ci-nel.yml
       - nel/**
       - CMakeLists.txt
-      - CMakePresets.txt
+      - CMakePresets.json
 
   pull_request:
     branches: [ "core4" ]
@@ -15,7 +15,7 @@ on:
       - .github/workflows/ci-nel.yml
       - nel/**
       - CMakeLists.txt
-      - CMakePresets.txt
+      - CMakePresets.json
 
 jobs:
   strings:
