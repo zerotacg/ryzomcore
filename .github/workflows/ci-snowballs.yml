@@ -108,6 +108,7 @@ jobs:
         run: >
           sh ${{ needs.strings.outputs.build-dir }}/package-nel-*/nel-*.sh
           --skip-license
+          --include-subdir
           --prefix=${{ needs.strings.outputs.install-dir }}
       - run: find ${{ needs.strings.outputs.install-dir }}
 
