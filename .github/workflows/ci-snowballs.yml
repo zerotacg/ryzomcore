@@ -108,7 +108,8 @@ jobs:
         run: >
           sh ${{ needs.strings.outputs.build-dir }}/package-nel-*/nel-*.sh
           --skip-license
-          --prefix=${{ needs.strings.outputs.install-dir }} && find ${{ needs.strings.outputs.install-dir }}
+          --prefix=${{ needs.strings.outputs.install-dir }}
+      - run: find ${{ needs.strings.outputs.install-dir }}
 
       - name: Configure CMake
         run: cmake --preset ${{ matrix.preset }}
