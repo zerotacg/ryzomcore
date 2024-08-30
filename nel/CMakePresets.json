@@ -6,8 +6,9 @@
   ],
   "configurePresets": [
     {
-      "binaryDir": "${sourceDir}/build/nel",
       "name": "nel",
+      "binaryDir": "${sourceDir}/build/nel",
+      "installDir": "${sourceDir}/build/install",
       "cacheVariables": {
         "WITH_STATIC": true,
         "WITH_NEL": true,
