@@ -109,8 +109,6 @@ jobs:
           --include-subdir
           --prefix=${{ needs.strings.outputs.install-dir }}
 
-      - run: find ${{ needs.strings.outputs.build-dir }}
-
       - name: Configure CMake
         run: cmake --preset ${{ matrix.preset }}
 
