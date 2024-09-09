@@ -32,7 +32,6 @@
     {
       "inherits": [
         "linux",
-        "vcpkg",
         "nel"
       ],
       "name": "linux-nel"
