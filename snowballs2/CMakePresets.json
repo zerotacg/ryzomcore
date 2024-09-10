@@ -13,6 +13,7 @@
         "WITH_SNOWBALLS_CLIENT": true,
         "WITH_SNOWBALLS_SERVER": true,
         "WITH_SNOWBALLS_PACKAGE": true,
+        "WITH_TESTING": true,
         "WITH_NEL": false,
         "WITH_NEL_TESTS": false,
         "WITH_NELNS": false,
