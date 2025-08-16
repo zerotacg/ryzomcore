@@ -59,7 +59,8 @@ jobs:
         run: >
           cmake -B ${{ needs.strings.outputs.build-output-dir }}
           -G "Ninja"
-          -DWITH_QT5=ON
+          -DWITH_QT5=OFF
+          -DWITH_QT6=ON
           -DWITH_STUDIO=ON
           -DWITH_RYZOM=OFF
           -DWITH_NEL_TOOLS=OFF
@@ -105,7 +106,8 @@ jobs:
         run: >
           cmake -B ${{ needs.strings.outputs.build-output-dir }}
           -G "Ninja"
-          -DWITH_QT5=ON
+          -DWITH_QT5=OFF
+          -DWITH_QT6=ON
           -DWITH_STUDIO=ON
           -DWITH_STATIC=ON
           -DWITH_RYZOM=OFF
