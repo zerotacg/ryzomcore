@@ -15,7 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "common.h"
+#include <algorithm>
 #include <QtGui/QtGui>
+#include <QRandomGenerator>
 #include "tiles_model.h"
 #include "tile_widget.h"
 
@@ -73,7 +75,7 @@ QVariant tiles_model::data(const QModelIndex &index, int role) const
 
 void tiles_model::sort ( int column, Qt::SortOrder order)
 {
-	qSort(tiles.begin(), tiles.end(), caseInsensitiveLessThan);
+	std::sort(tiles.begin(), tiles.end(), caseInsensitiveLessThan);
 }
 
 
@@ -81,7 +83,7 @@ void tiles_model::addTile(const TileModel &tile)
 {
 
     int row;
-    if (int(2.0*qrand()/(RAND_MAX+1.0)) == 1)
+    if (int(2.0*QRandomGenerator::global()->generate()/(RAND_MAX+1.0)) == 1)
         row = 0;
     else
         row = tiles.size();

@@ -40,8 +40,8 @@ public:
 		Big = 128
 	};
 
-	CTile_browser_dlg(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	void initDialog(const int&);   
+	CTile_browser_dlg(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::Dialog);
+	void initDialog(const int&);
 	
 
 private slots:

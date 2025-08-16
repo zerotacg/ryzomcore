@@ -856,7 +856,7 @@ MACRO(FIND_QT6)
       SET(QT_LIBRARIES Qt6::Widgets)
 
       # Gui
-      LIST(APPEND QT_LIBRARIES Qt6::Gui Qt6::OpenGL)
+      LIST(APPEND QT_LIBRARIES Qt6::Gui Qt6::OpenGL Qt6::OpenGLWidgets)
 
       ADD_QT_LIBRARY(PrintSupport)
 
