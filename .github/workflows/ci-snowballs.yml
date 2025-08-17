@@ -58,6 +58,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "^3.29.5"
 
       - name: Dependencies Linux
         if: runner.os == 'Linux'
