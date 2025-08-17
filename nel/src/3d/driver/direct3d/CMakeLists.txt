@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h *.def *.rc)
 
 NL_TARGET_DRIVER(nel_drv_direct3d_win ${SRC})
 
-INCLUDE_DIRECTORIES(BEFORE ${DXSDK_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(nel_drv_direct3d_win BEFORE PRIVATE ${DXSDK_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(nel_drv_direct3d_win NeL::3d NeL::misc ${DXSDK_D3DX9_LIBRARY} ${DXSDK_D3D9_LIBRARY})
 
@@ -10,7 +10,7 @@ NL_DEFAULT_PROPS(nel_drv_direct3d_win "NeL, Driver, Video: Direct3D")
 NL_ADD_RUNTIME_FLAGS(nel_drv_direct3d_win)
 NL_ADD_LIB_SUFFIX(nel_drv_direct3d_win)
 
-ADD_DEFINITIONS(-DRIVER_DIRECT3D_EXPORTS)
+TARGET_COMPILE_DEFINITIONS(nel_drv_direct3d_win PRIVATE RIVER_DIRECT3D_EXPORTS) # TODO fix typo or remove
 
 IF(WITH_PCH)
   target_precompile_headers(nel_drv_direct3d_win PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stddirect3d.h)

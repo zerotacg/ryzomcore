@@ -4,7 +4,7 @@ FILE(GLOB HEADERS ../../include/nel/logic/*.h)
 NL_TARGET_LIB(nellogic ${HEADERS} ${SRC})
 add_library_project_alias(nellogic logic)
 
-INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(nellogic PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(nellogic NeL::misc NeL::net)
 NL_DEFAULT_PROPS(nellogic "NeL, Library: NeL Logic")
@@ -12,7 +12,7 @@ NL_ADD_RUNTIME_FLAGS(nellogic)
 
 NL_ADD_LIB_SUFFIX(nellogic)
 
-ADD_DEFINITIONS(${LIBXML2_DEFINITIONS})
+TARGET_COMPILE_DEFINITIONS(nellogic PRIVATE ${LIBXML2_DEFINITIONS})
 
 IF(WITH_PCH)
   target_precompile_headers(nellogic PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stdlogic.h)

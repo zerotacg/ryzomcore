@@ -4,9 +4,9 @@ SOURCE_GROUP("" FILES ${SRC})
 
 ADD_LIBRARY(nel_3dsmax_shared SHARED ${SRC})
 
-INCLUDE_DIRECTORIES(${MAXSDK_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(nel_3dsmax_shared PRIVATE ${MAXSDK_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(nel_3dsmax_shared
-		 					NeL::misc
+                            NeL::misc
 							nel3d
 							nel_mesh_lib 
 							nel_patch_lib 
@@ -18,7 +18,7 @@ NL_ADD_RUNTIME_FLAGS(nel_3dsmax_shared)
 NL_ADD_LIB_SUFFIX(nel_3dsmax_shared)
 #SET_TARGET_PROPERTIES(nel_export PROPERTIES SUFFIX ".dlx")
 
-ADD_DEFINITIONS(-DNEL_3DSMAX_SHARED_EXPORTS ${MAXSDK_DEFINITIONS})
+TARGET_COMPILE_DEFINITIONS(nel_3dsmax_shared PRIVATE NEL_3DSMAX_SHARED_EXPORTS ${MAXSDK_DEFINITIONS})
 
 IF(WITH_PCH)
   target_precompile_headers(nel_3dsmax_shared PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/StdAfx.h)

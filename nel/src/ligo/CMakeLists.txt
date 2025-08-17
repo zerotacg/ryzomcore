@@ -4,7 +4,7 @@ FILE(GLOB HEADERS ../../include/nel/ligo/*.h)
 NL_TARGET_LIB(nelligo ${HEADERS} ${SRC})
 add_library_project_alias(nelligo ligo)
 
-INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(nelligo PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(nelligo NeL::misc)
 NL_DEFAULT_PROPS(nelligo "NeL, Library: NeL Ligo")
@@ -12,7 +12,7 @@ NL_ADD_RUNTIME_FLAGS(nelligo)
 
 NL_ADD_LIB_SUFFIX(nelligo)
 
-ADD_DEFINITIONS(${LIBXML2_DEFINITIONS})
+TARGET_COMPILE_DEFINITIONS(nelligo PRIVATE ${LIBXML2_DEFINITIONS})
 
 IF(WITH_PCH)
   target_precompile_headers(nelligo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stdligo.h)

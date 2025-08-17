@@ -49,7 +49,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ ubuntu-22.04, ubuntu-20.04 ]
+        os: [ ubuntu-22.04 ]
         build_type: [ Release ]
         build_preset: [ release ]
         c_compiler: [ gcc ]
@@ -58,10 +58,6 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
             ubuntu_version: 22.04
-          - os: ubuntu-20.04
-            c_compiler: gcc
-            cpp_compiler: g++
-            ubuntu_version: 20.04
 
     steps:
       - uses: lukka/get-cmake@v3.29.5
