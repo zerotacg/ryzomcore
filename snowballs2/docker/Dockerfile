@@ -30,7 +30,7 @@ RUN apt update; \
 COPY build/snowballs/snowballs-*.sh /tmp/install.sh
 
 RUN mkdir --parent "$APP_HOME/snowballs" \
- && sh /tmp/snowballs.sh --skip-license --prefix="$APP_HOME/snowballs"
+ && sh /tmp/install.sh --skip-license --prefix="$APP_HOME/snowballs"
 
 ENV LD_LIBRARY_PATH=$APP_HOME/snowballs/lib
 ENV PATH=$APP_HOME/snowballs/sbin:$APP_HOME/snowballs/bin:$PATH
