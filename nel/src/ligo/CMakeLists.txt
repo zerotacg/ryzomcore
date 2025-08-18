@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 FILE(GLOB HEADERS ../../include/nel/ligo/*.h)
 
 NL_TARGET_LIB(nelligo ${HEADERS} ${SRC})
-add_library_project_alias(nelligo ligo)
+add_project_library_alias(nelligo ligo)
 
 TARGET_INCLUDE_DIRECTORIES(nelligo PRIVATE ${LIBXML2_INCLUDE_DIR})
 

@@ -4,7 +4,7 @@ FILE(GLOB HEADERS ../../include/nel/pipeline/*.h)
 SOURCE_GROUP("" FILES ${HEADERS} ${SRC})
 
 NL_TARGET_LIB(nelpipeline ${HEADERS} ${SRC})
-add_library_project_alias(nelpipeline pipeline)
+add_project_library_alias(nelpipeline pipeline)
 
 TARGET_INCLUDE_DIRECTORIES(nelpipeline PRIVATE ${LIBXML2_INCLUDE_DIR})
 

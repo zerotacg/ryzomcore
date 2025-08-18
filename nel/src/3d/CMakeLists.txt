@@ -714,7 +714,7 @@ SOURCE_GROUP(Stereo FILES
 		../../include/nel/3d/stereo_debugger.h)
 
 NL_TARGET_LIB(nel3d ${HEADERS} ${SRC})
-add_library_project_alias(nel3d 3d)
+add_project_library_alias(nel3d 3d)
 
 TARGET_INCLUDE_DIRECTORIES(nel3d
         PRIVATE

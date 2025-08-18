@@ -4,7 +4,7 @@ FILE(GLOB NET_MANAGER "net_manager.*")
 LIST(REMOVE_ITEM SRC ${NET_MANAGER})
 
 NL_TARGET_LIB(nelnet ${HEADERS} ${SRC})
-add_library_project_alias(nelnet net)
+add_project_library_alias(nelnet net)
 
 IF(WITH_GTK)
   IF(GTK2_FOUND)

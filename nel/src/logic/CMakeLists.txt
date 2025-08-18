@@ -2,7 +2,7 @@ FILE(GLOB SRC *.cpp *.h)
 FILE(GLOB HEADERS ../../include/nel/logic/*.h)
 
 NL_TARGET_LIB(nellogic ${HEADERS} ${SRC})
-add_library_project_alias(nellogic logic)
+add_project_library_alias(nellogic logic)
 
 TARGET_INCLUDE_DIRECTORIES(nellogic PRIVATE ${LIBXML2_INCLUDE_DIR})
 

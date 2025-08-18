@@ -7,7 +7,7 @@ ENDIF ()
 project(NeL VERSION ${RyzomCore_VERSION} LANGUAGES CXX C)
 
 set(project_export_name "${PROJECT_NAME}-targets")
-include(../cmake/add_library_alias.cmake)
+include(../cmake/add_project_library_alias.cmake)
 
 IF(WITH_STATIC_DRIVERS)
   ADD_DEFINITIONS(-DNL_STATIC)
