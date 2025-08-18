@@ -98,7 +98,7 @@ jobs:
           if_no_artifact_found: ignore
 
       - uses: dawidd6/action-download-artifact@v6
-        if: ${{ ! steps.download-from-branch.outputs.found_artifact }}
+        if: ${{ steps.download-from-branch.outputs.found_artifact != 'true' }}
         with:
           workflow: ci-nel.yml
           workflow_conclusion: success
