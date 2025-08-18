@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build-dir: ${{ steps.strings.outputs.build-dir }}
+      build-output-dir: ${{ steps.strings.outputs.build-output-dir }}
       install-dir: ${{ steps.strings.outputs.install-dir }}
       build-version: ${{ steps.strings.outputs.build-version }}
       project-name: ${{ steps.strings.outputs.project-name }}
