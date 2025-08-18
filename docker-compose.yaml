@@ -10,3 +10,44 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+
+  snowballs:
+    image: "ryzomcore/snowballs"
+    build:
+      context: .
+      dockerfile: snowballs2/docker/Dockerfile
+
+  snowballs_naming_service:
+    image: "ghcr.io/zerotacg/ryzomcore-tools:latest"
+    entrypoint: naming_service
+    command:
+      - "Cryzomcore/etc/nel/nelns"
+      - "-Llogs"
+
+  snowballs_chat_service:
+    image: "ryzomcore/snowballs"
+    entrypoint: snowballs_chat_service
+    command:
+      - "-Csnowballs/etc/snowballs"
+      - "-Llogs"
+
+  snowballs_collision_service:
+    image: "ryzomcore/snowballs"
+    entrypoint: snowballs_collision_service
+    command:
+      - "-Csnowballs/etc/snowballs"
+      - "-Llogs"
+
+  snowballs_frontend_service:
+    image: "ryzomcore/snowballs"
+    entrypoint: snowballs_frontend_service
+    command:
+      - "-Csnowballs/etc/snowballs"
+      - "-Llogs"
+
+  snowballs_position_service:
+    image: "ryzomcore/snowballs"
+    entrypoint: snowballs_position_service
+    command:
+      - "-Csnowballs/etc/snowballs"
+      - "-Llogs"
