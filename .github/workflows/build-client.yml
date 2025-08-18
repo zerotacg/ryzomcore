@@ -23,10 +23,13 @@ jobs:
         os:
          - ubuntu-24.04
          - ubuntu-22.04
+         - windows-2025
          - windows-2022
          - macos-13
         include:
           - os: windows-2022
+            cmake_preset: windows-client
+          - os: windows-2025
             cmake_preset: windows-client
           - os: ubuntu-22.04
             ubuntu_version: 22.04
@@ -89,7 +92,7 @@ jobs:
     - name: Dependencies Windows
       if: runner.os == 'Windows'
       run: |
-        choco install directx-sdk
+        choco install directx-sdk nsis
 
     - uses: actions/cache/save@v4
       with:
