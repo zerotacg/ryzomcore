@@ -1,8 +1,8 @@
 {
   "version": 6,
   "include": [
-    "CMakePresets.base.json",
-    "CMakePresets.os.json"
+    "../cmake/CMakePresets.base.json",
+    "../cmake/CMakePresets.os.json"
   ],
   "configurePresets": [
     {
@@ -11,14 +11,24 @@
       "name": "nelns",
       "cacheVariables": {
         "WITH_NELNS": true,
+        "WITH_NELNS_SERVER": true,
+        "WITH_NELNS_LOGIN_SYSTEM": true,
+        "WITH_TESTING": true,
         "WITH_NEL_TESTS": true,
-        "WITH_NEL": false,
+        "WITH_NEL": true,
         "WITH_RYZOM": false,
         "WITH_SNOWBALLS": false,
         "WITH_STUDIO": false,
         "WITH_TOOLS": false,
         "WITH_QT5": true,
-        "CPACK_PACKAGE_NAME": "snowballs",
+        "CPACK_PACKAGE_NAME": "nelns"
+      }
+    },
+    {
+      "name": "ci-nelns",
+      "hidden": true,
+      "cacheVariables": {
+        "WITH_NEL": false,
         "CMAKE_PREFIX_PATH": "${sourceDir}/build/install"
       }
     },
@@ -28,6 +38,14 @@
         "nelns"
       ],
       "name": "linux-nelns"
+    },
+    {
+      "inherits": [
+        "linux",
+        "ci-nelns",
+        "nelns"
+      ],
+      "name": "ci-linux-nelns"
     },
     {
       "inherits": [

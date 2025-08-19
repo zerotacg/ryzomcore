@@ -29,8 +29,6 @@
       "hidden": true,
       "cacheVariables": {
         "WITH_NEL": false,
-        "WITH_NEL_TESTS": false,
-        "WITH_NELNS": false,
         "CMAKE_PREFIX_PATH": "${sourceDir}/build/install"
       }
     },
