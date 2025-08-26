@@ -39,6 +39,7 @@ ELSE()
   ADD_DEFINITIONS(-DHAVE_OVQT_CONFIG_H)
 ENDIF()
 
+add_subdirectory(3rdparty)
 ADD_SUBDIRECTORY(src)
 
 INSTALL(DIRECTORY data/
