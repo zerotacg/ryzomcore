@@ -7,7 +7,7 @@
   "configurePresets": [
     {
       "binaryDir": "${sourceDir}/build/studio",
-      "installDir": "${sourceDir}/build/install",
+      "installDir": "${sourceDir}/build/install/studio",
       "name": "studio",
       "cacheVariables": {
         "WITH_STUDIO": true,
