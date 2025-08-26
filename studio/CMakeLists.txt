@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.27)
 project(Studio VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
 
 find_package(NeL ${RyzomCore_VERSION} REQUIRED COMPONENTS 3d georges gui ligo misc sound)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Xml Gui OpenGL LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Xml Gui OpenGL OpenGLWidgets LinguistTools)
 # TODO try with qt_standard_project_setup
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

@@ -32,8 +32,8 @@
 #include <QWidget>
 #define NEL3DWIDGET QWidget
 #else
-#include <QGLWidget>
-#define NEL3DWIDGET QGLWidget
+#include <QOpenGLWidget>
+#define NEL3DWIDGET QOpenGLWidget
 #endif
 
 #include "../core_global.h"
