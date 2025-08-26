@@ -3,8 +3,9 @@ FILE(GLOB SRC *.cpp *.h)
 ADD_EXECUTABLE(nel_unit_test
         nel_unit_test.cpp
 )
+ADD_TEST(NAME nel_unit_test COMMAND nel_unit_test)
 
-INCLUDE_DIRECTORIES(${CPPTEST_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(nel_unit_test PRIVATE ${CPPTEST_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(nel_unit_test ${CPPTEST_LIBRARIES} nelmisc nelnet nelligo)
 NL_DEFAULT_PROPS(nel_unit_test "Unit Tests")

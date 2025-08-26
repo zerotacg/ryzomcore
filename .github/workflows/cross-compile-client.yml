@@ -3,18 +3,26 @@ name: build 32-Bit windows client
 on:
   push:
     branches: [ "core4", "feature/*" ]
-    paths-ignore:
-      - '.github/workflows/**.yml'
-      - '!.github/workflows/cross-compile-client.yml'
+    paths:
+      - .github/workflows/cross-compile-client.yml
+      # TODO use nel package instead
+      - nel/**
+      - ryzom/**
+      - CMakeLists.txt
+      - CMakePresets.json
   pull_request:
     branches: [ "core4" ]
-    paths-ignore:
-      - '.github/workflows/**.yml'
-      - '!.github/workflows/cross-compile-client.yml'
+    paths:
+      - .github/workflows/cross-compile-client.yml
+      # TODO use nel package instead
+      - nel/**
+      - ryzom/**
+      - CMakeLists.txt
+      - CMakePresets.json
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -56,7 +64,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ steps.strings.outputs.hunter-dir }}
-        key: ubuntu-22.04-hunter-cache
+        key: ubuntu-24.04-hunter-cache
 
     - name: Configure CMake
       run: >
