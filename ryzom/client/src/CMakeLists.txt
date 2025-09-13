@@ -216,17 +216,18 @@ IF(WITH_RYZOM_CLIENT)
   ENDIF()
 
   TARGET_LINK_LIBRARIES(ryzom_client
-              nelmisc
-              nelnet
-              nelligo
-              nelgeorges
-              nel3d
-              nelgui
-              nelsound
-              nel_sevenzip
+              PRIVATE
+              NeL::misc
+              NeL::net
+              NeL::ligo
+              NeL::georges
+              NeL::3d
+              NeL::gui
+              NeL::sound
+              NeL::sevenzip
               ryzom_clientsheets
               ryzom_gameshare
-              nelpacs
+              NeL::pacs
               ${LUA_LIBRARIES}
               ${LUABIND_LIBRARIES}
               ${CURL_LIBRARIES}
@@ -234,16 +235,16 @@ IF(WITH_RYZOM_CLIENT)
   )
 
   IF(NOT APPLE AND NOT WIN32)
-    TARGET_LINK_LIBRARIES(ryzom_client ${X11_LIBRARIES})
+    TARGET_LINK_LIBRARIES(ryzom_client PRIVATE ${X11_LIBRARIES})
   ENDIF()
 
   IF(APPLE)
-    TARGET_LINK_LIBRARIES(ryzom_client ${FOUNDATION_FRAMEWORK})
+    TARGET_LINK_LIBRARIES(ryzom_client PRIVATE ${FOUNDATION_FRAMEWORK})
   ENDIF()
 
   IF(WITH_MSQUIC)
     TARGET_INCLUDE_DIRECTORIES(ryzom_client PRIVATE ${msquic_INCLUDE_DIRS})
-    TARGET_LINK_LIBRARIES(ryzom_client ${msquic_LIBRARIES})
+    TARGET_LINK_LIBRARIES(ryzom_client PRIVATE ${msquic_LIBRARIES})
   ENDIF()
 
   TARGET_COMPILE_DEFINITIONS(ryzom_client PRIVATE ${LIBXML2_DEFINITIONS} ${CURL_DEFINITIONS} ${LUABIND_DEFINITIONS})

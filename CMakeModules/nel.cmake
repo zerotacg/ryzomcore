@@ -288,7 +288,7 @@ MACRO(NL_SETUP_DEFAULT_OPTIONS)
   # GUI toolkits
   ###
   OPTION(WITH_GTK                 "With GTK Support"                              OFF)
-  OPTION(WITH_QT6                 "With Qt 5 Support"                             OFF)
+  OPTION(WITH_QT6                 "With Qt 6 Support"                             OFF)
 
   IF(WIN32 AND MFC_FOUND)
     OPTION(WITH_MFC               "With MFC Support"                              ON )

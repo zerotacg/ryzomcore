@@ -40,7 +40,7 @@ public:
 		Big = 128
 	};
 
-	CTile_browser_dlg(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::Dialog);
+	CTile_browser_dlg(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	void initDialog(const int&);
 	
 
