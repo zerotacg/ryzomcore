@@ -65,7 +65,7 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "vcpkg-dir=${{ github.workspace }}/.vcpkg" >> "$GITHUB_OUTPUT"
-        echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT"
+        echo "runner.os=${{ runner.os }}"
 
     - uses: lukka/get-cmake@v3.29.5
       if: runner.os == 'Linux'
@@ -97,10 +97,11 @@ jobs:
         wget https://raw.githubusercontent.com/microsoft/msquic/main/src/inc/quic_sal_stub.h
         sudo mv msquic.h msquic_posix.h quic_sal_stub.h /usr/include/
 
-    - uses: actions/cache/restore@v4
+    - id: vcpkg-cache
+      uses: actions/cache/restore@v4
       with:
         path: ${{ steps.strings.outputs.vcpkg-dir }}
-        key: ${{ matrix.os }}-vcpkg
+        key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
 
     - uses: actions/cache/restore@v4
       if: runner.os == 'Windows'
@@ -112,6 +113,11 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         choco install directx-sdk nsis
+
+    - name: Dependencies Windows
+      if: runner.os == 'Darwin'
+      run: |
+        brew install nasm
 
     - uses: actions/cache/save@v4
       with:
@@ -130,7 +136,7 @@ jobs:
     - uses: actions/cache/save@v4
       with:
         path: ${{ steps.strings.outputs.vcpkg-dir }}
-        key: ${{ matrix.os }}-vcpkg
+        key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
 
     - name: Build
       env:
