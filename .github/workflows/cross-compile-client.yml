@@ -1,4 +1,4 @@
-name: build 32-Bit windows client
+name: "Ryzom Client: cross compile 32-Bit windows client"
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "hunter-dir=${{ github.workspace }}/.hunter" >> "$GITHUB_OUTPUT"
+        echo "vcpkg-dir=${{ github.workspace }}/.vcpkg" >> "$GITHUB_OUTPUT"
         COMMIT_HASH=${{ github.sha }}
         echo "version=sha.${COMMIT_HASH:0:8}" >> "$GITHUB_OUTPUT"
 
@@ -64,11 +64,11 @@ jobs:
         make
         sudo make install
 
-    - name: Cache Hunter Dependencies
+    - name: Cache vcpkg Dependencies
       uses: actions/cache@v4
       with:
-        path: ${{ steps.strings.outputs.hunter-dir }}
-        key: ubuntu-24.04-hunter-cache
+        path: ${{ steps.strings.outputs.vcpkg-dir }}
+        key: ubuntu-24.04-vcpkg-cache
 
     - name: Configure CMake
       run: >
@@ -78,9 +78,8 @@ jobs:
         -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/CMakeModules/toolchain-mingw.cmake
         -DCMAKE_CONFIGURATION_TYPES=Release
         -DFINAL_VERSION=OFF
-        -DHUNTER_CONFIGURATION_TYPES=Release
-        -DHUNTER_ENABLED=ON
-        -DHUNTER_ROOT=${{ steps.strings.outputs.hunter-dir }}
+        -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_INSTALLED_DIR=${{ steps.strings.outputs.vcpkg-dir }}
         -DWITH_DRIVER_OPENAL=ON
         -DWITH_DRIVER_OPENGL=ON
         -DWITH_INSTALL_LIBRARIES=OFF
