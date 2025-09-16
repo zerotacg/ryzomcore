@@ -61,6 +61,7 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "vcpkg-dir=${{ github.workspace }}/.vcpkg" >> "$GITHUB_OUTPUT"
+        echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT"
 
     - uses: lukka/get-cmake@v3.29.5
       if: runner.os == 'Linux'
