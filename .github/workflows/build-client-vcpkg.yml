@@ -40,17 +40,17 @@ jobs:
          - macos-13
         include:
           - os: windows-2022
-            cmake_preset: windows-ryzom-client-vcpkg
+            cmake_preset: windows-ryzom-client
           - os: windows-2025
-            cmake_preset: windows-ryzom-client-vcpkg
+            cmake_preset: windows-ryzom-client
           - os: ubuntu-22.04
             ubuntu_version: 22.04
-            cmake_preset: linux-ryzom-client-vcpkg
+            cmake_preset: linux-ryzom-client
           - os: ubuntu-24.04
             ubuntu_version: 24.04
-            cmake_preset: linux-ryzom-client-vcpkg
+            cmake_preset: linux-ryzom-client
           - os: macos-13
-            cmake_preset: macos-ryzom-client-vcpkg
+            cmake_preset: macos-ryzom-client
 
     steps:
     - uses: actions/checkout@v4
@@ -66,6 +66,8 @@ jobs:
       if: runner.os == 'Linux'
       with:
         cmakeVersion: 3.27.9
+
+    - uses: lukka/run-vcpkg@v11
 
     - name: Dependencies Linux
       if: runner.os == 'Linux'
@@ -113,8 +115,9 @@ jobs:
     - name: Configure CMake
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.13
-        VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
-      run: cmake --preset ${{ matrix.cmake_preset }}
+      run: >
+        cmake --preset ${{ matrix.cmake_preset }} ${{ matrix.cmake_options }}
+        -DCMAKE_TOOLCHAIN_FILE=$VCPKG_IROOT/scripts/buildsystems/vcpkg.cmake
 
     - uses: actions/cache/save@v4
       with:
