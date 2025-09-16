@@ -27,7 +27,6 @@
     },
     {
       "name": "ryzom-client",
-      "hidden": true,
       "binaryDir": "${sourceDir}/build/ryzom-client",
       "installDir": "${sourceDir}/build/install/ryzom-client",
       "cacheVariables": {
@@ -123,6 +122,11 @@
       "inherits": "release",
       "name": "ryzom",
       "configurePreset": "ryzom"
+    },
+    {
+      "name": "ryzom-client",
+      "inherits": "release",
+      "configurePreset": "ryzom-client"
     }
   ],
   "testPresets": [

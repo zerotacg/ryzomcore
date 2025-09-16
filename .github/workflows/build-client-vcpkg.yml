@@ -40,17 +40,17 @@ jobs:
          - macos-13
         include:
           - os: windows-2022
-            cmake_preset: windows-client
+            cmake_preset: windows-ryzom-client-vcpkg
           - os: windows-2025
-            cmake_preset: windows-client
+            cmake_preset: windows-ryzom-client-vcpkg
           - os: ubuntu-22.04
             ubuntu_version: 22.04
-            cmake_preset: linux-client
+            cmake_preset: linux-ryzom-client-vcpkg
           - os: ubuntu-24.04
             ubuntu_version: 24.04
-            cmake_preset: linux-client
+            cmake_preset: linux-ryzom-client-vcpkg
           - os: macos-13
-            cmake_preset: macos-client
+            cmake_preset: macos-ryzom-client-vcpkg
 
     steps:
     - uses: actions/checkout@v4
@@ -113,12 +113,7 @@ jobs:
     - name: Configure CMake
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.13
-      run: >
-        cmake --preset ${{ matrix.cmake_preset }}
-        ${{ matrix.cmake_options }}
-        -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
-        -DVCPKG_INSTALLED_DIR=${{ steps.strings.outputs.vcpkg-dir }}
-        -S ${{ github.workspace }}
+      run: cmake --preset ${{ matrix.cmake_preset }}
 
     - uses: actions/cache/save@v4
       with:
@@ -128,10 +123,10 @@ jobs:
     - name: Build
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.13
-      run: cmake --build --preset client
+      run: cmake --build --preset ryzom-client
 
     - name: Package
-      run: cmake --build --preset client --target package
+      run: cmake --build --preset ryzom-client --target package
 
     - uses: actions/upload-artifact@v4
       if: ${{ failure() }}
@@ -142,5 +137,5 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-client-package
-        path: build/ryzomcore-*
+        path: build/ryzom-client/ryzom-client-*
         if-no-files-found: error
