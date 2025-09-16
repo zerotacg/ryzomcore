@@ -90,9 +90,8 @@
     {
       "name": "linux-ryzom-client-vcpkg",
       "inherits": [
-        "linux",
         "vcpkg",
-        "ryzom-client"
+        "linux-ryzom-client"
       ]
     },
     {
@@ -107,6 +106,13 @@
       }
     },
     {
+      "name": "windows-ryzom-client-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "windows-ryzom-client"
+      ]
+    },
+    {
       "name": "macos-ryzom-client",
       "inherits": [
         "macos",
@@ -115,6 +121,13 @@
       "cacheVariables": {
         "WITH_LIBXML2_ICONV": false
       }
+    },
+    {
+      "name": "macos-ryzom-client-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "macos-ryzom-client"
+      ]
     }
   ],
   "buildPresets": [
