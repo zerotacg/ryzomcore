@@ -1,10 +1,10 @@
-name: "Ryzom Client: build on multiple platforms (hunter)"
+name: "Ryzom Client: build on multiple platforms (vcpkg)"
 
 on:
   push:
     branches: [ "core4", "feature/*" ]
     paths:
-      - .github/workflows/build-client.yml
+      - .github/workflows/build-client-vcpkg.yml
       # TODO use nel package instead
       - nel/**
       - ryzom/**
@@ -15,7 +15,7 @@ on:
   pull_request:
     branches: [ "core4" ]
     paths:
-      - .github/workflows/build-client.yml
+      - .github/workflows/build-client-vcpkg.yml
       # TODO use nel package instead
       - nel/**
       - ryzom/**
@@ -51,7 +51,6 @@ jobs:
             cmake_preset: linux-client
           - os: macos-13
             cmake_preset: macos-client
-            cmake_options: -DHUNTER_USE_CACHE_SERVERS=NO
 
     steps:
     - uses: actions/checkout@v4
@@ -61,7 +60,7 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "hunter-dir=${{ github.workspace }}/.hunter" >> "$GITHUB_OUTPUT"
+        echo "vcpkg-dir=${{ github.workspace }}/.vcpkg" >> "$GITHUB_OUTPUT"
 
     - uses: lukka/get-cmake@v3.29.5
       if: runner.os == 'Linux'
@@ -92,8 +91,8 @@ jobs:
 
     - uses: actions/cache/restore@v4
       with:
-        path: ${{ steps.strings.outputs.hunter-dir }}
-        key: ${{ matrix.os }}-hunter
+        path: ${{ steps.strings.outputs.vcpkg-dir }}
+        key: ${{ matrix.os }}-vcpkg
 
     - uses: actions/cache/restore@v4
       if: runner.os == 'Windows'
@@ -117,15 +116,14 @@ jobs:
       run: >
         cmake --preset ${{ matrix.cmake_preset }}
         ${{ matrix.cmake_options }}
-        -DHUNTER_CONFIGURATION_TYPES=Release
-        -DHUNTER_ENABLED=ON
-        -DHUNTER_ROOT=${{ steps.strings.outputs.hunter-dir }}
+        -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_INSTALLED_DIR=${{ steps.strings.outputs.vcpkg-dir }}
         -S ${{ github.workspace }}
 
     - uses: actions/cache/save@v4
       with:
-        path: ${{ steps.strings.outputs.hunter-dir }}
-        key: ${{ matrix.os }}-hunter
+        path: ${{ steps.strings.outputs.vcpkg-dir }}
+        key: ${{ matrix.os }}-vcpkg
 
     - name: Build
       env:

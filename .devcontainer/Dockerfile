@@ -54,6 +54,10 @@ RUN apt install --yes \
         libxrandr-dev \
         wget
 
+# vcpkg
+RUN apt install --yes \
+        curl zip unzip tar
+
 # work arround as there is no debug version available
 RUN cp /lib/x86_64-linux-gnu/libcpptest.so /lib/x86_64-linux-gnu/libcpptestd.so
 
@@ -67,7 +71,8 @@ ARG USER_GID=$USER_UID
 RUN wget --output-document=/tmp/cmake.sh https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh
 RUN mkdir --parents "$CMAKE_INSTALL_DIR" \
     && sh /tmp/cmake.sh --skip-license --prefix="$CMAKE_INSTALL_DIR" \
-    && ln --symbolic --force "$CMAKE_INSTALL_DIR/bin/"* /usr/local/bin
+    && ln --symbolic --force "$CMAKE_INSTALL_DIR/bin/"* /usr/local/bin \
+    && cmake --version
 
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
@@ -77,3 +82,10 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 USER $USERNAME
+
+ENV VCPKG_ROOT="/home/$USERNAME/vcpkg"
+ENV PATH="$PATH:$VCPKG_ROOT"
+
+RUN git clone https://github.com/microsoft/vcpkg.git $VCPKG_ROOT \
+    && $VCPKG_ROOT/bootstrap-vcpkg.sh -disableMetrics \
+    && vcpkg --version
