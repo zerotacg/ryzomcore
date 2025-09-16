@@ -13,17 +13,19 @@ ADD_EXECUTABLE(world_editor WIN32 ${SRC})
 TARGET_INCLUDE_DIRECTORIES(world_editor PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(world_editor
-					NeL::misc
-					nelligo
-					NeL::3d
-					nelgeorges
-					NeL::pacs)
+        PRIVATE
+        NeL::misc
+        NeL::ligo
+        NeL::3d
+        NeL::georges
+        NeL::pacs
+)
 
 NL_DEFAULT_PROPS(world_editor "Ryzom, Tools, World: World Editor")
 NL_ADD_RUNTIME_FLAGS(world_editor)
 
-IF(WITH_PCH)
-  target_precompile_headers(world_editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h)
-ENDIF()
+IF (WITH_PCH)
+    target_precompile_headers(world_editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h)
+ENDIF ()
 
 INSTALL(TARGETS world_editor RUNTIME DESTINATION ${RYZOM_BIN_PREFIX} COMPONENT tools)

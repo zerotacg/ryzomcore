@@ -92,6 +92,7 @@ ADD_EXECUTABLE(ryzom_entities_game_service WIN32
 TARGET_INCLUDE_DIRECTORIES(ryzom_entities_game_service PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${RZ_SERVER_SRC_DIR} ${LIBXML2_INCLUDE_DIR} ${MYSQL_INCLUDE_DIR})
 
 TARGET_LINK_LIBRARIES(ryzom_entities_game_service
+		                PRIVATE
 						ryzom_adminmodules
 						ryzom_gameshare
 						ryzom_servershare
@@ -100,9 +101,10 @@ TARGET_LINK_LIBRARIES(ryzom_entities_game_service
 						ryzom_gameplaymodule
 						NeL::misc
 						NeL::net
-						nelweb
-						nelgeorges
-						nelligo)
+						NeL::web
+						NeL::georges
+						NeL::ligo
+)
 
 NL_DEFAULT_PROPS(ryzom_entities_game_service "Ryzom, Services: Entities Game Service (EGS)")
 NL_ADD_RUNTIME_FLAGS(ryzom_entities_game_service)

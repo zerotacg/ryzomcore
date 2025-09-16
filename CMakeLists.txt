@@ -46,6 +46,11 @@ ENDIF()
 OPTION(HUNTER_ENABLED "Enable Hunter package manager" OFF)
 IF(HUNTER_ENABLED)
   cmake_minimum_required(VERSION 3.24)
+
+  IF (POLICY CMP0144)
+    cmake_policy(SET CMP0144 NEW)
+  ENDIF ()
+
   INCLUDE("CMakeModules/HunterGate.cmake")
   HunterGate(
     URL "https://github.com/cpp-pm/hunter/archive/v0.26.1.tar.gz"
@@ -286,13 +291,6 @@ IF(WITH_QT5)
   FIND_QT5()
 ENDIF()
 
-IF(WITH_QT)
-  SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QTDIR} $ENV{QTDIR})
-
-  # Use Qt 4
-  FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtXml QtOpenGL REQUIRED)
-ENDIF()
-
 #TODO: hunter assimp package
 IF(WITH_ASSIMP)
   FIND_PACKAGE(assimp REQUIRED)
@@ -306,10 +304,13 @@ IF(WITH_NEL_TESTS OR WITH_TESTING)
   FIND_PACKAGE(CppTest)
 
   ENABLE_TESTING()
+  # GoogleTest requires at least C++17 not the whole project depends on google test though
+  # set(CMAKE_CXX_STANDARD 17)
+  # set(CMAKE_CXX_STANDARD_REQUIRED ON)
   include(FetchContent)
   FetchContent_Declare(
           googletest
-          URL https://github.com/google/googletest/archive/a7f443b80b105f940225332ed3c31f2790092f47.zip
+          URL https://github.com/google/googletest/archive/54915d462bb64e9b2bd1a3f0e70c00e6f5d817fb.zip
           EXCLUDE_FROM_ALL
   )
   SET(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -401,20 +402,8 @@ IF(WITH_NEL)
   SET(NELGUI_LIBRARIES NeL::gui)
   SET(NELSOUND_LIBRARIES NeL::sound)
 
-  # wrap find_package to be able to use local projects as dependencies the same way if it where used from installation
-  set(subprojects
-          NeL
-          CACHE STRING "Subprojects to use directly from source"
-  )
-  macro(find_package)
-    IF (POLICY CMP0057)
-      cmake_policy(SET CMP0057 NEW)
-    ENDIF ()
-
-    if (NOT "${ARGV0}" IN_LIST subprojects)
-      _find_package(${ARGV})
-    endif ()
-  endmacro()
+  # allow find_package to find projects from within the mono repo
+  list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_BINARY_DIR}/nel/internal")
 ELSE()
 #  FIND_PACKAGE(NeL COMPONENTS 3d misc pacs sound nimp REQUIRED)
   FIND_PACKAGE(NeL REQUIRED)

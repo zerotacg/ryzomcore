@@ -26,7 +26,7 @@ NL_DEFAULT_PROPS(studio_plugin_sheet_builder "Tools: Studio Plugin: Sheet builde
 NL_ADD_RUNTIME_FLAGS(studio_plugin_sheet_builder)
 NL_ADD_LIB_SUFFIX(studio_plugin_sheet_builder)
 
-ADD_DEFINITIONS(-DQT_PLUGIN -DQT_SHARED ${QT_DEFINITIONS})
+TARGET_COMPILE_DEFINITIONS(studio_plugin_sheet_builder PRIVATE QT_PLUGIN QT_SHARED ${QT_DEFINITIONS})
 
 
 IF(WIN32)

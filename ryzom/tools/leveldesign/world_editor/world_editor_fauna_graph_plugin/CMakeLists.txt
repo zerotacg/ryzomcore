@@ -3,11 +3,13 @@ FILE(GLOB SRC *.cpp *.h *.rc)
 ADD_LIBRARY(world_editor_fauna_graph_plugin SHARED ${SRC})
 
 TARGET_LINK_LIBRARIES(world_editor_fauna_graph_plugin
-							NeL::misc
-							NeL::3d
-							NeL::sound
-							NeL::snd_lowlevel)
-							
+        PUBLIC
+        NeL::misc
+        NeL::3d
+        NeL::sound
+        NeL::snd_lowlevel
+)
+
 NL_DEFAULT_PROPS(world_editor_fauna_graph_plugin "Ryzom, Tools, World: World Editor Fauna Graph Plugin")
 NL_ADD_RUNTIME_FLAGS(world_editor_fauna_graph_plugin)
 NL_ADD_LIB_SUFFIX(world_editor_fauna_graph_plugin)

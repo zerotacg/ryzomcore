@@ -1,5 +1,3 @@
-FILE(GLOB SRC *.cpp *.h)
-
 ADD_EXECUTABLE(nel_unit_test
         nel_unit_test.cpp
 )
@@ -23,9 +21,19 @@ add_test_executable(nel_misc_config_file_test
         ut_misc_config_file.test.cpp
 )
 target_link_libraries(nel_misc_config_file_test
+        PRIVATE
         NeL::misc
 )
 target_compile_definitions(nel_misc_config_file_test
         PUBLIC
         NEL_UNIT_BASE="${CMAKE_CURRENT_SOURCE_DIR}/"
+)
+
+
+add_test_executable(nel_net_module_test
+        ut_net_module.test.cpp
+)
+target_link_libraries(nel_net_module_test
+        PRIVATE
+        nelmisc nelnet
 )
