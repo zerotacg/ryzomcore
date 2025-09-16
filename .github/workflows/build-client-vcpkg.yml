@@ -121,9 +121,10 @@ jobs:
     - name: Configure CMake
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.13
+      shell: bash
       run: >
         cmake --preset ${{ matrix.cmake_preset }} ${{ matrix.cmake_options }}
-        -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+        -DCMAKE_TOOLCHAIN_FILE="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
         -DVCPKG_INSTALLED_DIR="${{ steps.strings.outputs.vcpkg-dir }}"
 
     - uses: actions/cache/save@v4
