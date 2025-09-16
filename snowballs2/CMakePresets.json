@@ -6,9 +6,9 @@
   ],
   "configurePresets": [
     {
+      "name": "snowballs",
       "binaryDir": "${sourceDir}/build/snowballs",
       "installDir": "${sourceDir}/build/install/snowballs",
-      "name": "snowballs",
       "cacheVariables": {
         "WITH_SNOWBALLS": true,
         "WITH_SNOWBALLS_CLIENT": true,

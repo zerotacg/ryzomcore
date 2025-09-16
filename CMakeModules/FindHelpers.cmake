@@ -802,17 +802,12 @@ MACRO(ADD_QT_SYSTEM_LIBRARY _NAME)
 ENDMACRO()
 
 MACRO(FIND_QT6)
-  CMAKE_MINIMUM_REQUIRED(VERSION 3.16 FATAL_ERROR)
   SET(CMAKE_CXX_STANDARD 17)
   SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
   # qt5 required cxx 11, not the whole project depends on qt though
   #set(CMAKE_CXX_STANDARD 11)
   #set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-  set(CMAKE_AUTOMOC ON)
-  set(CMAKE_AUTORCC ON)
-  set(CMAKE_AUTOUIC ON)
 
   SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QTDIR} $ENV{QTDIR})
 
@@ -870,9 +865,9 @@ MACRO(FIND_QT6)
 
       IF(WIN32)
         LIST(APPEND QT_LIBRARIES
-                ${WINSDK_LIBRARY_DIR}/Imm32.lib
-                ${WINSDK_LIBRARY_DIR}/OpenGL32.lib
-                ${WINSDK_LIBRARY_DIR}/WinMM.Lib)
+          ${WINSDK_LIBRARY_DIR}/Imm32.lib
+          ${WINSDK_LIBRARY_DIR}/OpenGL32.lib
+          ${WINSDK_LIBRARY_DIR}/WinMM.Lib)
         ADD_QT_PLUGIN(platforms qwindows)
         ADD_QT_LIBRARY(PlatformSupport)
       ELSEIF(APPLE)
@@ -888,11 +883,11 @@ MACRO(FIND_QT6)
         FIND_LIBRARY(OPENGL_FRAMEWORK NAMES OpenGL)
 
         LIST(APPEND QT_LIBRARIES
-                ${CUPS_LIBRARY}
-                ${COCOA_FRAMEWORK}
-                ${SYSTEMCONFIGURATION_FRAMEWORK}
-                ${IOKIT_FRAMEWORK}
-                ${OPENGL_FRAMEWORK})
+          ${CUPS_LIBRARY}
+          ${COCOA_FRAMEWORK}
+          ${SYSTEMCONFIGURATION_FRAMEWORK}
+          ${IOKIT_FRAMEWORK}
+          ${OPENGL_FRAMEWORK})
 
         ADD_QT_PLUGIN(printsupport cocoaprintersupport)
         ADD_QT_PLUGIN(platforms qcocoa)
@@ -975,9 +970,9 @@ MACRO(FIND_QT6)
 
       IF(WIN32)
         LIST(APPEND QT_LIBRARIES
-                ${WINSDK_LIBRARY_DIR}/Crypt32.lib
-                ${WINSDK_LIBRARY_DIR}/WS2_32.Lib
-                ${WINSDK_LIBRARY_DIR}/IPHlpApi.Lib)
+          ${WINSDK_LIBRARY_DIR}/Crypt32.lib
+          ${WINSDK_LIBRARY_DIR}/WS2_32.Lib
+          ${WINSDK_LIBRARY_DIR}/IPHlpApi.Lib)
       ENDIF()
 
       # Core
@@ -1002,10 +997,10 @@ MACRO(FIND_QT6)
         FIND_LIBRARY(SECURITY_FRAMEWORK Security)
 
         LIST(APPEND QT_LIBRARIES
-                ${PCRE_LIBRARY}
-                ${FOUNDATION_FRAMEWORK}
-                ${CARBON_FRAMEWORK}
-                ${SECURITY_FRAMEWORK})
+          ${PCRE_LIBRARY}
+          ${FOUNDATION_FRAMEWORK}
+          ${CARBON_FRAMEWORK}
+          ${SECURITY_FRAMEWORK})
       ELSEIF(UNIX)
         FIND_PACKAGE(Threads)
         LIST(APPEND QT_LIBRARIES ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS} -lrt)
