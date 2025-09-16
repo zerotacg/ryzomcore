@@ -86,6 +86,7 @@ jobs:
           libasound2-dev \
           libgl1-mesa-dev \
           libjack-dev \
+          libluabind-dev \
           libpulse-dev \
           libxrandr-dev \
           libxrender-dev \
