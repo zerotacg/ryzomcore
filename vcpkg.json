@@ -1,7 +1,18 @@
 {
   "dependencies": [
+    "curl",
+    "freetype",
+    "giflib",
     "gtest",
+    "ijg-libjpeg",
+    "libpng",
     "libxml2",
-    "openssl"
+    "lua",
+    "openssl",
+    "zlib",
+    "libogg",
+    "libvorbis",
+    "ffmpeg",
+    "openal-soft"
   ]
 }
