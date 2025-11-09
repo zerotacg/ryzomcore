@@ -53,3 +53,15 @@ services:
       MARIADB_ROOT_PASSWORD: password
     ports:
       - 3306:3306
+
+  nelns:
+    image: "ryzomcore/nelns"
+    build:
+      context: .
+      dockerfile: nelns/docker/Dockerfile
+
+  snowballs:
+    image: "ryzomcore/snowballs"
+    build:
+      context: .
+      dockerfile: snowballs2/docker/Dockerfile
