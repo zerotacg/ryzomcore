@@ -12,6 +12,7 @@
     "libvorbis",
     "libxml2",
     "lua",
+    "luabind",
     "openal-soft",
     "openssl",
     "zlib"
