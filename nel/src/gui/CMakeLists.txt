@@ -8,7 +8,8 @@ add_project_library_alias(nelgui gui)
 
 TARGET_INCLUDE_DIRECTORIES(nelgui
         PUBLIC
-        ${LUA_INCLUDE_DIR}
+        $<BUILD_INTERFACE:${LUA_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:include>
         PRIVATE
         ${LUABIND_INCLUDE_DIR}
         ${CURL_INCLUDE_DIRS}
