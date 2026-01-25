@@ -35,6 +35,7 @@ RUN apt update && \
         libxml2-dev \
         mingw-w64 \
         mingw-w64-tools \
+        nasm \
         ninja-build \
         qtbase5-dev \
         qttools5-dev \

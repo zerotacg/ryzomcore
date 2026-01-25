@@ -1,18 +1,19 @@
 {
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
     "curl",
+    "ffmpeg",
     "freetype",
     "giflib",
     "gtest",
-    "ijg-libjpeg",
+    "libjpeg-turbo",
+    "libogg",
     "libpng",
+    "libvorbis",
     "libxml2",
     "lua",
+    "openal-soft",
     "openssl",
-    "zlib",
-    "libogg",
-    "libvorbis",
-    "ffmpeg",
-    "openal-soft"
+    "zlib"
   ]
 }
