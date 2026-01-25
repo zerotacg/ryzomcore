@@ -27,6 +27,7 @@ on:
       - CMakePresets.json
       - vcpkg.json
       - vcpkg-configuration.json
+  workflow_dispatch:
 
 jobs:
   build:

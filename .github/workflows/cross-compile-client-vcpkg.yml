@@ -12,6 +12,8 @@ on:
       - CMakeModules/**
       - CMakeLists.txt
       - CMakePresets.json
+      - vcpkg.json
+      - vcpkg-configuration.json
   pull_request:
     branches: [ "core4" ]
     paths:
@@ -23,6 +25,8 @@ on:
       - CMakeModules/**
       - CMakeLists.txt
       - CMakePresets.json
+      - vcpkg.json
+      - vcpkg-configuration.json
   workflow_dispatch:
 
 jobs:
@@ -44,6 +48,8 @@ jobs:
     - uses: lukka/get-cmake@v3.29.5
       with:
         cmakeVersion: 3.27.9
+
+    - uses: lukka/run-vcpkg@v11
 
     - name: Dependencies
       run: |
