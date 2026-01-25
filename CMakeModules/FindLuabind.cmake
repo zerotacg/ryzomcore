@@ -99,7 +99,7 @@ MACRO(FIND_CORRECT_LUA_VERSION)
       FIND_PACKAGE(Lua REQUIRED 5.0)
     ENDIF()
   ENDIF()
-  if(Lua_FOUND AND NOT TARGET Lua::Lua)
+  if((Lua_FOUND OR LUA_FOUND) AND NOT TARGET Lua::Lua)
       add_library(Lua::Lua INTERFACE IMPORTED)
       set_target_properties(
               Lua::Lua
