@@ -17,3 +17,13 @@ include(CMakeFindDependencyMacro)
 foreach(_dependency IN ITEMS @package_required_dependencies@)
     find_dependency(${_dependency} REQUIRED)
 endforeach()
+
+
+foreach(_comp ${@PROJECT_NAME@_FIND_COMPONENTS})
+  if (@PROJECT_NAME@_${_comp}_FOUND)
+    foreach(_dependency IN ITEMS @package_${_comp}_dependencies@)
+        find_dependency(${_dependency} REQUIRED)
+    endforeach()
+  endif()
+endforeach()
+
