@@ -6,9 +6,9 @@
   ],
   "configurePresets": [
     {
-      "name": "ryzom",
       "binaryDir": "${sourceDir}/build/ryzom",
       "installDir": "${sourceDir}/build/install/ryzom",
+      "name": "ryzom",
       "cacheVariables": {
         "WITH_RYZOM": true,
         "WITH_RYZOM_CLIENT": true,
@@ -65,7 +65,21 @@
         "ci-ryzom",
         "ryzom"
       ],
-      "name": "ci-linux-ryzom"
+      "name": "ci-linux-ryzom-static",
+      "cacheVariables": {
+        "WITH_STATIC": true
+      }
+    },
+    {
+      "inherits": [
+        "linux",
+        "ci-ryzom",
+        "ryzom"
+      ],
+      "name": "ci-linux-ryzom-dynamic",
+      "cacheVariables": {
+        "WITH_STATIC": false
+      }
     },
     {
       "inherits": [
@@ -73,34 +87,6 @@
         "ryzom"
       ],
       "name": "windows-ryzom"
-    },
-    {
-      "name": "linux-ryzom-client",
-      "inherits": [
-        "linux",
-        "ryzom-client"
-      ]
-    },
-    {
-      "name": "windows-ryzom-client",
-      "inherits": [
-        "windows",
-        "ryzom-client"
-      ],
-      "cacheVariables": {
-        "WITH_DRIVER_DIRECT3D": true,
-        "WITH_DRIVER_XAUDIO2": true
-      }
-    },
-    {
-      "name": "macos-ryzom-client",
-      "inherits": [
-        "macos",
-        "ryzom-client"
-      ],
-      "cacheVariables": {
-        "WITH_LIBXML2_ICONV": false
-      }
     }
   ],
   "buildPresets": [
@@ -110,9 +96,16 @@
       "configurePreset": "ryzom"
     },
     {
-      "name": "ryzom-client",
-      "inherits": "release",
-      "configurePreset": "ryzom-client"
+      "inherits": "ryzom",
+      "name": "ci-linux-ryzom",
+      "configurePreset": "ci-linux-ryzom-dynamic"
+    },
+    {
+      "inherits": "ci-linux-ryzom",
+      "name": "ci-linux-ryzom/install",
+      "targets": [
+        "ryzom/install"
+      ]
     }
   ],
   "testPresets": [
@@ -126,6 +119,25 @@
     {
       "name": "ryzom",
       "configurePreset": "ryzom"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ci-linux-ryzom",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-linux-ryzom-dynamic"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-ryzom"
+        },
+        {
+          "type": "build",
+          "name": "ci-linux-ryzom/install"
+        }
+      ]
     }
   ]
 }
