@@ -1,6 +1,7 @@
 @PACKAGE_INIT@
 
 set(_@PROJECT_NAME@_supported_components @package_components@)
+set(_@PROJECT_NAME@_gui_dependencies @package_gui_dependencies@)
 
 foreach(_comp ${@PROJECT_NAME@_FIND_COMPONENTS})
   if (NOT _comp IN_LIST _@PROJECT_NAME@_supported_components)
@@ -21,7 +22,7 @@ endforeach()
 
 foreach(_comp ${@PROJECT_NAME@_FIND_COMPONENTS})
   if (@PROJECT_NAME@_${_comp}_FOUND)
-    foreach(_dependency IN ITEMS @package_${_comp}_dependencies@)
+    foreach(_dependency IN ITEMS ${_@PROJECT_NAME@_${_comp}_dependencies})
         find_dependency(${_dependency} REQUIRED)
     endforeach()
   endif()
