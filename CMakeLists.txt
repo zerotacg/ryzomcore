@@ -348,18 +348,9 @@ ENDIF()
 IF(WITH_NEL)
   IF(HUNTER_ENABLED)
     IF(WITH_GUI)
+      HUNTER_ADD_PACKAGE(Lua)
       HUNTER_ADD_PACKAGE(luabind)
       FIND_PACKAGE(Lua REQUIRED)
-      if((Lua_FOUND OR LUA_FOUND) AND NOT TARGET Lua::Lua)
-        message(FATAL_ERROR "lua target")
-        add_library(Lua::Lua INTERFACE IMPORTED)
-        set_target_properties(
-                Lua::Lua
-                PROPERTIES
-                INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
-                INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}"
-        )
-      endif()
       FIND_PACKAGE(Luabind REQUIRED)
     ENDIF()
 
@@ -368,15 +359,6 @@ IF(WITH_NEL)
   ELSE()
     IF(WITH_GUI)
       FIND_PACKAGE(Lua REQUIRED)
-      if((Lua_FOUND OR LUA_FOUND) AND NOT TARGET Lua::Lua)
-        add_library(Lua::Lua INTERFACE IMPORTED)
-        set_target_properties(
-                Lua::Lua
-                PROPERTIES
-                INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
-                INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}"
-        )
-      endif()
       FIND_PACKAGE(Luabind REQUIRED)
     ENDIF()
 
