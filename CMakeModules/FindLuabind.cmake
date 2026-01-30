@@ -38,7 +38,7 @@ MACRO(FIND_CORRECT_LUA_VERSION)
 
     IF(NOT LUALIB_FOUND)
       # check for Lua 5.2
-      SET(LUA52_LIBRARIES liblua5.2 liblua-5.2 liblua.so.5.2)
+      SET(LUA52_LIBRARIES liblua5.2 liblua5.2.so liblua-5.2 liblua.so.5.2)
 
       FOREACH(_LIB ${LUA52_LIBRARIES})
         CHECK_LINKED_LIBRARY(LUABIND_LIBRARY_RELEASE _LIB LUALIB_FOUND)
