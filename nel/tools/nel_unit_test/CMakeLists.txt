@@ -19,8 +19,6 @@ target_compile_definitions(nel_unit_test
         NEL_UNIT_BASE="${PROJECT_SOURCE_DIR}/tools/nel_unit_test/"
 )
 
-INSTALL(TARGETS nel_unit_test RUNTIME DESTINATION ${NL_BIN_PREFIX})
-
 
 add_test_executable(nel_misc_config_file_test
         ut_misc_config_file.test.cpp
