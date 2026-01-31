@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "core4", "feature/*" ]
     paths:
-      - .github/workflows/cross-compile-client.yml
+      - .github/workflows/cross-compile-client-vcpkg.yml
       # TODO use nel package instead
       - nel/**
       - ryzom/**
@@ -17,7 +17,7 @@ on:
   pull_request:
     branches: [ "core4" ]
     paths:
-      - .github/workflows/cross-compile-client.yml
+      - .github/workflows/cross-compile-client-vcpkg.yml
       # TODO use nel package instead
       - nel/**
       - ryzom/**
