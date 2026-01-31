@@ -68,10 +68,9 @@ jobs:
         echo "vcpkg-dir=${{ github.workspace }}/.vcpkg" >> "$GITHUB_OUTPUT"
         echo "runner.os=${{ runner.os }}"
 
-    - uses: lukka/get-cmake@v3.29.5
-      if: runner.os == 'Linux'
+    - uses: lukka/get-cmake@latest
       with:
-        cmakeVersion: 3.27.9
+        cmakeVersion: 3.31.6
 
     - uses: lukka/run-vcpkg@v11
 
