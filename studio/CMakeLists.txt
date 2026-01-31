@@ -10,6 +10,11 @@ project(Studio VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
 
 find_package(NeL ${RyzomCore_VERSION} REQUIRED COMPONENTS 3d georges gui ligo misc sound)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+find_package(Qt5 REQUIRED COMPONENTS Core Gui LinguistTools Widgets)
+
 # This tells the application(s) where to find the installed data.
 IF(WIN32)
   SET(OVQT_PLUGIN_SPECS_DIR "plugins")

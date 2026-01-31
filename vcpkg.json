@@ -16,6 +16,7 @@
     "luabind",
     "openal-soft",
     "openssl",
+    "qt5",
     "zlib"
   ]
 }
