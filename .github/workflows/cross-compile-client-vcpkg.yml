@@ -55,7 +55,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install --yes \
-        autoconf autoconf-archive automake libtool nasm \
+        autoconf autoconf-archive automake libtool nasm libltdl-dev \
         libasound2-dev \
         libgl1-mesa-dev \
         libjack-dev \
