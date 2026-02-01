@@ -1,4 +1,4 @@
-vcpkg-sample-library provides CMake targets:
+cpptest provides CMake targets:
 
 find_package(CppTest REQUIRED)
 

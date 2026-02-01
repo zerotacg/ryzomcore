@@ -1,4 +1,4 @@
-vcpkg-sample-library provides CMake targets:
+luabind provides CMake targets:
 
 find_package(Luabind REQUIRED)
 

@@ -1,22 +1,98 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "ryzom-core",
+  "version-string": "4.1.0.0",
   "dependencies": [
-    "cpptest",
-    "curl",
-    "ffmpeg",
-    "freetype",
     "giflib",
-    "gtest",
     "libjpeg-turbo",
     "libogg",
     "libpng",
     "libvorbis",
-    "libxml2",
-    "lua",
-    "luabind",
-    "openal-soft",
-    "openssl",
-    "qt5",
-    "zlib"
-  ]
+    "openal-soft"
+  ],
+  "default-features": [
+    "nel"
+  ],
+  "features": {
+    "nel": {
+      "description": "Builds NeL", "dependencies": [{
+        "name": "ryzom-core",
+        "default-features": false,
+        "features": ["nel-3d", "nel-gui", "nel-net", "nel-web"]
+      }]
+    },
+    "nel-3d": {
+      "description": "Builds with 3D support", "dependencies": [
+        {
+          "name": "ryzom-core",
+          "default-features": false,
+          "features": ["nel-misc"]
+        },
+        "freetype"
+      ]
+    },
+    "nel-gui": {
+      "description": "Builds with GUI support", "dependencies": ["lua","luabind","qt5"]
+    },
+    "nel-misc": {
+      "description": [],
+      "dependencies": ["libxml2","zlib"]
+    },
+    "nel-net": {
+      "description": "Builds with NET support", "dependencies": []
+    },
+    "nel-web": {
+      "description": "Builds with WEB support", "dependencies": [
+        {
+          "name": "ryzom-core",
+          "default-features": false,
+          "features": ["nel-misc"]
+        },
+        "curl",
+        "libxml2",
+        "openssl"
+      ]
+    },
+    "nelns": {
+      "description": "Builds NeL Network Services", "dependencies": [
+        {
+          "name": "ryzom-core",
+          "default-features": false,
+          "features": ["nel-misc", "nel-net"]
+        }
+      ]
+    },
+    "ryzom": {
+      "description": "Builds Ryzom", "dependencies": [{
+        "name": "ryzom-core",
+        "default-features": false,
+        "features": ["ryzom-client", "ryzom-server", "ryzom-tools"]
+      }]
+    },
+    "ryzom-client": {
+      "description": "Builds Ryzom Client", "dependencies": [
+        {
+          "name": "ryzom-core",
+          "default-features": false,
+          "features": ["nel-misc"]
+        },
+        "luabind"
+      ]
+    },
+    "ryzom-server": {
+      "description": "Builds Ryzom Services", "dependencies": []
+    },
+    "ryzom-tools": {
+      "description": "Builds Ryzom Tools", "dependencies": []
+    },
+    "ffmpeg": {
+      "description": "Builds with ffmpeg support", "dependencies": ["ffmpeg"]
+    },
+    "msquic": {
+      "description": "Builds with msquic", "dependencies": ["msquic"]
+    },
+    "testing": {
+      "description": "Builds tests", "dependencies": ["cpptest", "gtest"]
+    }
+  }
 }
