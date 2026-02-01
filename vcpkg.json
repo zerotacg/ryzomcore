@@ -36,7 +36,10 @@
     },
     "nel-misc": {
       "description": [],
-      "dependencies": ["libxml2","zlib"]
+      "dependencies": [
+        { "name":"libxml2", "default-features":  false, "features":  ["zlib"] },
+        "zlib"
+      ]
     },
     "nel-net": {
       "description": "Builds with NET support", "dependencies": []
@@ -76,7 +79,9 @@
           "default-features": false,
           "features": ["nel-misc"]
         },
-        "luabind"
+        "curl",
+        "luabind",
+        "openssl"
       ]
     },
     "ryzom-server": {
