@@ -6,7 +6,13 @@
   "homepage": "https://github.com/ryzom/luabind",
   "license": "MIT",
   "dependencies": [
-    "boost",
+    "boost-dynamic-bitset",
+    "boost-foreach",
+    "boost-integer",
+    "boost-lexical-cast",
+    "boost-mpl",
+    "boost-smart-ptr",
+    "boost-utility",
     "lua",
     {
       "name": "vcpkg-cmake",
