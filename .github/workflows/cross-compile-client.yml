@@ -73,25 +73,13 @@ jobs:
 
     - name: Configure CMake
       run: >
-        cmake --version;
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -G Ninja
+        cmake --preset ryzom-client
+        -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/CMakeModules/toolchain-mingw.cmake
         -DCMAKE_CONFIGURATION_TYPES=Release
-        -DFINAL_VERSION=OFF
         -DHUNTER_CONFIGURATION_TYPES=Release
         -DHUNTER_ENABLED=ON
         -DHUNTER_ROOT=${{ steps.strings.outputs.hunter-dir }}
-        -DWITH_DRIVER_OPENAL=ON
-        -DWITH_DRIVER_OPENGL=ON
-        -DWITH_INSTALL_LIBRARIES=OFF
-        -DWITH_NEL_SAMPLES=OFF
-        -DWITH_NEL_TESTS=OFF
-        -DWITH_NEL_TOOLS=OFF
-        -DWITH_RYZOM_CLIENT=ON
-        -DWITH_RYZOM_SERVER=OFF
-        -DWITH_RYZOM_TOOLS=OFF
-        -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
