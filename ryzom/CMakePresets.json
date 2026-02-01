@@ -107,6 +107,17 @@
       }
     },
     {
+      "name": "ryzom-client-x86-mingw-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "ryzom-client"
+      ],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x86-mingw-static",
+        "VCPKG_MANIFEST_FEATURES": "ryzom-client"
+      }
+    },
+    {
       "name": "macos-ryzom-client",
       "inherits": [
         "macos",
