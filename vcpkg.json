@@ -6,7 +6,6 @@
     "giflib",
     "libjpeg-turbo",
     "libogg",
-    "libpng",
     "libvorbis",
     "openal-soft"
   ],
@@ -41,6 +40,7 @@
     "nel-misc": {
       "description": [],
       "dependencies": [
+        "libpng",
         { "name":"libxml2", "default-features":  false, "features":  ["zlib"] },
         "zlib"
       ]
@@ -85,7 +85,8 @@
         },
         "curl",
         "luabind",
-        "openssl"
+        "openssl",
+        "zlib"
       ]
     },
     "ryzom-server": {
