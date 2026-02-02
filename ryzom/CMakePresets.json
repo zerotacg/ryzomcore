@@ -117,7 +117,9 @@
         "VCPKG_TARGET_TRIPLET": "x86-mingw-static",
         "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": true,
         "VCPKG_MANIFEST_FEATURES": "ryzom-client",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/CMakeModules/toolchain-mingw.cmake"
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/CMakeModules/toolchain-mingw.cmake",
+        "WITH_EXTERNAL": false,
+        "WITH_STATIC_CURL": false
       }
     },
     {
