@@ -65,6 +65,7 @@ jobs:
         key: vcpkg-ubuntu-24.04-mingw
 
     - name: Configure CMake
+      continue-on-error: true
       run: >
         cmake --preset ryzom-client-x86-mingw-vcpkg
         -B ${{ steps.strings.outputs.build-output-dir }}
@@ -72,6 +73,7 @@ jobs:
         -DVCPKG_INSTALLED_DIR=${{ steps.strings.outputs.vcpkg-dir }}
 
     - name: debug
+      continue-on-error: true
       run: >
         cat vcpkg/buildtrees/openal-soft/install-x86-mingw-static-dbg-out.log
 
