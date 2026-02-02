@@ -58,12 +58,6 @@ jobs:
         mingw-w64 \
         mingw-w64-tools
 
-    - name: Cache vcpkg Dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.strings.outputs.vcpkg-dir }}
-        key: vcpkg-ubuntu-24.04-mingw
-
     - name: Configure CMake
       continue-on-error: true
       run: >
@@ -79,8 +73,3 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ryzom-client-win32-${{ steps.strings.outputs.version }}
-        path: ${{ steps.strings.outputs.build-output-dir }}/bin
