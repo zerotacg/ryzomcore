@@ -55,17 +55,8 @@ jobs:
       run: |
         sudo apt update
         sudo apt install --yes \
-        autoconf autoconf-archive automake libtool nasm libltdl-dev libxi-dev libxtst-dev linux-libc-dev \
-        libasound2-dev \
-        libgl1-mesa-dev \
-        libjack-dev \
-        libpulse-dev \
-        libxrandr-dev \
-        libxrender-dev \
-        libxxf86vm-dev \
         mingw-w64 \
-        mingw-w64-tools \
-        ninja-build
+        mingw-w64-tools
 
     - name: Cache vcpkg Dependencies
       uses: actions/cache@v4
