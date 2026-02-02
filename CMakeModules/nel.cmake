@@ -1264,20 +1264,12 @@ MACRO(SETUP_EXTERNAL)
   ENDIF()
 
   IF(WIN32)
-    IF (HUNTER_ENABLED)
-      FIND_PACKAGE(External QUIET)
-    ELSE()
-      FIND_PACKAGE(External REQUIRED)
-    ENDIF()
-
     # If using custom boost, we need to define the right variables used by official boost CMake module
     IF(DEFINED BOOST_DIR)
       SET(BOOST_INCLUDEDIR ${BOOST_DIR}/include)
       SET(BOOST_LIBRARYDIR ${BOOST_DIR}/lib)
     ENDIF()
   ELSE()
-    FIND_PACKAGE(External QUIET)
-
     IF(APPLE)
       IF(WITH_STATIC_EXTERNAL)
         # Look only for static libraries because systems libraries are using Frameworks
