@@ -76,7 +76,7 @@ RUN wget --output-document=/tmp/microsoft.deb https://packages.microsoft.com/con
     && sudo mv msquic.h msquic_posix.h quic_sal_stub.h /usr/include/
 
 
-ARG CMAKE_VERSION=3.29.5
+ARG CMAKE_VERSION=3.31.6
 ARG CMAKE_INSTALL_DIR=/opt/cmake-$CMAKE_VERSION
 ARG USERNAME=ryzom
 ARG USER_UID=1000
