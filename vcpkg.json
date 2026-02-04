@@ -4,7 +4,6 @@
   "version-string": "4.1.0.0",
   "dependencies": [
     "giflib",
-    "libjpeg-turbo",
     "libogg",
     "libvorbis",
     "openal-soft"
@@ -17,7 +16,7 @@
       "description": "Builds NeL", "dependencies": [{
         "name": "ryzom-core",
         "default-features": false,
-        "features": ["nel-3d", "nel-gui", "nel-net", "nel-web"]
+        "features": ["nel-3d", "nel-gui", "nel-net", "nel-web", "testing"]
       }]
     },
     "nel-3d": {
@@ -41,6 +40,7 @@
       "description": [],
       "dependencies": [
         "libpng",
+        "libjpeg-turbo",
         { "name":"libxml2", "default-features":  false, "features":  ["zlib"] },
         "zlib"
       ]
