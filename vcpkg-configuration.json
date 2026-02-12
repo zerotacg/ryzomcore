@@ -2,12 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg-configuration.schema.json",
   "default-registry": {
     "kind": "git",
-    "baseline": "890e0f0506f9dcb76800dfa2ea28b03ebc627bfa",
+    "baseline": "0a434205c521ca43d66921271ae2a1d051e718a5",
     "repository": "https://github.com/microsoft/vcpkg"
   },
-  "overlay-ports": [
-    "vcpkg-ports"
-  ],
   "registries": [
     {
       "kind": "artifact",
@@ -19,5 +16,8 @@
       "location": "https://artifacts.tools.arm.com/vcpkg-registry",
       "name": "arm"
     }
+  ],
+  "overlay-ports": [
+    "vcpkg-ports"
   ]
 }

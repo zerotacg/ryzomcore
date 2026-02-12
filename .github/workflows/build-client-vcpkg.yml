@@ -79,7 +79,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y --no-install-recommends \
-          autoconf autoconf-archive automake libtool nasm
+          autoconf autoconf-archive automake libtool nasm libltdl-dev
 
     - id: vcpkg-cache
       uses: actions/cache/restore@v4

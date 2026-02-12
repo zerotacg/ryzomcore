@@ -13,75 +13,125 @@
   ],
   "features": {
     "nel": {
-      "description": "Builds NeL", "dependencies": [{
-        "name": "ryzom-core",
-        "default-features": false,
-        "features": ["nel-3d", "nel-gui", "nel-net", "nel-web", "testing"]
-      }]
-    },
-    "nel-3d": {
-      "description": "Builds with 3D support", "dependencies": [
+      "description": "Builds NeL",
+      "dependencies": [
         {
           "name": "ryzom-core",
           "default-features": false,
-          "features": ["nel-misc"]
+          "features": [
+            "nel-3d",
+            "nel-gui",
+            "nel-net",
+            "nel-web",
+            "testing"
+          ]
+        }
+      ]
+    },
+    "nel-3d": {
+      "description": "Builds with 3D support",
+      "dependencies": [
+        {
+          "name": "ryzom-core",
+          "default-features": false,
+          "features": [
+            "nel-misc"
+          ]
         },
         {
           "name": "freetype",
           "default-features": false,
-          "features": ["error-strings"]
+          "features": [
+            "error-strings"
+          ]
         }
       ]
     },
     "nel-gui": {
-      "description": "Builds with GUI support", "dependencies": ["lua","luabind","qt5"]
+      "description": "Builds with GUI support",
+      "dependencies": [
+        "lua",
+        "luabind",
+        "qt5"
+      ]
     },
     "nel-misc": {
       "description": [],
       "dependencies": [
         "libpng",
         "libjpeg-turbo",
-        { "name":"libxml2", "default-features":  false, "features":  ["zlib"] },
+        {
+          "name": "libxml2",
+          "default-features": false,
+          "features": [
+            "zlib"
+          ]
+        },
         "zlib"
       ]
     },
     "nel-net": {
-      "description": "Builds with NET support", "dependencies": []
+      "description": "Builds with NET support",
+      "dependencies": []
     },
     "nel-web": {
-      "description": "Builds with WEB support", "dependencies": [
+      "description": "Builds with WEB support",
+      "dependencies": [
         {
           "name": "ryzom-core",
           "default-features": false,
-          "features": ["nel-misc"]
+          "features": [
+            "nel-misc"
+          ]
         },
         "curl",
-        { "name":"libxml2", "default-features":  false, "features":  ["zlib"] },
+        {
+          "name": "libxml2",
+          "default-features": false,
+          "features": [
+            "zlib"
+          ]
+        },
         "openssl"
       ]
     },
     "nelns": {
-      "description": "Builds NeL Network Services", "dependencies": [
+      "description": "Builds NeL Network Services",
+      "dependencies": [
         {
           "name": "ryzom-core",
           "default-features": false,
-          "features": ["nel-misc", "nel-net"]
+          "features": [
+            "nel-misc",
+            "nel-net"
+          ]
         }
       ]
     },
     "ryzom": {
-      "description": "Builds Ryzom", "dependencies": [{
-        "name": "ryzom-core",
-        "default-features": false,
-        "features": ["ryzom-client", "ryzom-server", "ryzom-tools"]
-      }]
-    },
-    "ryzom-client": {
-      "description": "Builds Ryzom Client", "dependencies": [
+      "description": "Builds Ryzom",
+      "dependencies": [
         {
           "name": "ryzom-core",
           "default-features": false,
-          "features": ["nel-3d","nel-misc"]
+          "features": [
+            "ryzom-client",
+            "ryzom-server",
+            "ryzom-tools"
+          ]
+        }
+      ]
+    },
+    "ryzom-client": {
+      "description": "Builds Ryzom Client",
+      "dependencies": [
+        {
+          "name": "ryzom-core",
+          "default-features": false,
+          "features": [
+            "nel-3d",
+            "nel-misc"
+          ]
         },
         "curl",
         "luabind",
@@ -90,19 +140,31 @@
       ]
     },
     "ryzom-server": {
-      "description": "Builds Ryzom Services", "dependencies": []
+      "description": "Builds Ryzom Services",
+      "dependencies": []
     },
     "ryzom-tools": {
-      "description": "Builds Ryzom Tools", "dependencies": []
+      "description": "Builds Ryzom Tools",
+      "dependencies": []
     },
     "ffmpeg": {
-      "description": "Builds with ffmpeg support", "dependencies": ["ffmpeg"]
+      "description": "Builds with ffmpeg support",
+      "dependencies": [
+        "ffmpeg"
+      ]
     },
     "msquic": {
-      "description": "Builds with msquic", "dependencies": ["msquic"]
+      "description": "Builds with msquic",
+      "dependencies": [
+        "msquic"
+      ]
     },
     "testing": {
-      "description": "Builds tests", "dependencies": ["cpptest", "gtest"]
+      "description": "Builds tests",
+      "dependencies": [
+        "cpptest",
+        "gtest"
+      ]
     }
   }
 }
