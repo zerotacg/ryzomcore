@@ -44,7 +44,8 @@
           "features": [
             "error-strings"
           ]
-        }
+        },
+        "opengl"
       ]
     },
     "nel-gui": {
