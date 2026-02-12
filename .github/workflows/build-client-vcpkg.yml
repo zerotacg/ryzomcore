@@ -45,15 +45,15 @@ jobs:
          - macos-13
         include:
           - os: windows-2022
-            cmake_preset: windows-ryzom-client
+            cmake_preset: ryzom-client-x64-windows-vcpkg
           - os: windows-2025
-            cmake_preset: windows-ryzom-client
+            cmake_preset: ryzom-client-x64-windows-vcpkg
           - os: ubuntu-22.04
             ubuntu_version: 22.04
-            cmake_preset: linux-ryzom-client
+            cmake_preset: ryzom-client-x64-linux-vcpkg
           - os: ubuntu-24.04
             ubuntu_version: 24.04
-            cmake_preset: linux-ryzom-client
+            cmake_preset: ryzom-client-x64-linux-vcpkg
           - os: macos-13
             cmake_preset: macos-ryzom-client
 
@@ -113,8 +113,7 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: 10.13
       shell: bash
       run: >
-        cmake --preset ${{ matrix.cmake_preset }} ${{ matrix.cmake_options }}
-        -DCMAKE_TOOLCHAIN_FILE="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        cmake --preset ${{ matrix.cmake_preset }}
         -DVCPKG_INSTALLED_DIR="${{ steps.strings.outputs.vcpkg-dir }}"
 
     - uses: actions/cache/save@v4

@@ -107,6 +107,32 @@
       }
     },
     {
+      "name": "ryzom-client-x64-linux-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "ryzom-client"
+      ],
+      "cacheVariables": {
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": true,
+        "VCPKG_MANIFEST_FEATURES": "ryzom-client"
+      }
+    },
+    {
+      "name": "ryzom-client-x64-windows-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "ryzom-client"
+      ],
+      "cacheVariables": {
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": true,
+        "VCPKG_MANIFEST_FEATURES": "ryzom-client",
+        "WITH_DRIVER_DIRECT3D": true,
+        "WITH_DRIVER_XAUDIO2": true,
+        "WITH_EXTERNAL": false,
+        "WITH_STATIC_CURL": false
+      }
+    },
+    {
       "name": "ryzom-client-x86-mingw-vcpkg",
       "inherits": [
         "vcpkg",
