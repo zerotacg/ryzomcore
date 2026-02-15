@@ -182,6 +182,7 @@ protected:
 
 	friend class	CWaveMakerShape;
 	TAnimationTime  _Time;
+	uint64          _LastFrameId; // avoid double-accumulation in stereo
 };
 
 // tmp for debug

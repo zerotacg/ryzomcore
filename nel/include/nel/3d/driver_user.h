@@ -232,6 +232,12 @@ public:
 	virtual void			stencilMask(uint mask);
 	// @}
 
+	/// \name Clip planes
+	// @{
+	virtual void			enableClipPlane(uint index, bool enable);
+	virtual void			setClipPlane(uint index, const NLMISC::CPlane &plane);
+	// @}
+
 	/// \name Scene gestion.
 	// @{
 	/// Create a new scene.

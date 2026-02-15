@@ -284,6 +284,7 @@ CDriverD3D::CDriverD3D()
 	_CurStencilOpZFail = D3DSTENCILOP_KEEP;
 	_CurStencilOpZPass = D3DSTENCILOP_KEEP;
 	_CurStencilWriteMask = std::numeric_limits<DWORD>::max();
+	_CurClipPlaneEnable = 0;
 
 
 	for(uint k = 0; k < MaxTexture; ++k)
@@ -3553,6 +3554,45 @@ void CDriverD3D::stencilMask(uint mask)
 
 	_CurStencilWriteMask = (DWORD)mask;
 	setRenderState (D3DRS_STENCILWRITEMASK, _CurStencilWriteMask);
+}
+
+// ***************************************************************************
+void CDriverD3D::enableClipPlane(uint index, bool enable)
+{
+	H_AUTO_D3D(CDriverD3D_enableClipPlane);
+	nlassert(index < 6);
+
+	DWORD bit = 1 << index;
+	DWORD newValue;
+	if (enable)
+		newValue = _CurClipPlaneEnable | bit;
+	else
+		newValue = _CurClipPlaneEnable & ~bit;
+	if (newValue != _CurClipPlaneEnable)
+	{
+		_CurClipPlaneEnable = newValue;
+		setRenderState(D3DRS_CLIPPLANEENABLE, _CurClipPlaneEnable);
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::setClipPlane(uint index, const NLMISC::CPlane &plane)
+{
+	H_AUTO_D3D(CDriverD3D_setClipPlane);
+	nlassert(index < 6);
+
+	// Plane is in NeL world space. The D3D World matrix operates in NeL
+	// space (basis conversion is in the View matrix), so no basis
+	// conversion is needed on the plane coefficients.
+	// Adjust d for _PZBCameraPos precision optimization.
+	float equation[4];
+	equation[0] = plane.a;
+	equation[1] = plane.b;
+	equation[2] = plane.c;
+	equation[3] = plane.d + plane.a * _PZBCameraPos.x
+	                      + plane.b * _PZBCameraPos.y
+	                      + plane.c * _PZBCameraPos.z;
+	_DeviceInterface->SetClipPlane(index, equation);
 }
 
 // volatile bool preciseStateProfile = false;

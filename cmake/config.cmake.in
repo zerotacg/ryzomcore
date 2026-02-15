@@ -21,7 +21,7 @@ endforeach()
 
 
 # Dependencies for components
-foreach(_comp _@PROJECT_NAME@_supported_components)
+foreach(_comp ${_@PROJECT_NAME@_supported_components})
   foreach(_dependency IN ITEMS ${_@PROJECT_NAME@_${_comp}_dependencies})
     find_dependency(${_dependency} REQUIRED)
   endforeach()

@@ -1905,6 +1905,20 @@ void CDriverUser::stencilMask(uint mask)
 }
 
 // ***************************************************************************
+void CDriverUser::enableClipPlane(uint index, bool enable)
+{
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->enableClipPlane(index, enable);
+}
+
+// ***************************************************************************
+void CDriverUser::setClipPlane(uint index, const NLMISC::CPlane &plane)
+{
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->setClipPlane(index, plane);
+}
+
+// ***************************************************************************
 uint64 CDriverUser::getSwapBufferCounter()
 {
 	NL3D_HAUTO_UI_DRIVER

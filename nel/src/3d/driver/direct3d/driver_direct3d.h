@@ -1266,6 +1266,9 @@ public:
 	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass);
 	virtual void			stencilMask(uint mask);
 
+	virtual void			enableClipPlane(uint index, bool enable);
+	virtual void			setClipPlane(uint index, const NLMISC::CPlane &plane);
+
 	uint32					getMaxVertexIndex() const { return _MaxVertexIndex; }
 
 		// *** Inline info
@@ -2681,6 +2684,7 @@ private:
 	DWORD			_CurStencilOpZFail;
 	DWORD			_CurStencilOpZPass;
 	DWORD			_CurStencilWriteMask;
+	DWORD			_CurClipPlaneEnable;
 
 public:
 

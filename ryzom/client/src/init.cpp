@@ -48,6 +48,7 @@
 #include "nel/3d/u_text_context.h"
 #include "nel/3d/u_shape_bank.h"
 #include "nel/3d/stereo_hmd.h"
+#include "nel/3d/stereo_passthrough.h"
 // Net.
 #include "nel/net/email.h"
 // Ligo.
@@ -664,6 +665,14 @@ void initStereoDisplayDevice()
 		nldebug("VR [C]: NOT Enabled");
 	}
 	IStereoDisplay::releaseUnusedLibraries();
+
+	// Always ensure StereoDisplay is non-null
+	if (!StereoDisplay)
+	{
+		StereoDisplay = new NL3D::CStereoPassthrough();
+		if (Driver)
+			StereoDisplay->setDriver(Driver);
+	}
 }
 
 // we want to get executable directory

@@ -28,6 +28,7 @@
 #include "frustum.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/plane.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/bitmap.h"
@@ -292,6 +293,12 @@ public:
 	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask) = 0;
 	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass) = 0;
 	virtual void			stencilMask(uint mask) = 0;
+	// @}
+
+	/// \name Clip planes
+	// @{
+	virtual void			enableClipPlane(uint index, bool enable) = 0;
+	virtual void			setClipPlane(uint index, const NLMISC::CPlane &plane) = 0;
 	// @}
 
 	/// \name Scene gestion.

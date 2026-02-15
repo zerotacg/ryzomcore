@@ -39,7 +39,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x70; // total video memory
+const uint32 IDriver::InterfaceVersion = 0x71; // user clip planes
 
 // ***************************************************************************
 IDriver::IDriver() : _SyncTexDrvInfos( "IDriver::_SyncTexDrvInfos" )

@@ -711,7 +711,9 @@ SOURCE_GROUP(Stereo FILES
 		stereo_libvr.cpp
         ../../include/nel/3d/stereo_libvr.h
 		stereo_debugger.cpp
-		../../include/nel/3d/stereo_debugger.h)
+		../../include/nel/3d/stereo_debugger.h
+		stereo_passthrough.cpp
+		../../include/nel/3d/stereo_passthrough.h)
 
 NL_TARGET_LIB(nel3d ${HEADERS} ${SRC})
 add_project_library_alias(nel3d 3d)

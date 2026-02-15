@@ -1,3 +1,4 @@
+ADD_SUBDIRECTORY(clip_plane)
 ADD_SUBDIRECTORY(font)
 ADD_SUBDIRECTORY(font_perf)
 ADD_SUBDIRECTORY(cluster_viewer)

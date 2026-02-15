@@ -697,6 +697,9 @@ public:
 	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass);
 	virtual void			stencilMask(uint mask);
 
+	virtual void			enableClipPlane(uint index, bool enable);
+	virtual void			setClipPlane(uint index, const NLMISC::CPlane &plane);
+
 	GfxMode						_CurrentMode;
 	sint32						_WindowX;
 	sint32						_WindowY;

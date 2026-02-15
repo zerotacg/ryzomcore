@@ -25,6 +25,7 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/plane.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -1422,6 +1423,13 @@ public:
 	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask) = 0;
 	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass) = 0;
 	virtual void			stencilMask(uint mask) = 0;
+
+	/** Set clip planes. Plane is in NeL world space.
+	  * The driver handles coordinate system conversion internally.
+	  * Useful for water reflections to clip geometry below the water surface.
+	  */
+	virtual void			enableClipPlane(uint index, bool enable) = 0;
+	virtual void			setClipPlane(uint index, const NLMISC::CPlane &plane) = 0;
 
 protected:
 	friend	class			IVBDrvInfos;

@@ -1128,6 +1128,11 @@ private:
 	/// Last update date of the system. Useful with sharing only, to avoid several motions.
 	sint64					 _LastUpdateDate;
 
+	/// Frame ID deduplication for stereo rendering: prevents double-processing of
+	/// animation and render state updates when the scene is rendered multiple times per frame.
+	uint64					 _LastAnimFrameId;
+	uint64					 _LastRenderFrameId;
+
 	// current edited element located (edition purpose only)
 	CPSLocated				 *_CurrEditedElementLocated;
 	// current edited located bindable, NULL means all binadable of a located. (edition purpose only)

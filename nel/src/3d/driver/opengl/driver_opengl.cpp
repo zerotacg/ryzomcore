@@ -3035,6 +3035,44 @@ void CDriverGL::stencilMask(uint mask)
 }
 
 // ***************************************************************************
+void CDriverGL::enableClipPlane(uint index, bool enable)
+{
+	H_AUTO_OGL(CDriverGL_enableClipPlane)
+
+	_DriverGLStates.enableClipPlane(index, enable);
+}
+
+// ***************************************************************************
+void CDriverGL::setClipPlane(uint index, const NLMISC::CPlane &plane)
+{
+	H_AUTO_OGL(CDriverGL_setClipPlane)
+
+#ifndef USE_OPENGLES
+	// Plane is in NeL world space. _ViewMtx = changeBasis * userViewMatrix
+	// already transforms from NeL world to GL eye space, so no basis
+	// conversion is needed on the plane - glClipPlane will handle it
+	// via the inverse of the modelview we load.
+	// Adjust d for _PZBCameraPos precision optimization.
+	double equation[4];
+	equation[0] = plane.a;
+	equation[1] = plane.b;
+	equation[2] = plane.c;
+	equation[3] = plane.d + plane.a * _PZBCameraPos.x
+	                      + plane.b * _PZBCameraPos.y
+	                      + plane.c * _PZBCameraPos.z;
+
+	// glClipPlane transforms the plane by the inverse of the current
+	// modelview matrix. By loading _ViewMtx (NeL world -> GL eye),
+	// GL correctly converts the NeL-world-space plane to eye space.
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadMatrixf((const GLfloat *)_ViewMtx.get());
+	glClipPlane(GL_CLIP_PLANE0 + index, equation);
+	glPopMatrix();
+#endif
+}
+
+// ***************************************************************************
 void CDriverGL::getNumPerStageConstant(uint &lightedMaterial, uint &unlightedMaterial) const
 {
 	lightedMaterial = inlGetNumTextStages();
