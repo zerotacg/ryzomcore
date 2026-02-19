@@ -41,6 +41,7 @@
 // tmp
 #include "nel/3d/particle_system_model.h"
 #include "nel/3d/scene.h"
+#include "nel/misc/wang_hash.h" // for lowbias32
 
 
 #ifdef NL_DEBUG
@@ -58,6 +59,8 @@
 namespace NL3D
 {
 
+using NLMISC::lowbias32;
+
 uint32										CParticleSystem::NbParticlesDrawn = 0;
 UPSSoundServer *							CParticleSystem::_SoundServer = NULL;
 CParticleSystem::TGlobalValuesMap			CParticleSystem::_GlobalValuesMap;
@@ -68,6 +71,7 @@ TAnimationTime CParticleSystem::EllapsedTime = 0.f;
 TAnimationTime CParticleSystem::InverseTotalEllapsedTime = 0.f;
 TAnimationTime CParticleSystem::RealEllapsedTime = 0.f;
 float CParticleSystem::RealEllapsedTimeRatio = 1.f;
+uint32 CParticleSystem::RandomSeed = 0;
 bool CParticleSystem::InsideSimLoop = false;
 bool CParticleSystem::InsideRemoveLoop = false;
 bool CParticleSystem::InsideNewElementsLoop = false;;
@@ -119,6 +123,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 	_CurrEditedElementLocatedBindable(NULL),
 	_CurrEditedElementIndex(0),
 	_Scene(NULL),
+	_NextAttribMakerId(0),
 	_TimeThreshold(0.15f),
 	_SystemDate(0.f),
 	_MaxNbIntegrations(2),
@@ -447,6 +452,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 		{
 			EllapsedTime = RealEllapsedTime = ellapsedTime;
 			RealEllapsedTimeRatio = 1.f;
+			// Set deterministic random seed from frame ID for CRandomIterator
+			RandomSeed = lowbias32((uint32)(_Scene ? _Scene->getFrameId() : 0));
 			// Only update state once per frame (dedup for stereo rendering)
 			uint64 frameId = _Scene ? _Scene->getFrameId() : 0;
 			if (!_Scene || frameId != _LastRenderFrameId)
@@ -473,6 +480,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 		{
 			EllapsedTime = RealEllapsedTime = ellapsedTime;
 			RealEllapsedTimeRatio = 1.f;
+			// Set deterministic random seed from frame ID for CRandomIterator
+			RandomSeed = lowbias32((uint32)(_Scene ? _Scene->getFrameId() : 0));
 			// Only update state once per frame (dedup for stereo rendering)
 			uint64 frameId = _Scene ? _Scene->getFrameId() : 0;
 			if (!_Scene || frameId != _LastRenderFrameId)
@@ -505,6 +514,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime, CParticleSys
 		case ToolRender:
 			EllapsedTime = RealEllapsedTime = ellapsedTime;
 			RealEllapsedTimeRatio = 1.f;
+			RandomSeed = lowbias32((uint32)(_Scene ? _Scene->getFrameId() : 0));
 			stepLocated(PSToolRender);
 		break;
 		case Anim:

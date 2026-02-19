@@ -137,6 +137,9 @@ public:
 
 		//// get the scene set by setScene()
 		CScene *getScene() const { return _Scene; }
+
+		/// Allocate a sequential ID for attrib makers (deterministic random seeding)
+		uint32 allocAttribMakerId() { return _NextAttribMakerId++; }
 		//@}
 
 	// *****************************************************************************************************
@@ -1147,6 +1150,7 @@ private:
 
 	CScene					*_Scene;
 
+	uint32					_NextAttribMakerId; // sequential counter for deterministic attrib maker IDs
 
 	// contains the name of the system. (VERSION >= 2 only)
 	std::string _Name;
@@ -1258,6 +1262,7 @@ public:
 	static TAnimationTime								InverseTotalEllapsedTime;
 	static TAnimationTime								RealEllapsedTime;
 	static float										RealEllapsedTimeRatio;
+	static uint32										RandomSeed; // deterministic seed for CRandomIterator, set per frame from _FrameId
 	static bool											InsideSimLoop;
 	static bool											InsideRemoveLoop;
 	static bool											InsideNewElementsLoop;

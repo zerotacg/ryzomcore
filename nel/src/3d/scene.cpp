@@ -198,6 +198,7 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	//_WaterEnvMap = new CTextureCube;
 
 	_WaterEnvMap = NULL;
+	_ForceWaterEnvMap = false;
 
 	_GlobalSystemTime= 0.0;
 

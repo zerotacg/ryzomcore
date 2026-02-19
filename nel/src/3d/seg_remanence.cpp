@@ -275,7 +275,7 @@ void CSegRemanence::render(IDriver *drv, CMaterial &mat)
 
 	// draw wire frame version if needed
 	#ifdef DEBUG_SEG_REMANENCE_DISPLAY
-		static CMaterial unlitWF;
+		static CMaterial unlitWF; // STATIC GPU RESOURCE: Blocks multiple driver instances
 		unlitWF.initUnlit();
 		unlitWF.setDoubleSided(true);
 		IDriver::TPolygonMode oldPM = drv->getPolygonMode();

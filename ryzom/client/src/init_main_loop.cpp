@@ -647,6 +647,7 @@ void initMainLoop()
 		// Setup the global Wind from cfg.
 		Scene->setGlobalWindPower(ClientCfg.GlobalWindPower);
 		Scene->setGlobalWindDirection(ClientCfg.GlobalWindDirection);
+		Scene->setForceWaterEnvMap(ClientCfg.ForceWaterEnvMap);
 
 		// init the clustered sound system
 		if (SoundMngr != NULL)

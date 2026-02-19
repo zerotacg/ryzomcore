@@ -651,6 +651,9 @@ public:
 	void		  setWaterEnvMap(CWaterEnvMap *waterEnvMap) { _WaterEnvMap = waterEnvMap; }
 	// Get currenlty used water envmap for that scene.
 	CWaterEnvMap *getWaterEnvMap() const { return _WaterEnvMap; }
+	// Force all water surfaces to use the scene water envmap, regardless of per-shape flag
+	void		  setForceWaterEnvMap(bool force) { _ForceWaterEnvMap = force; }
+	bool		  getForceWaterEnvMap() const { return _ForceWaterEnvMap; }
 	/** Update water envmaps. Water textures that need to be updated includes UWaterEnvMap textures & Day/Night textures (as defined in the water material).
 	  * Should be called at the beginning of the frame before anything is rendered.
 	  */
@@ -834,6 +837,7 @@ private:
 	UScene::TRenderPart	_RenderedPart;
 	void	renderOcclusionTestMeshsWithCurrMaterial();
 	CWaterEnvMap	*_WaterEnvMap;
+	bool			_ForceWaterEnvMap;
 	/// Delayed model creation For skeleton spawn script animation
 	std::vector<CSSSModelRequest>		_SSSModelRequests;
 	void									flushSSSModelRequests();

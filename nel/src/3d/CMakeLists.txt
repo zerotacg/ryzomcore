@@ -283,8 +283,7 @@ SOURCE_GROUP(Textures FILES
         texture_blank.cpp
         ../../include/nel/3d/texture_blank.h
         texture_blend.cpp
-        ../../include/nel/3d/texture_bloom.h
-        texture_bloom.cpp
+        ../../include/nel/3d/texture_offscreen.h
         ../../include/nel/3d/texture_blend.h
         texture_bump.cpp
         ../../include/nel/3d/texture_bump.h

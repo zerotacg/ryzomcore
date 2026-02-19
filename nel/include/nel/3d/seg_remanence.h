@@ -154,8 +154,8 @@ private:
 	CAnimatedMaterial   *_AniMat;
 	uint64				_LastSampleFrame;
 	//
-	static CVertexBuffer _VB;
-	static CIndexBuffer  _IB;
+	static CVertexBuffer _VB; // STATIC GPU RESOURCE: Blocks multiple driver instances
+	static CIndexBuffer  _IB; // STATIC GPU RESOURCE: Blocks multiple driver instances
 
 private:
 	void		updateOpacityFromShape();

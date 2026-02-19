@@ -35,7 +35,7 @@
 #include "nel/3d/u_camera.h"
 #include "nel/3d/u_driver.h"
 #include "nel/3d/material.h"
-#include "nel/3d/texture_bloom.h"
+#include "nel/3d/texture_offscreen.h"
 #include "nel/3d/texture_user.h"
 #include "nel/3d/driver_user.h"
 #include "nel/3d/u_texture.h"
@@ -104,6 +104,38 @@ const char *a_arbfp1 =
 	"MOV result.color.w, R0;\n"
 	"END\n";
 	// 24 instructions, 3 R-regs
+
+// GLSL 330 version of the same shader for the GL3 driver.
+// Sampler names match CProgramIndex convention for automatic texture unit binding.
+// texCoord0 at location 8 matches TAttribOffset::TexCoord0 from the builtin VP.
+const char *a_glsl330f =
+	"#version 330\n"
+	"#extension GL_ARB_separate_shader_objects : enable\n"
+	"\n"
+	"out vec4 fragColor;\n"
+	"\n"
+	"layout(location = 8) smooth in vec4 texCoord0;\n"
+	"\n"
+	"uniform sampler2D sampler0;\n"
+	"uniform sampler2D sampler1;\n"
+	"\n"
+	"void main()\n"
+	"{\n"
+	"  vec4 left = texture(sampler0, texCoord0.xy);\n"
+	"  vec4 right = texture(sampler1, texCoord0.xy);\n"
+	"  vec4 avg = (left + right) * 0.5;\n"
+	"\n"
+	"  vec3 d = abs(left.rgb - right.rgb);\n"
+	"  float md = max(max(d.r, d.g), d.b);\n"
+	"\n"
+	"  fragColor = avg;\n"
+	"  if (md >= 0.01)\n"
+	"    fragColor.r = 0.5 + (fragColor.r * 0.5);\n"
+	"  else if (md > 0.0)\n"
+	"    fragColor.b = 0.5 + (fragColor.b * 0.5);\n"
+	"  else\n"
+	"    fragColor.g = 0.5 + (fragColor.g * 0.5);\n"
+	"}\n";
 
 const char *a_ps_2_0 =
 	"ps_2_0\n"
@@ -203,6 +235,15 @@ void CStereoDebugger::setDriver(NL3D::UDriver *driver)
 	if (drvInternal->supportBloomEffect() && drvInternal->supportNonPowerOfTwoTextures())
 	{
 		m_PixelProgram = new CPixelProgram();
+		// glsl330f
+		{
+			IProgram::CSource *source = new IProgram::CSource();
+			source->Features.MaterialFlags = CProgramFeatures::TextureStages;
+			source->Features.NoUniforms = true;
+			source->Profile = IProgram::glsl330f;
+			source->setSourcePtr(a_glsl330f);
+			m_PixelProgram->addSource(source);
+		}
 		// arbfp1
 		{
 			IProgram::CSource *source = new IProgram::CSource();
@@ -318,7 +359,7 @@ void CStereoDebugger::initTextures()
 	m_Driver->getWindowSize(width, height);
 	NL3D::IDriver *drvInternal = (static_cast<CDriverUser *>(m_Driver))->getDriver();	
 
-	m_LeftTex = new CTextureBloom();
+	m_LeftTex = new CTextureOffscreen();
 	m_LeftTex->setRenderTarget(true);
 	m_LeftTex->setReleasable(false);
 	m_LeftTex->resize(width, height);
@@ -329,7 +370,7 @@ void CStereoDebugger::initTextures()
 	m_LeftTexU = new CTextureUser(m_LeftTex);
 	nlassert(!drvInternal->isTextureRectangle(m_LeftTex)); // not allowed
 
-	m_RightTex = new CTextureBloom();
+	m_RightTex = new CTextureOffscreen();
 	m_RightTex->setRenderTarget(true);
 	m_RightTex->setReleasable(false);
 	m_RightTex->resize(width, height);
@@ -495,15 +536,17 @@ bool CStereoDebugger::wantInterface2D()
 
 bool CStereoDebugger::isSceneFirst()
 {
-	return m_Stage == 3;
+	// Odd stages are left eye (1=L reflect, 3=L scene): run traversals
+	return m_Stage % 2 != 0;
 }
 
 bool CStereoDebugger::isSceneLast()
 {
+	// Even stages are right eye (2=R reflect, 4=R scene): release traversals
 	if (m_Driver->getPolygonMode() == UDriver::Filled)
-		return m_Stage == 4;
+		return m_Stage % 2 == 0;
 	else
-		return m_Stage == 3;
+		return m_Stage % 2 != 0; // wireframe: single pass per group, first=last
 }
 
 uint CStereoDebugger::getFlareContext()
@@ -515,7 +558,7 @@ uint CStereoDebugger::getFlareContext()
 /// Returns true if a new render target was set, always fase if not using render targets
 bool CStereoDebugger::beginRenderTarget()
 {
-	if (m_Stage >= 3 && m_Stage <= 4 && m_Driver && (m_Driver->getPolygonMode() == UDriver::Filled))
+	if (m_PixelProgram && m_Stage >= 3 && m_Stage <= 4 && m_Driver && (m_Driver->getPolygonMode() == UDriver::Filled))
 	{
 		if (!m_LeftTexU) getTextures();
 		if (m_Stage == 3) static_cast<CDriverUser *>(m_Driver)->setRenderTarget(*m_LeftTexU, 0, 0, 0, 0);
@@ -528,7 +571,7 @@ bool CStereoDebugger::beginRenderTarget()
 /// Returns true if a render target was fully drawn, always false if not using render targets
 bool CStereoDebugger::endRenderTarget()
 {
-	if (m_Stage >= 3 && m_Stage <= 4 && m_Driver && (m_Driver->getPolygonMode() == UDriver::Filled))
+	if (m_PixelProgram && m_Stage >= 3 && m_Stage <= 4 && m_Driver && (m_Driver->getPolygonMode() == UDriver::Filled))
 	{
 		CTextureUser cu;
 		(static_cast<CDriverUser *>(m_Driver))->setRenderTarget(cu);

@@ -208,6 +208,8 @@ public:
 	virtual	void			enableFog(bool enable);
 	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
 	virtual	void			setupFog(float start, float end, CRGBA color);
+	/// setup fog mode and density. mode/density are orthogonal to start/end/color.
+	virtual	void			setupFogMode(uint mode = 0, float density = 1.f);
 	// @}
 
 	/// \name Light support.
@@ -489,6 +491,7 @@ public:
 	virtual uint			getAnisotropicFilter() const;
 	virtual uint			getAnisotropicFilterMaximum() const;
 	virtual void			forceTextureResize(uint divisor);
+	virtual bool			supportMonitorColorProperties () const;
 	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 	// @}
 

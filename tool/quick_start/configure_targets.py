@@ -180,9 +180,11 @@ def GenerateCMakeOptions(spec, generator, fv, target, buildDir, filteredPrefix):
 	# OpenGL / OpenAL
 	if spec != NeLSpecServer:
 		opts += [ "-DWITH_DRIVER_OPENGL=ON" ]
+		opts += [ "-DWITH_DRIVER_OPENGL3=ON" ]
 		opts += [ "-DWITH_DRIVER_OPENAL=ON" ]
 	else:
 		opts += [ "-DWITH_DRIVER_OPENGL=OFF" ]
+		opts += [ "-DWITH_DRIVER_OPENGL3=OFF" ]
 		opts += [ "-DWITH_DRIVER_OPENAL=OFF" ]
 	
 	# CMake Prefix

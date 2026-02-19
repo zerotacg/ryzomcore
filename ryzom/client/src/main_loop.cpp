@@ -572,7 +572,7 @@ void clearBuffers()
 void renderScene(bool forceFullDetail, bool bloom)
 {
 	CTextureUser *effectRenderTarget = NULL;
-	if (bloom)
+	if (bloom && Driver->supportBloomEffect())
 	{
 		// set bloom parameters before applying bloom effect
 		CBloomEffect::getInstance().setSquareBloom(ClientCfg.SquareBloom);
@@ -592,7 +592,7 @@ void renderScene(bool forceFullDetail, bool bloom)
 	{
 		s_ForceFullDetail.restore();
 	}
-	if (bloom)
+	if (bloom && Driver->supportBloomEffect())
 	{
 		// apply bloom effect
 		CBloomEffect::getInstance().applyBloom();
@@ -607,7 +607,7 @@ void renderScene(bool forceFullDetail, bool bloom)
 void updateWaterEnvMap()
 {
 	#ifdef USE_WATER_ENV_MAP
-	if (WaterEnvMapRefCount > 0) // water env map needed
+	if (WaterEnvMapRefCount > 0 || ClientCfg.ForceWaterEnvMap) // water env map needed
 	{
 		if (!WaterEnvMap)
 		{
@@ -638,7 +638,7 @@ void updateWaterEnvMap()
 		WaterEnvMapRdr.CurrTime = TimeInSec - FirstTimeInSec;
 		WaterEnvMapRdr.CurrWeather = WeatherManager.getWeatherValue();
 		CSky &sky = ContinentMngr.cur()->CurrentSky;
-		WaterEnvMap->setAlpha(sky.getWaterEnvMapAlpha());
+		WaterEnvMap->setAlpha(ClientCfg.ForceWaterEnvMap ? 128 : 255); // Not useful and does not work under D3D, use alpha map instead on your water shape! // sky.getWaterEnvMapAlpha())
 		Scene->updateWaterEnvMaps(TimeInSec - FirstTimeInSec);
 	}
 	#endif
@@ -1653,6 +1653,7 @@ bool mainLoop()
 		uint i = 0;
 		CTextureUser *effectRenderTarget = NULL;
 		bool haveEffects = Render && Driver->getPolygonMode() == UDriver::Filled
+			&& Driver->supportBloomEffect()
 			&& (ClientCfg.Bloom || FXAA);
 		bool defaultRenderTarget = false;
 		if (haveEffects)

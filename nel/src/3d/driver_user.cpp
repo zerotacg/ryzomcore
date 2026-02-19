@@ -146,6 +146,9 @@ CDriverUser::CDriverUser (uintptr_t windowIcon, TDriver driver, emptyProc exitFu
 	if (!_Driver && driver == OpenGlEs)
 		_Driver= CDRU::createGlEsDriver();
 
+	if( !_Driver && driver == OpenGl3 )
+		_Driver = CDRU::createGl3Driver();
+
 	nlassert(_Driver);
 	_Driver->init (windowIcon, exitFunc);
 
@@ -1400,6 +1403,13 @@ void			CDriverUser::setupFog(float start, float end, CRGBA color)
 
 	_Driver->setupFog(start, end, color);
 }
+// ***************************************************************************
+void			CDriverUser::setupFogMode(uint mode, float density)
+{
+	NL3D_HAUTO_UI_DRIVER;
+
+	_Driver->setupFogMode((IDriver::TFogMode)mode, density);
+}
 
 
 // ***************************************************************************
@@ -1513,6 +1523,12 @@ void			CDriverUser::forceTextureResize(uint divisor)
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->forceTextureResize(divisor);
+}
+bool			CDriverUser::supportMonitorColorProperties () const
+{
+	NL3D_HAUTO_UI_DRIVER;
+
+	return _Driver->supportMonitorColorProperties ();
 }
 bool			CDriverUser::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
