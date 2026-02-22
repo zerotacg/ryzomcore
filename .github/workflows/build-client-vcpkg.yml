@@ -42,7 +42,7 @@ jobs:
          - ubuntu-22.04
          - windows-2025
          - windows-2022
-         - macos-13
+         # - macos-15
         include:
           - os: windows-2022
             cmake_preset: ryzom-client-x64-windows-vcpkg
@@ -54,8 +54,6 @@ jobs:
           - os: ubuntu-24.04
             ubuntu_version: 24.04
             cmake_preset: ryzom-client-x64-linux-vcpkg
-          - os: macos-13
-            cmake_preset: macos-ryzom-client
 
     steps:
     - uses: actions/checkout@v4
@@ -70,7 +68,7 @@ jobs:
 
     - uses: lukka/get-cmake@latest
       with:
-        cmakeVersion: 3.31.6
+        cmakeVersion: 3.31.11
 
     - uses: lukka/run-vcpkg@v11
 
@@ -124,10 +122,10 @@ jobs:
     - name: Build
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.13
-      run: cmake --build --preset ryzom-client
+      run: cmake --build --preset ci-ryzom-client
 
     - name: Package
-      run: cmake --build --preset ryzom-client --target package
+      run: cpack --preset ci-ryzom-client
 
     - uses: actions/upload-artifact@v4
       if: ${{ failure() }}
