@@ -137,6 +137,31 @@ const char *a_glsl330f =
 	"    fragColor.g = 0.5 + (fragColor.g * 0.5);\n"
 	"}\n";
 
+// Pipeline-stage source for stereo debugger PP (no uniforms, just samplers).
+const char *a_glsl300esf =
+	"#version 300 es\n"
+	"precision highp float;\n"
+	"precision highp int;\n"
+	"out vec4 fragColor;\n"
+	"smooth in vec4 texCoord0;\n"
+	"uniform sampler2D sampler0;\n"
+	"uniform sampler2D sampler1;\n"
+	"void main()\n"
+	"{\n"
+	"  vec4 left = texture(sampler0, texCoord0.xy);\n"
+	"  vec4 right = texture(sampler1, texCoord0.xy);\n"
+	"  vec4 avg = (left + right) * 0.5;\n"
+	"  vec3 d = abs(left.rgb - right.rgb);\n"
+	"  float md = max(max(d.r, d.g), d.b);\n"
+	"  fragColor = avg;\n"
+	"  if (md >= 0.01)\n"
+	"    fragColor.r = 0.5 + (fragColor.r * 0.5);\n"
+	"  else if (md > 0.0)\n"
+	"    fragColor.b = 0.5 + (fragColor.b * 0.5);\n"
+	"  else\n"
+	"    fragColor.g = 0.5 + (fragColor.g * 0.5);\n"
+	"}\n";
+
 const char *a_ps_2_0 =
 	"ps_2_0\n"
 	"// cgc version 3.1.0013, build date Apr 18 2012\n"
@@ -235,7 +260,17 @@ void CStereoDebugger::setDriver(NL3D::UDriver *driver)
 	if (drvInternal->supportBloomEffect() && drvInternal->supportNonPowerOfTwoTextures())
 	{
 		m_PixelProgram = new CPixelProgram();
-		// glsl330f
+		// glsl300esf — pipeline stage source (preferred for linked program path)
+		{
+			IProgram::CSource *source = new IProgram::CSource();
+			source->Features.MaterialFlags = CProgramFeatures::TextureStages;
+			source->Features.NoUniforms = true;
+			source->Profile = IProgram::glsl300esf;
+			source->DisplayName = "glsl300esf/StereoDebug";
+			source->setSourcePtr(a_glsl300esf);
+			m_PixelProgram->addSource(source);
+		}
+		// glsl330f — SSO fallback
 		{
 			IProgram::CSource *source = new IProgram::CSource();
 			source->Features.MaterialFlags = CProgramFeatures::TextureStages;

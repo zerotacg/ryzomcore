@@ -68,7 +68,7 @@ namespace NLDRIVERGL3 {
 
 namespace /* anonymous */ {
 
-#define MEGA_PP_MAX_SAMPLERS 8
+#define MEGA_PP_MAX_SAMPLERS IDRV_PROGRAM_MAXSAMPLERS
 
 // Packed accessors for light indices/factors in object UBO (used by PPL path)
 static const char *s_LightIdxAccess[8] = {
@@ -80,7 +80,7 @@ static const char *s_LightFacAccess[8] = {
 	"nlLightFactors45.x", "nlLightFactors45.y", "nlLightFactors45.z", "nlLightFactors45.w"
 };
 
-void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular, bool ppClip, bool tableUBO, bool cameraUBO, bool objectUBO, bool materialUBO)
+void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular, bool ppClip, bool tableUBO, bool cameraUBO, bool objectUBO, bool materialUBO, bool linked = false)
 {
 	// Object UBO implies camera UBO
 	if (objectUBO) { cameraUBO = true; }
@@ -92,34 +92,61 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	ss << " (fogOrPpl=" << (int)fogOrPpl << ", cube=" << (int)cube << ", specular=" << (int)specular
 	   << ", ppClip=" << (int)ppClip << ", tableUBO=" << (int)tableUBO
 	   << ", cameraUBO=" << (int)cameraUBO << ", objectUBO=" << (int)objectUBO
-	   << ", materialUBO=" << (int)materialUBO << ")" << std::endl;
+	   << ", materialUBO=" << (int)materialUBO << ", linked=" << (int)linked << ")" << std::endl;
 	ss << std::endl;
-	ss << "#version 330" << std::endl;
-	ss << "#extension GL_ARB_separate_shader_objects : enable" << std::endl;
+	if (linked)
+	{
+		ss << "#version 300 es" << std::endl;
+		ss << "precision highp float;" << std::endl;
+		ss << "precision highp int;" << std::endl;
+	}
+	else
+	{
+		ss << "#version 330" << std::endl;
+		ss << "#extension GL_ARB_separate_shader_objects : enable" << std::endl;
+	}
 	ss << std::endl;
 
 	ss << "out vec4 fragColor;" << std::endl;
 	ss << std::endl;
 
 	// Varying inputs (all declared unconditionally)
+	// layout(location) qualifiers required for SSO (glsl330f), not allowed for linked (glsl300esf)
 	for (int i = Weight; i < NumOffsets; ++i)
 	{
 		if (i == PrimaryColor || i == SecondaryColor)
 			continue;
 		if (fogOrPpl && i == VaryingLocationVertexColor)
 			continue; // Slot used by vertexColor
-		ss << "layout(location = " << i << ") smooth in vec4 " << g_AttribNames[i] << ";" << std::endl;
+		if (fogOrPpl && i == VaryingLocationWorldPos)
+			continue; // Slot used by worldPos
+		if (!linked)
+			ss << "layout(location = " << i << ") ";
+		ss << "smooth in vec4 " << g_AttribNames[i] << ";" << std::endl;
 	}
 	ss << std::endl;
 
 	if (fogOrPpl)
 	{
-		ss << "layout(location = " << VaryingLocationEcPos << ") smooth in vec4 ecPos;" << std::endl;
-		ss << "layout(location = " << VaryingLocationVertexColor << ") smooth in vec4 vertexColor;" << std::endl;
+		if (!linked)
+			ss << "layout(location = " << VaryingLocationEcPos << ") ";
+		ss << "smooth in vec4 ecPos;" << std::endl;
+		if (!linked)
+			ss << "layout(location = " << VaryingLocationVertexColor << ") ";
+		ss << "smooth in vec4 vertexColor;" << std::endl;
+		if (!linked)
+			ss << "layout(location = " << VaryingLocationWorldPos << ") ";
+		ss << "smooth in vec4 worldPos;" << std::endl;
 	}
-	ss << "layout(location = " << VaryingLocationDiffuseColor << ") smooth in vec4 diffuseColor;" << std::endl;
+	if (!linked)
+		ss << "layout(location = " << VaryingLocationDiffuseColor << ") ";
+	ss << "smooth in vec4 diffuseColor;" << std::endl;
 	if (specular)
-		ss << "layout(location = " << VaryingLocationSpecularColor << ") smooth in vec4 specularColor;" << std::endl;
+	{
+		if (!linked)
+			ss << "layout(location = " << VaryingLocationSpecularColor << ") ";
+		ss << "smooth in vec4 specularColor;" << std::endl;
+	}
 	ss << std::endl;
 
 	// Samplers
@@ -144,13 +171,22 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	}
 	ss << std::endl;
 
-	// Per-stage constants and EMBM matrices (always individual uniforms)
-	for (int i = 0; i < MEGA_PP_MAX_SAMPLERS; ++i)
-		ss << "uniform vec4 constant" << i << ";" << std::endl;
-	for (int i = 0; i < IDRV_MAT_MAXTEXTURES; ++i)
-		ss << "uniform vec4 embmMatrix" << i << ";" << std::endl;
+	// Per-stage constants and EMBM matrices
 	if (!materialUBO)
+	{
+		// All constants as individual uniforms (0-3 for TexEnv, 4-7 for lightmap factors)
+		for (int i = 0; i < MEGA_PP_MAX_SAMPLERS; ++i)
+			ss << "uniform vec4 constant" << i << ";" << std::endl;
+		for (int i = 0; i < IDRV_MAT_MAXTEXTURES; ++i)
+			ss << "uniform vec4 embmMatrix" << i << ";" << std::endl;
 		ss << "uniform float nlLightMapScale;" << std::endl;
+	}
+	else
+	{
+		// constant0-3: TexEnv constant colors (Normal/UserColor) in material UBO
+		// constant4-7: EMBM matrices (Normal/UserColor) or lightmap factors (LightMap) in material UBO
+		// — mutually exclusive by shader type, so they share the same UBO slots
+	}
 	ss << std::endl;
 
 	// Fog uniforms (individual uniforms only when no camera UBO)
@@ -159,7 +195,6 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 		ss << "uniform vec2 fogParams;" << std::endl;
 		ss << "uniform vec4 fogColor;" << std::endl;
 		ss << "uniform float fogDensity;" << std::endl;
-		ss << "uniform vec3 cameraForward;" << std::endl;
 		ss << std::endl;
 	}
 
@@ -187,8 +222,6 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 		ss << "uniform int nlVertexFormat;" << std::endl;
 	if (fogOrPpl && !cameraUBO)
 		ss << "uniform int nlFogMode;" << std::endl;
-	if (fogOrPpl && !objectUBO)
-		ss << "uniform int nlWorldSpacePosition;" << std::endl;
 	if (fogOrPpl && !objectUBO)
 		ss << "uniform int nlVertexColorLighted;" << std::endl;
 
@@ -274,7 +307,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 
 	ss << "float getArgA(int src, int op, vec4 texel, vec4 previous, vec4 diffuse, vec4 cnst) {" << std::endl;
 	ss << "  vec4 s = getTexEnvSrc(src, texel, previous, diffuse, cnst);" << std::endl;
-	ss << "  return (op == 0) ? s.r : (op == 1) ? (1.0 - s.r) : (op == 2) ? s.a : (1.0 - s.a);" << std::endl;
+	ss << "  return (op == 0) ? s.a : (op == 1) ? (1.0 - s.a) : (op == 2) ? s.a : (1.0 - s.a);" << std::endl;
 	ss << "}" << std::endl;
 	ss << std::endl;
 
@@ -339,13 +372,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	if (fogOrPpl)
 	{
 		ss << "vec4 applyFog(vec4 col) {" << std::endl;
-		ss << "  float z;" << std::endl;
-		ss << "  if (nlWorldSpacePosition != 0) {" << std::endl;
-		if (cameraUBO)
-			ss << "    vec3 camFwd = vec3(viewMatrix[0].y, viewMatrix[1].y, viewMatrix[2].y);" << std::endl;
-		ss << "    z = abs(dot(ecPos.xyz / ecPos.w - cameraWorldPos, " << (cameraUBO ? "camFwd" : "cameraForward") << "));" << std::endl;
-		ss << "  } else" << std::endl;
-		ss << "    z = abs(ecPos.y / ecPos.w);" << std::endl;
+		ss << "  float z = abs(ecPos.y / ecPos.w);" << std::endl;
 		ss << "  float fogFactor;" << std::endl;
 		ss << "  if (nlFogMode == 1) fogFactor = clamp(exp(-fogDensity * z), 0.0, 1.0);" << std::endl;
 		ss << "  else if (nlFogMode == 2) fogFactor = clamp(exp(-fogDensity * fogDensity * z * z), 0.0, 1.0);" << std::endl;
@@ -398,14 +425,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	if (ppClip)
 	{
 		ss << "  {" << std::endl;
-		ss << "    vec4 clipPos;" << std::endl;
-		if (cameraUBO)
-		{
-			ss << "    if (nlWorldSpacePosition != 0)" << std::endl;
-			ss << "      clipPos = viewMatrix * vec4(ecPos.xyz / ecPos.w, 1.0);" << std::endl;
-			ss << "    else" << std::endl;
-		}
-		ss << "      clipPos = vec4(ecPos.xyz / ecPos.w, 1.0);" << std::endl;
+		ss << "    vec4 clipPos = vec4(ecPos.xyz / ecPos.w, 1.0);" << std::endl;
 		for (int i = 0; i < 6; ++i)
 			ss << "    if ((nlClipPlaneMask & " << (1 << i) << ") != 0 && dot(clipPlane" << i << ", clipPos) < 0.0) discard;" << std::endl;
 		ss << "  }" << std::endl;
@@ -427,7 +447,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 		// Material diffuse must be skipped in the light equation, matching VP behavior (effectiveDiffuse = 1.0).
 		ss << "  vec4 pplMatDiff = (nlVertexColorLighted != 0) ? vec4(1.0) : " << matDiffStr << ";" << std::endl;
 		ss << "  if (nlNumPerPixelLights > 0) {" << std::endl;
-		ss << "    vec3 wsPos = ecPos.xyz / ecPos.w;" << std::endl;
+		ss << "    vec3 wsPos = worldPos.xyz / worldPos.w;" << std::endl;
 		ss << "    vec3 wsNormal = normalize(normal.xyz);" << std::endl;
 		// cameraWorldPos: precomputed on CPU as inverse view matrix position
 		// With PZB: (0,0,0) since view translation is zeroed. Without PZB: actual camera world position.
@@ -504,7 +524,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 		// UserColor: texel1 = texel0 (same texture sampled once)
 		if (i == 1)
 		{
-			ss << "    if (nlShader == 1) { texel1 = texel0; } else {" << std::endl;
+			ss << "    if (nlShader == " << (int)CMaterial::UserColor << ") { texel1 = texel0; } else {" << std::endl;
 		}
 
 		// Determine texcoord
@@ -515,7 +535,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 			if (i == 0)
 			{
 				// Stage 0: LightMap checks if more stages follow
-				ss << "    if (nlShader == 3 && (nlTextureActive & " << (1 << (i + 1)) << ") != 0)" << std::endl;
+				ss << "    if (nlShader == " << (int)CMaterial::LightMap << " && (nlTextureActive & " << (1 << (i + 1)) << ") != 0)" << std::endl;
 				ss << "      tc = texCoord1.st;" << std::endl;
 				ss << "    else" << std::endl;
 				ss << "      tc = texCoord0.st;" << std::endl;
@@ -523,7 +543,7 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 			else
 			{
 				// Stage N: LightMap uses texCoord1 if more stages follow, else texCoord0
-				ss << "    if (nlShader == 3) {" << std::endl;
+				ss << "    if (nlShader == " << (int)CMaterial::LightMap << ") {" << std::endl;
 				if (i < MEGA_PP_MAX_SAMPLERS - 1)
 					ss << "      tc = ((nlTextureActive & " << (1 << (i + 1)) << ") != 0) ? texCoord1.st : texCoord0.st;" << std::endl;
 				else
@@ -558,8 +578,8 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	ss << std::endl;
 
 	// --- Shader switch ---
-	// Normal (0) / UserColor (1): TexEnv interpreter
-	ss << "  if (nlShader == 0 || nlShader == 1) {" << std::endl;
+	// Normal / UserColor: TexEnv interpreter
+	ss << "  if (nlShader == " << (int)CMaterial::Normal << " || nlShader == " << (int)CMaterial::UserColor << ") {" << std::endl;
 	ss << "    vec4 texEnvResult = fragColor;" << std::endl;
 	ss << "    vec2 embmOfs = vec2(0.0);" << std::endl;
 	ss << "    bool prevEMBM = false;" << std::endl;
@@ -568,7 +588,11 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	// Unrolled 4 TexEnv stages
 	const char *envNames[] = { "nlTexEnvMode0", "nlTexEnvMode1", "nlTexEnvMode2", "nlTexEnvMode3" };
 	const char *cnstNames[] = { "constant0", "constant1", "constant2", "constant3" };
-	const char *embmNames[] = { "embmMatrix0", "embmMatrix1", "embmMatrix2", "embmMatrix3" };
+	// EMBM matrices: individual uniforms (embmMatrix0-3) or folded into material UBO (constant4-7)
+	// EMBM (Normal/UserColor) and lightmap factors (LightMap) are mutually exclusive by shader type
+	const char *embmNamesUBO[] = { "constant4", "constant5", "constant6", "constant7" };
+	const char *embmNamesUniform[] = { "embmMatrix0", "embmMatrix1", "embmMatrix2", "embmMatrix3" };
+	const char **embmNames = materialUBO ? embmNamesUBO : embmNamesUniform;
 
 	for (int i = 0; i < IDRV_MAT_MAXTEXTURES; ++i)
 	{
@@ -609,8 +633,8 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	ss << "    fragColor = texEnvResult;" << std::endl;
 	ss << std::endl;
 
-	// Specular (2)
-	ss << "  } else if (nlShader == 2) {" << std::endl;
+	// Specular
+	ss << "  } else if (nlShader == " << (int)CMaterial::Specular << ") {" << std::endl;
 	ss << "    if ((nlTextureActive & 1) != 0) {" << std::endl;
 	ss << "      vec3 specop0 = texel0.rgb * fragColor.rgb;" << std::endl;
 	ss << "      if ((nlTextureActive & 2) != 0)" << std::endl;
@@ -622,8 +646,8 @@ void megaPPGenerate(std::string &result, bool fogOrPpl, bool cube, bool specular
 	ss << "    }" << std::endl;
 	ss << std::endl;
 
-	// LightMap (3)
-	ss << "  } else if (nlShader == 3) {" << std::endl;
+	// LightMap
+	ss << "  } else if (nlShader == " << (int)CMaterial::LightMap << ") {" << std::endl;
 	// Find last active stage and accumulate lightmaps
 	ss << "    int lastStage = -1;" << std::endl;
 	for (int i = MEGA_PP_MAX_SAMPLERS - 1; i >= 0; --i)
@@ -681,74 +705,94 @@ bool CDriverGL3::initMegaPixelPrograms()
 	int activeMaterialUBO = m_UseMegaMaterialUBO ? 1 : 0;
 	int activePPClip = m_PPClipPlanes ? 1 : 0;
 
-	for (int fogOrPpl = 0; fogOrPpl < 2; ++fogOrPpl)
+	for (int linked = 0; linked < 2; ++linked)
 	{
-		for (int cube = 0; cube < 2; ++cube)
-		{
-			for (int specular = 0; specular < 2; ++specular)
-			{
-				for (int ppClip = 0; ppClip < 2; ++ppClip)
-				{
-					// ppClip only valid when fogOrPpl (needs ecPos varying)
-					if (ppClip && !fogOrPpl)
-						continue;
+		if (!linked && !m_SupportSSO) continue; // Skip unlinked if no SSO support
 
-					for (int tableUBO = 0; tableUBO < 2; ++tableUBO)
+		// Skip linked variants if linked mega shaders are not enabled
+		if (linked && !m_LinkedMegaShaders) continue;
+
+		for (int fogOrPpl = 0; fogOrPpl < 2; ++fogOrPpl)
+		{
+			for (int cube = 0; cube < 2; ++cube)
+			{
+				for (int specular = 0; specular < 2; ++specular)
+				{
+					for (int ppClip = 0; ppClip < 2; ++ppClip)
 					{
-						// tableUBO only valid when fogOrPpl (PPL needs ecPos)
-						if (tableUBO && !fogOrPpl)
+						// ppClip only valid when fogOrPpl (needs ecPos varying)
+						if (ppClip && !fogOrPpl)
 							continue;
 
-						for (int cameraUBO = 0; cameraUBO < 2; ++cameraUBO)
+						for (int tableUBO = 0; tableUBO < 2; ++tableUBO)
 						{
-							for (int objectUBO = 0; objectUBO < 2; ++objectUBO)
+							// tableUBO folds when !fogOrPpl (no lighting code in PP)
+							if (tableUBO && !fogOrPpl)
+								continue;
+
+							for (int cameraUBO = linked; cameraUBO < 2; ++cameraUBO)
 							{
-								for (int materialUBO = 0; materialUBO < 2; ++materialUBO)
+								for (int objectUBO = linked; objectUBO < 2; ++objectUBO)
 								{
-									// objectUBO implies cameraUBO
-									if (objectUBO && !cameraUBO)
-										continue;
-
-									// objectUBO implies lightTableUBO when PPL code is active
-									// (non-table PPL references nlPpLightMode which isn't in NlModel UBO)
-									if (objectUBO && !tableUBO && fogOrPpl)
-										continue;
-
-									// Skip variants that won't be selected at runtime
-									if (!m_BuildUnusedPrograms)
+									for (int materialUBO = linked; materialUBO < 2; ++materialUBO)
 									{
-										// ppClip=1 is never selected when m_PPClipPlanes is off
-										if (ppClip && !m_PPClipPlanes) continue;
-										if (tableUBO != activeTableUBO) continue;
-										if (cameraUBO != activeCameraUBO) continue;
-										if (objectUBO != activeObjectUBO) continue;
-										if (materialUBO != activeMaterialUBO) continue;
+										// objectUBO implies cameraUBO
+										if (objectUBO && !cameraUBO)
+											continue;
+
+										// objectUBO implies lightTableUBO when PPL code is active
+										// (non-table PPL references nlPpLightMode which isn't in NlModel UBO)
+										if (objectUBO && !tableUBO && fogOrPpl)
+											continue;
+
+										// Skip variants that won't be selected at runtime
+										if (!m_BuildUnusedPrograms)
+										{
+											// ppClip=1 is never selected when m_PPClipPlanes is off
+											if (ppClip && !m_PPClipPlanes) continue;
+											if (linked)
+											{
+												// Linked programs are always fully UBO-backed;
+												// ensure the all-UBO variant is built.
+												// tableUBO folds to 0 when !fogOrPpl (no lighting code).
+												if (tableUBO != (fogOrPpl ? 1 : 0)) continue;
+												if (!cameraUBO || !objectUBO || !materialUBO) continue;
+											}
+											else
+											{
+												// tableUBO folds to 0 when !fogOrPpl (no lighting code).
+												if (tableUBO != (fogOrPpl ? activeTableUBO : 0)) continue;
+												if (cameraUBO != activeCameraUBO) continue;
+												if (objectUBO != activeObjectUBO) continue;
+												if (materialUBO != activeMaterialUBO) continue;
+											}
+										}
+
+										std::string result;
+										megaPPGenerate(result, fogOrPpl != 0, cube != 0, specular != 0, ppClip != 0, tableUBO != 0, cameraUBO != 0, objectUBO != 0, materialUBO != 0, linked != 0);
+
+										CPixelProgram *pp = new CPixelProgram();
+										IProgram::CSource *src = new IProgram::CSource();
+										src->Profile = linked ? IProgram::glsl300esf : IProgram::glsl330f;
+										src->DisplayName = NLMISC::toString("Mega PP (linked=%d, fogOrPpl=%d, cube=%d, spec=%d, ppClip=%d, tableUBO=%d, cam=%d, obj=%d, mat=%d)", linked, fogOrPpl, cube, specular, ppClip, tableUBO, cameraUBO, objectUBO, materialUBO);
+										src->Features.UsesLightTableUBO = (tableUBO != 0);
+										src->Features.UsesCameraUBO = (cameraUBO != 0);
+										src->Features.UsesObjectUBO = (objectUBO != 0);
+										src->Features.UsesMaterialUBO = (materialUBO != 0);
+										src->setSource(result);
+										pp->addSource(src);
+
+										nldebug("GL3: Compile '%s'", src->DisplayName.c_str());
+
+										if (!compilePixelProgram(pp))
+										{
+											nlwarning("GL3: Mega PP compilation failed (%s)", src->DisplayName.c_str());
+											delete pp;
+											return false;
+										}
+
+										m_MegaPP[linked][fogOrPpl][cube][specular][ppClip][tableUBO][cameraUBO][objectUBO][materialUBO] = pp;
 									}
-
-									std::string result;
-									megaPPGenerate(result, fogOrPpl != 0, cube != 0, specular != 0, ppClip != 0, tableUBO != 0, cameraUBO != 0, objectUBO != 0, materialUBO != 0);
-
-									CPixelProgram *pp = new CPixelProgram();
-									IProgram::CSource *src = new IProgram::CSource();
-									src->Profile = IProgram::glsl330f;
-									src->DisplayName = NLMISC::toString("Mega PP (fogOrPpl=%d, cube=%d, spec=%d, ppClip=%d, tableUBO=%d, cam=%d, obj=%d, mat=%d)", fogOrPpl, cube, specular, ppClip, tableUBO, cameraUBO, objectUBO, materialUBO);
-									src->Features.UsesLightTableUBO = (tableUBO != 0);
-									src->Features.UsesCameraUBO = (cameraUBO != 0);
-									src->Features.UsesObjectUBO = (objectUBO != 0);
-									src->Features.UsesMaterialUBO = (materialUBO != 0);
-									src->setSource(result);
-									pp->addSource(src);
-
-									nldebug("GL3: Compile '%s'", src->DisplayName.c_str());
-
-									if (!compilePixelProgram(pp))
-									{
-										nlwarning("GL3: Mega PP compilation failed (%s)", src->DisplayName.c_str());
-										delete pp;
-										return false;
-									}
-
-									m_MegaPP[fogOrPpl][cube][specular][ppClip][tableUBO][cameraUBO][objectUBO][materialUBO] = pp;
 								}
 							}
 						}
@@ -769,19 +813,10 @@ bool CDriverGL3::setupMegaPixelProgram()
 	CMaterialDrvInfosGL3 *matDrv = static_cast<CMaterialDrvInfosGL3 *>((IMaterialDrvInfos *)(mat._MatDrvInfo));
 	nlassert(matDrv);
 
-	// Update PPBuiltin cached state. In the mega path, Touched is not consumed
-	// (no per-material PP compilation), but the check functions update PPBuiltin
-	// fields that uploadMaterialUBO() reads (Shader, TextureActive, TexEnvMode, Flags).
+	// Update PPBuiltin driver state (fog, vertex format, specular, clip plane).
+	// Material-derived PPBuiltin state (Shader, Flags, TextureActive, TexEnvMode)
+	// is now pushed from setupMaterial. LightMap texture state from setupLightmapPass.
 	matDrv->PPBuiltin.checkDriverStateTouched(this);
-	matDrv->PPBuiltin.checkDriverMaterialStateTouched(this, mat);
-	matDrv->PPBuiltin.checkMaterialStateTouched(mat);
-
-	// Propagate material-UBO-relevant changes only (not fog/vertexFormat/specular changes).
-	if (matDrv->PPBuiltin.MaterialUBOTouched)
-	{
-		matDrv->MaterialUBODirty = true;
-		matDrv->PPBuiltin.MaterialUBOTouched = false;
-	}
 
 	// Activate PPL only if the paired VP supports it
 	bool pplActive = false;
@@ -816,13 +851,13 @@ bool CDriverGL3::setupMegaPixelProgram()
 
 	m_ProgramNoUniforms[PixelProgram] = false; // Mega PP always has uniforms
 	m_ProgramNoBuiltinUniforms[PixelProgram] = false;
-	m_ProgramOnlyUBOs[PixelProgram] = false;
+	m_ProgramOnlyUBOs[PixelProgram] = objectUBO && materialUBO;
 	m_ProgramUsesLightTableUBO[PixelProgram] = tableUBO;
 	m_ProgramUsesCameraUBO[PixelProgram] = cameraUBO;
 	m_ProgramUsesObjectUBO[PixelProgram] = objectUBO;
 	m_ProgramUsesMaterialUBO[PixelProgram] = materialUBO;
 
-	CPixelProgram *pp = m_MegaPP[fogOrPpl][cube][specular][ppClip][tableUBO][cameraUBO][objectUBO][materialUBO];
+	CPixelProgram *pp = m_MegaPP[0][fogOrPpl][cube][specular][ppClip][tableUBO][cameraUBO][objectUBO][materialUBO];
 	nlassert(pp);
 
 	if (!activePixelProgram(pp, true))

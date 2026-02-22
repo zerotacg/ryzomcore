@@ -582,7 +582,7 @@ public:
 	 */
 	virtual	bool			supportVertexBufferHard() const = 0;
 
-	/** return true if volatile vertex buffer are supported. (e.g a vertex buffer which can be created with the flag CVertexBuffer::AGPVolatile or CVertexBuffer::RAMVolatile)
+	/** return true if volatile vertex buffer are supported. (e.g. FullStream or SmallStream usage)
 	 *  If these are not supported, a RAM vb is created instead (transparent to user)
      */
 	virtual bool			supportVolatileVertexBuffer() const = 0;

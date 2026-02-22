@@ -97,7 +97,10 @@ CDepthStencilFBO::CDepthStencilFBO(CDriverGL3 *driver, uint width, uint height)
 	Width = width;
 	Height = height;
 
-	// GL 3.3 core: always use packed depth-stencil
+	// GL 3.3 core: always use packed depth-stencil.
+	// GL_RENDERBUFFER is a setup-only binding point: bind to allocate storage via
+	// nglRenderbufferStorage, then reference by ID in nglFramebufferRenderbuffer.
+	// It is never read or depended on during rendering, so not tracked in the state cache.
 	nglGenRenderbuffers(1, &DepthFBOId);
 	StencilFBOId = DepthFBOId;
 	nglBindRenderbuffer(GL_RENDERBUFFER, DepthFBOId);
@@ -136,7 +139,7 @@ bool CTextureDrvInfosGL3::initFrameBufferObject(ITexture * tex)
 		nglGenFramebuffers(1, &FBOId);
 
 		// initialize FBO
-		nglBindFramebuffer(GL_FRAMEBUFFER, FBOId);
+		_Driver->_DriverGLStates.forceBindFramebuffer(FBOId);
 		nglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, TextureMode, ID, 0);
 
 		// attach depth/stencil render to FBO
@@ -243,15 +246,15 @@ bool CTextureDrvInfosGL3::activeFrameBufferObject(ITexture * tex)
 	{
 		if (initFrameBufferObject(tex))
 		{
-			glBindTexture(TextureMode, 0);
-			nglBindFramebuffer(GL_FRAMEBUFFER, FBOId);
+			_Driver->_DriverGLStates.forceBindTexture(TextureMode, 0);
+			_Driver->_DriverGLStates.forceBindFramebuffer(FBOId);
 		}
 		else
 			return false;
 	}
 	else
 	{
-		nglBindFramebuffer(GL_FRAMEBUFFER, 0);
+		_Driver->_DriverGLStates.forceBindFramebuffer(0);
 	}
 
 	return true;
@@ -592,7 +595,7 @@ void CDriverGL3::bindTextureWithMode(ITexture &tex)
 	{
 		// FIXME GL3 TEXTUREMODE _DriverGLStates.setTextureMode(CDriverGLStates3::TextureCubeMap);
 		// Bind this texture
-		glBindTexture(GL_TEXTURE_CUBE_MAP, gltext->ID);
+		_DriverGLStates.forceBindTexture(GL_TEXTURE_CUBE_MAP, gltext->ID);
 	}
 	else
 	{
@@ -603,7 +606,7 @@ void CDriverGL3::bindTextureWithMode(ITexture &tex)
 
 		// FIXME GL3 TEXTUREMODE _DriverGLStates.setTextureMode(textureMode);
 		// Bind this texture
-		glBindTexture(gltext->TextureMode, gltext->ID);
+		_DriverGLStates.forceBindTexture(gltext->TextureMode, gltext->ID);
 	}
 }
 
@@ -803,6 +806,9 @@ bool CDriverGL3::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 		CTextureDrvInfosGL3*	gltext;
 		gltext= getTextureGl(tex);
 
+		// glPixelStorei controls how glTexImage2D/glTexSubImage2D unpack client memory.
+		// It is transient upload state, not rendering state: set before the upload call,
+		// reset to defaults immediately after. Not tracked in the state cache.
 		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 
 		// a. Load All the texture case.
@@ -1036,7 +1042,7 @@ bool CDriverGL3::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 					nMipMaps = 1;
 
 				// Bind PBO for async upload
-				nglBindBuffer(GL_PIXEL_UNPACK_BUFFER, _PixelUploadPBO);
+				_DriverGLStates.forceBindPixelUnpackBuffer(_PixelUploadPBO);
 
 				// For all rect, update the texture/mipmap.
 				//===============================================
@@ -1086,7 +1092,8 @@ bool CDriverGL3::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 								nglUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 							}
 
-							// Async upload from PBO (data is packed, no row padding)
+							// Async upload from PBO (data is packed, no row padding).
+						// Transient upload state — see note in setupTexture().
 							glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 							glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 							glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
@@ -1104,8 +1111,8 @@ bool CDriverGL3::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 					}
 				}
 
-				// Unbind PBO, reset pixel store state
-				nglBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+				// Unbind PBO, reset transient pixel store state
+				_DriverGLStates.forceBindPixelUnpackBuffer(0);
 				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 				glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 				glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
@@ -1169,8 +1176,9 @@ bool CDriverGL3::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 
 	// FIXME GL3 TEXTUREMODE _DriverGLStates.setTextureMode (textureMode);
 	// Bind this texture, for reload...
-	glBindTexture (gltext->TextureMode, gltext->ID);
+	_DriverGLStates.forceBindTexture(gltext->TextureMode, gltext->ID);
 
+	// Transient upload state, not rendering state — see note in setupTexture().
 	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
 
 	bool dummy;
@@ -1244,12 +1252,13 @@ bool CDriverGL3::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 
 		void	*ptr= tex.getPixels(nNumMipMap).getPtr();
 
+		// Transient upload state — see note in setupTexture().
 		glPixelStorei (GL_UNPACK_ROW_LENGTH, w);
 		glPixelStorei (GL_UNPACK_SKIP_ROWS, y0);
 		glPixelStorei (GL_UNPACK_SKIP_PIXELS, x0);
 		glTexSubImage2D (GL_TEXTURE_2D, nNumMipMap, x0, y0, x1-x0, y1-y0, glSrcFmt,glSrcType, ptr);
 
-		// Reset the transfer mode...
+		// Reset transient pixel store state
 		glPixelStorei (GL_UNPACK_ROW_LENGTH, 0);
 		glPixelStorei (GL_UNPACK_SKIP_ROWS, 0);
 		glPixelStorei (GL_UNPACK_SKIP_PIXELS, 0);
@@ -1311,7 +1320,7 @@ bool CDriverGL3::activateTexture(uint stage, ITexture *tex)
 					_CurrentTextureInfoGL[stage] = gltext;
 
 					// setup this texture
-					glBindTexture(GL_TEXTURE_CUBE_MAP, gltext->ID);
+					_DriverGLStates.forceBindTexture(GL_TEXTURE_CUBE_MAP, gltext->ID);
 
 					// Change parameters of texture, if necessary.
 					//============================================
@@ -1345,7 +1354,7 @@ bool CDriverGL3::activateTexture(uint stage, ITexture *tex)
 					_CurrentTextureInfoGL[stage]= gltext;
 
 					// setup this texture
-					glBindTexture(gltext->TextureMode, gltext->ID);
+					_DriverGLStates.forceBindTexture(gltext->TextureMode, gltext->ID);
 
 
 					// Change parameters of texture, if necessary.

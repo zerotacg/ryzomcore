@@ -6,9 +6,9 @@
   ],
   "configurePresets": [
     {
+      "name": "ryzom",
       "binaryDir": "${sourceDir}/build/ryzom",
       "installDir": "${sourceDir}/build/install/ryzom",
-      "name": "ryzom",
       "cacheVariables": {
         "WITH_RYZOM": true,
         "WITH_RYZOM_CLIENT": true,
@@ -54,53 +54,55 @@
       }
     },
     {
+      "name": "linux-ryzom",
       "inherits": [
         "linux",
         "ryzom"
-      ],
-      "name": "linux-ryzom"
+      ]
     },
     {
+      "name": "ci-linux-ryzom-static",
       "inherits": [
         "linux",
         "ci-ryzom",
         "ryzom"
       ],
-      "name": "ci-linux-ryzom-static",
       "cacheVariables": {
         "WITH_STATIC": true
       }
     },
     {
+      "name": "ci-linux-ryzom-dynamic",
       "inherits": [
         "linux",
         "ci-ryzom",
         "ryzom"
       ],
-      "name": "ci-linux-ryzom-dynamic",
       "cacheVariables": {
         "WITH_STATIC": false
       }
     },
     {
+      "name": "windows-ryzom",
       "inherits": [
         "windows",
         "ryzom"
-      ],
-      "name": "windows-ryzom"
-    },
-    {
-      "name": "linux-ryzom-client",
-      "inherits": [
-        "linux",
-        "ryzom-client"
       ]
     },
     {
-      "name": "windows-ryzom-client",
+      "name": "ci-linux-ryzom-client-hunter",
       "inherits": [
-        "windows",
-        "ryzom-client"
+        "hunter",
+        "ryzom-client",
+        "linux"
+      ]
+    },
+    {
+      "name": "ci-windows-ryzom-client-hunter",
+      "inherits": [
+        "hunter",
+        "ryzom-client",
+        "windows"
       ],
       "cacheVariables": {
         "WITH_DRIVER_DIRECT3D": true,
@@ -108,10 +110,22 @@
       }
     },
     {
+      "name": "ci-macos-ryzom-client-hunter",
+      "inherits": [
+        "hunter",
+        "ryzom-client",
+        "macos"
+      ],
+      "cacheVariables": {
+        "WITH_LIBXML2_ICONV": false
+      }
+    },
+    {
       "name": "ryzom-client-x64-linux-vcpkg",
       "inherits": [
         "vcpkg",
-        "ryzom-client"
+        "ryzom-client",
+        "linux"
       ],
       "cacheVariables": {
         "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": true,
@@ -122,7 +136,8 @@
       "name": "ryzom-client-x64-windows-vcpkg",
       "inherits": [
         "vcpkg",
-        "ryzom-client"
+        "ryzom-client",
+        "windows"
       ],
       "cacheVariables": {
         "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": true,
@@ -137,7 +152,8 @@
       "name": "ryzom-client-x86-mingw-vcpkg",
       "inherits": [
         "vcpkg",
-        "ryzom-client"
+        "ryzom-client",
+        "macos"
       ],
       "cacheVariables": {
         "MINGW": true,
@@ -148,41 +164,36 @@
         "WITH_EXTERNAL": false,
         "WITH_STATIC_CURL": false
       }
-    },
-    {
-      "name": "macos-ryzom-client",
-      "inherits": [
-        "macos",
-        "ryzom-client"
-      ],
-      "cacheVariables": {
-        "WITH_LIBXML2_ICONV": false
-      }
     }
   ],
   "buildPresets": [
     {
-      "inherits": "release",
       "name": "ryzom",
+      "inherits": "release",
       "configurePreset": "ryzom"
     },
     {
-      "inherits": "ryzom",
       "name": "ci-linux-ryzom",
+      "inherits": "ryzom",
       "configurePreset": "ci-linux-ryzom-dynamic"
     },
     {
-      "inherits": "ci-linux-ryzom",
       "name": "ci-linux-ryzom/install",
+      "inherits": "ci-linux-ryzom",
       "targets": [
         "ryzom/install"
       ]
+    },
+    {
+      "name": "ci-ryzom-client",
+      "configurePreset": "ryzom-client",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
     {
-      "inherits": "default",
       "name": "ryzom",
+      "inherits": "default",
       "configurePreset": "ryzom"
     }
   ],
@@ -190,6 +201,10 @@
     {
       "name": "ryzom",
       "configurePreset": "ryzom"
+    },
+    {
+      "name": "ci-ryzom-client",
+      "configurePreset": "ryzom-client"
     }
   ],
   "workflowPresets": [

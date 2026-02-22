@@ -239,7 +239,6 @@ CDriverGL3::CDriverGL3()
 	_CurrentMode.Windowed = true;
 	_CurrentMode.AntiAlias = -1;
 
-	_DefaultVAO = 0;
 	_Interval = 1;
 	_Resizable = false;
 
@@ -257,6 +256,7 @@ CDriverGL3::CDriverGL3()
 	_CurrentFogColor[1]= 0;
 	_CurrentFogColor[2]= 0;
 	_CurrentFogColor[3]= 0;
+	_FogColorOverrideBlack = false;
 
 	_RenderTargetFBO = NULL;
 
@@ -287,21 +287,10 @@ CDriverGL3::CDriverGL3()
 		_MaterialAllTextureTouchedFlag|= IDRV_TOUCHED_TEX[i];
 	}
 
-	for (i = 0; i < IDRV_MAT_MAXTEXTURES; i++)
-		_UserTexMat[i].identity();
-
-	_UserTexMatEnabled = 0;
+	// _UserTexMat removed — texture matrices read directly from material
 
 	// reserve enough space to never reallocate, nor test for reallocation.
 	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
-	// must set replace for alpha part.
-	_LightMapLastStageEnv.Env.OpAlpha= CMaterial::Replace;
-	_LightMapLastStageEnv.Env.SrcArg0Alpha= CMaterial::Texture;
-	_LightMapLastStageEnv.Env.OpArg0Alpha= CMaterial::SrcAlpha;
-
-///	buildCausticCubeMapTex();
-
-	_SpecularBatchOn= false;
 
 	_PolygonSmooth= false;
 
@@ -324,7 +313,10 @@ CDriverGL3::CDriverGL3()
 
 	_LightMapDynamicLightEnabled = false;
 	_LightMapDynamicLightDirty= false;
-	_LightMapDynLightTableIndex = -1;
+	_LightMapDynUBOId = 0;
+	memset(&_LightMapDynUBOEntry, 0, sizeof(_LightMapDynUBOEntry));
+	_LightMapDynUBODirty = false;
+	_UseLightMapDynUBO = false;
 	_LightTableMode= false;
 	_LightTableUBOId = 0;
 	_LightTableDirty = false;
@@ -332,6 +324,7 @@ CDriverGL3::CDriverGL3()
 	_LightTableUBOCapacity = 0;
 	_CameraUBOId = 0;
 	_CameraUBODirty = true;
+	_CameraUBOUploadDirty = false;
 	_CameraUBOCapacity = 0;
 	_LightTableObjCount = 0;
 	_NumPerPixelLights = 0;
@@ -359,10 +352,14 @@ CDriverGL3::CDriverGL3()
 	m_VPBuiltinTouched = true;
 	
 	// for GL ES 3.0 compatibility
-	m_PPClipPlanes = false;
+	m_PPClipPlanes = false; // false for GL 3.3, true for GL ES 3.0, switches to using PP for clip plane discard, since no driver support
+	m_LinkedMegaShaders = false; // not required but also useful under GL 3.3, set true for both
+	m_SupportSSO = true; // true for GL 3.3, false for GL ES 3.0, false if we want to be strict :)
+	// set sso and linked shaders opposite to each other to test exclusive modes
+	// m_SupportNonUBOs = false; // testing strict mode, linked-only always implies ubo-only // TODO
 
 #if !FINAL_VERSION && defined(NL_DEBUG)
-	m_BuildUnusedPrograms = true;
+	m_BuildUnusedPrograms = false; // set to test compilation of all possible mega shader variants
 #else
 	m_BuildUnusedPrograms = false;
 #endif
@@ -371,6 +368,7 @@ CDriverGL3::CDriverGL3()
 	m_UseMegaCameraUBO = true;      // implied by m_UseMegaObjectUBO
 	m_UseMegaObjectUBO = true;
 	m_UseMegaMaterialUBO = true;
+	m_PPOBound = true; // PPO is bound after initProgramPipeline()
 	m_VPSpecularOutput = true;
 	m_VPNormalOutput = false;
 	m_VPWorldSpacePositionOutput = false;
@@ -381,9 +379,10 @@ CDriverGL3::CDriverGL3()
 	memset(m_ProgramUsesCameraUBO, 0, sizeof(m_ProgramUsesCameraUBO));
 	memset(m_ProgramUsesObjectUBO, 0, sizeof(m_ProgramUsesObjectUBO));
 	memset(m_ProgramUsesMaterialUBO, 0, sizeof(m_ProgramUsesMaterialUBO));
+	m_NelvpActiveUB = NULL;
 	_ObjectUBOId = 0;
 	_ObjectUBOCapacity = 0;
-	_OverrideMaterialUBOId = 0;
+	// _OverrideMaterialUBOId = 0; // Replaced by per-material UBO slots
 	for (sint i = 0; i < UBBindingCount; ++i)
 	{
 		_BoundUserUB[i] = NULL;
@@ -431,10 +430,21 @@ bool CDriverGL3::setupDisplay()
 		nlwarning("Missing required GL 3.30 Core features. Update your driver");
 		throw EBadDisplay("Missing required GL 3.30 Core features. Update your driver");
 	}
-	if (!_Extensions.ARBSeparateShaderObjects)
+	if (m_SupportSSO)
 	{
-		nlwarning("Missing required GL extension: GL_ARB_separate_shader_objects. Update your driver");
-		throw EBadDisplay("Missing required GL extension: GL_ARB_separate_shader_objects. Update your driver");
+		if (!_Extensions.ARBSeparateShaderObjects)
+		{
+			m_SupportSSO = false;
+			if (!m_UseMegaShaders || !m_LinkedMegaShaders)
+			{
+				nlwarning("Missing required GL extension: GL_ARB_separate_shader_objects. Update your driver");
+				throw EBadDisplay("Missing required GL extension: GL_ARB_separate_shader_objects. Update your driver");
+			}
+			else
+			{
+				nlwarning("Missing recommended GL extension: GL_ARB_separate_shader_objects. Update your driver");
+			}
+		}
 	}
 
 	// All User Light are disabled by Default
@@ -458,19 +468,13 @@ bool CDriverGL3::setupDisplay()
 		_ClipPlaneEye[i][3] = 0.f;
 	}
 
-	// init _DriverGLStates
-	_DriverGLStates.init();
-
 	// Init OpenGL/Driver defaults.
 	//=============================
-	glViewport(0,0,_CurrentMode.Width,_CurrentMode.Height);
+	_DriverGLStates.init();
+	_DriverGLStates.viewport(0, 0, _CurrentMode.Width, _CurrentMode.Height);
 	glEnable(GL_DITHER);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-
-	// Create and bind a default VAO (required for core profile)
-	nglGenVertexArrays(1, &_DefaultVAO);
-	nglBindVertexArray(_DefaultVAO);
 	glEnable(GL_DEPTH_TEST);
+	_DriverGLStates.polygonMode(GL_FILL);
 	//glDisable(GL_NORMALIZE);
 	//glDisable(GL_COLOR_SUM_EXT); // FIXME GL3
 
@@ -478,7 +482,7 @@ bool CDriverGL3::setupDisplay()
 	_CurrScissor.initFullScreen();
 	_ForceNormalize = false;
 	// Setup defaults for blend, lighting ...
-	_DriverGLStates.forceDefaults(IDRV_MAT_MAXTEXTURES);
+	_DriverGLStates.forceDefaults();
 	// Default delta camera pos.
 	_PZBCameraPos = CVector::Null;
 
@@ -505,7 +509,7 @@ bool CDriverGL3::setupDisplay()
 		// init no texture.
 		_CurrentTexture[stage] = NULL;
 		_CurrentTextureInfoGL[stage] = NULL;
-		// texture are disabled in DriverGLStates.forceDefaults().
+		// init no texture.
 	}
 	for (uint stage = 0; stage < IDRV_MAT_MAXTEXTURES; ++stage)
 	{
@@ -522,21 +526,46 @@ bool CDriverGL3::setupDisplay()
 
 	// Create UBOs
 	nglGenBuffers(1, &_LightTableUBOId);
+	nglGenBuffers(1, &_LightMapDynUBOId);
 	nglGenBuffers(1, &_CameraUBOId);
 	nglGenBuffers(1, &_ObjectUBOId);
-	nglGenBuffers(1, &_OverrideMaterialUBOId);
+	// nglGenBuffers(1, &_OverrideMaterialUBOId); // Replaced by per-material UBO slots
 	nglGenBuffers(1, &_PixelUploadPBO);
 
 	if (m_UseMegaShaders)
 	{
 		if (!initMegaVertexPrograms())
+		{
 			nlwarning("GL3: Failed to init mega vertex programs, falling back to per-material shaders");
+#ifdef NL_DEBUG
+			nlerror("GL3: Mega vertex program init failed");
+#endif
+			m_UseMegaShaders = false;
+		}
 		else if (!initMegaPixelPrograms())
+		{
 			nlwarning("GL3: Failed to init mega pixel programs, falling back to per-material shaders");
+#ifdef NL_DEBUG
+			nlerror("GL3: Mega pixel program init failed");
+#endif
+			m_UseMegaShaders = false;
+		}
 		else
 			nlinfo("GL3: Mega shaders initialized");
-		if (!m_MegaVP[0][0][0][0][0][0] || !m_MegaPP[0][0][0][0][0][0][0][0])
-			m_UseMegaShaders = false; // Fallback
+	}
+
+	if (m_LinkedMegaShaders && m_UseMegaShaders)
+	{
+		if (!initMegaLinkedPrograms())
+		{
+			nlwarning("GL3: Failed to link mega programs, falling back to SSO");
+#ifdef NL_DEBUG
+			nlerror("GL3: Mega linked program init failed");
+#endif
+			m_LinkedMegaShaders = false;
+		}
+		else
+			nlinfo("GL3: Linked mega shaders initialized");
 	}
 
 	_PPLExponent = 1.f;
@@ -616,7 +645,7 @@ bool CDriverGL3::activeFrameBufferObject(ITexture * tex)
 		}
 		else
 		{
-			nglBindFramebuffer(GL_FRAMEBUFFER, 0);
+			_DriverGLStates.forceBindFramebuffer(0);
 			return true;
 		}
 	}
@@ -679,7 +708,7 @@ bool CDriverGL3::clearStencilBuffer(sint stencilval)
 void CDriverGL3::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 {
 	H_AUTO_OGL(CDriverGL3_setColorMask)
-	glColorMask (bRed, bGreen, bBlue, bAlpha);
+	_DriverGLStates.colorMask(bRed, bGreen, bBlue, bAlpha);
 }
 
 // --------------------------------------------------
@@ -753,14 +782,14 @@ bool CDriverGL3::swapBuffers()
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
 		_CurrentTextureInfoGL[stage]= NULL;
-		// texture are disabled in DriverGLStates.forceDefaults().
+		// init no texture.
 		setTexGenModeVP(stage, TexGenDisabled);
 	}
 
 	// Activate the default material.
 	//===========================================================
 	// Same reasoning as textures :)
-	_DriverGLStates.forceDefaults(IDRV_MAT_MAXTEXTURES);
+	_DriverGLStates.forceDefaults();
 
 	_CurrentMaterial= NULL;
 
@@ -844,10 +873,10 @@ bool CDriverGL3::release()
 	m_UserPixelProgram = NULL;
 
 	// Delete all cached programs
-	for (std::unordered_set<CVPBuiltin>::iterator it(m_VPBuiltinCache.begin()), end(m_VPBuiltinCache.end()); it != end; ++it)
+	for (CHashSet<CVPBuiltin, CVPBuiltinHashTraits>::iterator it(m_VPBuiltinCache.begin()), end(m_VPBuiltinCache.end()); it != end; ++it)
 		delete it->VertexProgram;
 	m_VPBuiltinCache.clear();
-	for (std::unordered_set<CPPBuiltin>::iterator it(m_PPBuiltinCache.begin()), end(m_PPBuiltinCache.end()); it != end; ++it)
+	for (CHashSet<CPPBuiltin, CPPBuiltinHashTraits>::iterator it(m_PPBuiltinCache.begin()), end(m_PPBuiltinCache.end()); it != end; ++it)
 		delete it->PixelProgram;
 	m_PPBuiltinCache.clear();
 
@@ -856,6 +885,11 @@ bool CDriverGL3::release()
 	{
 		nglDeleteBuffers(1, &_LightTableUBOId);
 		_LightTableUBOId = 0;
+	}
+	if (_LightMapDynUBOId)
+	{
+		nglDeleteBuffers(1, &_LightMapDynUBOId);
+		_LightMapDynUBOId = 0;
 	}
 	if (_CameraUBOId)
 	{
@@ -867,11 +901,12 @@ bool CDriverGL3::release()
 		nglDeleteBuffers(1, &_ObjectUBOId);
 		_ObjectUBOId = 0;
 	}
-	if (_OverrideMaterialUBOId)
-	{
-		nglDeleteBuffers(1, &_OverrideMaterialUBOId);
-		_OverrideMaterialUBOId = 0;
-	}
+	// Replaced by per-material UBO slots
+	// if (_OverrideMaterialUBOId)
+	// {
+	// 	nglDeleteBuffers(1, &_OverrideMaterialUBOId);
+	// 	_OverrideMaterialUBOId = 0;
+	// }
 	if (_PixelUploadPBO)
 	{
 		nglDeleteBuffers(1, &_PixelUploadPBO);
@@ -907,11 +942,7 @@ bool CDriverGL3::release()
 	// FIXME VERTEXBUFFER
 
 	// Delete default VAO
-	if (_DefaultVAO)
-	{
-		nglDeleteVertexArrays(1, &_DefaultVAO);
-		_DefaultVAO = 0;
-	}
+	_DriverGLStates.release();
 
 	// destroy window and associated ressources
 	destroyWindow();
@@ -970,7 +1001,7 @@ void CDriverGL3::setupViewport (const class CViewport& viewport)
 	clamp (iwidth, 0, (sint)clientWidth-ix);
 	sint iheight=(sint)((float)clientHeight*height+0.5f);
 	clamp (iheight, 0, (sint)clientHeight-iy);
-	glViewport (ix, iy, iwidth, iheight);
+	_DriverGLStates.viewport(ix, iy, iwidth, iheight);
 }
 
 // --------------------------------------------------
@@ -1018,7 +1049,7 @@ void CDriverGL3::setupScissor (const class CScissor& scissor)
 	// enable or disable Scissor, but AFTER textureTarget adjust
 	if (x==0.f && y==0.f && width>=1.f && height>=1.f)
 	{
-		glDisable(GL_SCISSOR_TEST);
+		_DriverGLStates.enableScissorTest(false);
 	}
 	else
 	{
@@ -1038,8 +1069,8 @@ void CDriverGL3::setupScissor (const class CScissor& scissor)
 		sint iheight= iy1 - iy0;
 		clamp (iheight, 0, (sint)clientHeight);
 
-		glScissor (ix0, iy0, iwidth, iheight);
-		glEnable(GL_SCISSOR_TEST);
+		_DriverGLStates.scissor(ix0, iy0, iwidth, iheight);
+		_DriverGLStates.enableScissorTest(true);
 	}
 }
 
@@ -1104,8 +1135,8 @@ void CDriverGL3::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &re
 	{
 		zbuffer.resize(rect.Width*rect.Height);
 
-		glPixelTransferf(GL_DEPTH_SCALE, 1.0f) ;
-		glPixelTransferf(GL_DEPTH_BIAS, 0.f) ;
+		// glPixelTransferf(GL_DEPTH_SCALE/GL_DEPTH_BIAS) removed: does not exist
+		// in GL 3.3 core profile. Depth readback returns raw values without transfer.
 		glReadPixels (rect.X, rect.Y, rect.Width, rect.Height, GL_DEPTH_COMPONENT , GL_FLOAT, &(zbuffer[0]));
 	}
 }
@@ -1165,12 +1196,12 @@ void CDriverGL3::copyFrameBufferToTexture(ITexture *tex,
 	// FIXME GL3 TEXTUREMODE _DriverGLStates.setTextureMode(textureMode);
 	if (tex->isTextureCube())
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, gltext->ID);
+		_DriverGLStates.forceBindTexture(GL_TEXTURE_CUBE_MAP, gltext->ID);
 		glCopyTexSubImage2D(NLCubeFaceToGLCubeFace[cubeFace], level, offsetx, offsety, x, y, width, height);
 	}
 	else
 	{
-		glBindTexture(gltext->TextureMode, gltext->ID);
+		_DriverGLStates.forceBindTexture(gltext->TextureMode, gltext->ID);
 		glCopyTexSubImage2D(gltext->TextureMode, level, offsetx, offsety, x, y, width, height);
 	}
 	// disable texturing.
@@ -1180,105 +1211,6 @@ void CDriverGL3::copyFrameBufferToTexture(ITexture *tex,
 	//if (_RenderTargetFBO)
 	//	gltext->activeFrameBufferObject(tex);
 }
-
-// ***************************************************************************
-void CDriverGL3::setPolygonMode (TPolygonMode mode)
-{
-	H_AUTO_OGL(CDriverGL3_setPolygonMode)
-	IDriver::setPolygonMode (mode);
-
-	// Set the polygon mode
-	switch (_PolygonMode)
-	{
-	case Filled:
-		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-		break;
-	case Line:
-		glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-		break;
-	case Point:
-		glPolygonMode (GL_FRONT_AND_BACK, GL_POINT);
-		break;
-	}
-}
-
-// ***************************************************************************
-bool CDriverGL3::fogEnabled()
-{
-	H_AUTO_OGL(CDriverGL3_fogEnabled)
-	return _FogEnabled;
-}
-
-// ***************************************************************************
-void CDriverGL3::enableFog(bool enable)
-{
-	H_AUTO_OGL(CDriverGL3_enableFog)
-	_FogEnabled = enable;
-	enableFogVP(enable);
-}
-
-// ***************************************************************************
-void CDriverGL3::setupFog(float start, float end, CRGBA color)
-{
-	H_AUTO_OGL(CDriverGL3_setupFog)
-
-	_CurrentFogColor[0]= color.R/255.0f;
-	_CurrentFogColor[1]= color.G/255.0f;
-	_CurrentFogColor[2]= color.B/255.0f;
-	_CurrentFogColor[3]= color.A/255.0f;
-
-	_FogStart = start;
-	_FogEnd = end;
-	_CameraUBODirty = true;
-}
-
-// ***************************************************************************
-float CDriverGL3::getFogStart() const
-{
-	H_AUTO_OGL(CDriverGL3_getFogStart)
-	return _FogStart;
-}
-
-// ***************************************************************************
-float CDriverGL3::getFogEnd() const
-{
-	H_AUTO_OGL(CDriverGL3_getFogEnd)
-	return _FogEnd;
-}
-
-// ***************************************************************************
-CRGBA CDriverGL3::getFogColor() const
-{
-	H_AUTO_OGL(CDriverGL3_getFogColor)
-	CRGBA	ret;
-	ret.R= (uint8)(_CurrentFogColor[0]*255);
-	ret.G= (uint8)(_CurrentFogColor[1]*255);
-	ret.B= (uint8)(_CurrentFogColor[2]*255);
-	ret.A= (uint8)(_CurrentFogColor[3]*255);
-	return ret;
-}
-
-// ***************************************************************************
-void CDriverGL3::setupFogMode(TFogMode mode, float density)
-{
-	H_AUTO_OGL(CDriverGL3_setupFogMode)
-	_FogMode = mode;
-	_FogDensity = density;
-	_CameraUBODirty = true;
-}
-
-// ***************************************************************************
-IDriver::TFogMode CDriverGL3::getFogMode() const
-{
-	return _FogMode;
-}
-
-// ***************************************************************************
-float CDriverGL3::getFogDensity() const
-{
-	return _FogDensity;
-}
-
 
 // ***************************************************************************
 void			CDriverGL3::profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut)
@@ -1389,33 +1321,6 @@ void CDriverGL3::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float s
 bool CDriverGL3::supportWorldSpacePPL() const
 {
 	return true;
-}
-
-// ***************************************************************************
-bool CDriverGL3::supportBlendConstantColor() const
-{
-	H_AUTO_OGL(CDriverGL3_supportBlendConstantColor)
-	return _Extensions.GLCore;
-}
-
-// ***************************************************************************
-void CDriverGL3::setBlendConstantColor(NLMISC::CRGBA col)
-{
-	H_AUTO_OGL(CDriverGL3_setBlendConstantColor)
-
-	// bkup
-	_CurrentBlendConstantColor = col;
-
-	static const float OO255 = 1.0f / 255.0f;
-	nglBlendColor(col.R * OO255, col.G * OO255, col.B * OO255, col.A * OO255);
-}
-
-// ***************************************************************************
-NLMISC::CRGBA CDriverGL3::getBlendConstantColor() const
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-
-	return	_CurrentBlendConstantColor;
 }
 
 // ***************************************************************************
@@ -1556,25 +1461,6 @@ uint	CDriverGL3::getSwapVBLInterval()
 }
 
 // ***************************************************************************
-// GL_POLYGON_SMOOTH is not available in GL 3.3 core profile.
-// Only caller is CShadowMapManager, which uses it to smooth shadow polygon edges.
-// Alternative: render shadow maps to an MSAA FBO and resolve, or apply a
-// post-process blur/edge-detection filter on the shadow map.
-void	CDriverGL3::enablePolygonSmoothing(bool smooth)
-{
-	H_AUTO_OGL(CDriverGL3_enablePolygonSmoothing);
-	_PolygonSmooth= smooth;
-}
-
-// ***************************************************************************
-bool	CDriverGL3::isPolygonSmoothingEnabled() const
-{
-	H_AUTO_OGL(CDriverGL3_isPolygonSmoothingEnabled)
-
-	return _PolygonSmooth;
-}
-
-// ***************************************************************************
 void	CDriverGL3::startProfileVBHardLock()
 {
 	if (_VBHardProfiling)
@@ -1624,7 +1510,7 @@ void	CDriverGL3::endProfileVBHardLock(vector<std::string> &result)
 	// clear.
 	_VBHardProfiling= false;
 	_VBHardProfiles.clear();
-	_VBHardProfiles.shrink_to_fit();
+	std::vector<CVBHardProfile>().swap(_VBHardProfiles);
 }
 
 // ***************************************************************************
@@ -1969,122 +1855,6 @@ uint COcclusionQueryGL3::getVisibleCount()
 }
 
 // ***************************************************************************
-void CDriverGL3::setDepthRange(float znear, float zfar)
-{
-	H_AUTO_OGL(CDriverGL3_setDepthRange)
-	_DriverGLStates.setDepthRange(znear, zfar);
-}
-
-// ***************************************************************************
-void CDriverGL3::getDepthRange(float &znear, float &zfar) const
-{
-	H_AUTO_OGL(CDriverGL3_getDepthRange)
-	_DriverGLStates.getDepthRange(znear, zfar);
-}
-
-// ***************************************************************************
-void CDriverGL3::setCullMode(TCullMode cullMode)
-{
-	H_AUTO_OGL(CDriverGL3_setCullMode)
-	_DriverGLStates.setCullMode((CDriverGLStates3::TCullMode) cullMode);
-}
-
-// ***************************************************************************
-CDriverGL3::TCullMode CDriverGL3::getCullMode() const
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-	return (CDriverGL3::TCullMode) _DriverGLStates.getCullMode();
-}
-
-// ***************************************************************************
-void CDriverGL3::enableStencilTest(bool enable)
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-	_DriverGLStates.enableStencilTest(enable);
-}
-
-// ***************************************************************************
-bool CDriverGL3::isStencilTestEnabled() const
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-	return _DriverGLStates.isStencilTestEnabled();
-}
-
-// ***************************************************************************
-void CDriverGL3::stencilFunc(TStencilFunc stencilFunc, int ref, uint mask)
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-
-	GLenum glstencilFunc = 0;
-
-	switch(stencilFunc)
-	{
-		case IDriver::never:		glstencilFunc=GL_NEVER; break;
-		case IDriver::less:			glstencilFunc=GL_LESS; break;
-		case IDriver::lessequal:	glstencilFunc=GL_LEQUAL; break;
-		case IDriver::equal:		glstencilFunc=GL_EQUAL; break;
-		case IDriver::notequal:		glstencilFunc=GL_NOTEQUAL; break;
-		case IDriver::greaterequal:	glstencilFunc=GL_GEQUAL; break;
-		case IDriver::greater:		glstencilFunc=GL_GREATER; break;
-		case IDriver::always:		glstencilFunc=GL_ALWAYS; break;
-		default: nlstop;
-	}
-
-	_DriverGLStates.stencilFunc(glstencilFunc, (GLint)ref, (GLuint)mask);
-}
-
-// ***************************************************************************
-void CDriverGL3::stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass)
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-
-	GLenum glFail = 0, glZFail = 0, glZPass = 0;
-
-	switch(fail)
-	{
-		case IDriver::keep:		glFail=GL_KEEP; break;
-		case IDriver::zero:		glFail=GL_ZERO; break;
-		case IDriver::replace:	glFail=GL_REPLACE; break;
-		case IDriver::incr:		glFail=GL_INCR; break;
-		case IDriver::decr:		glFail=GL_DECR; break;
-		case IDriver::invert:	glFail=GL_INVERT; break;
-		default: nlstop;
-	}
-
-	switch(zfail)
-	{
-		case IDriver::keep:		glZFail=GL_KEEP; break;
-		case IDriver::zero:		glZFail=GL_ZERO; break;
-		case IDriver::replace:	glZFail=GL_REPLACE; break;
-		case IDriver::incr:		glZFail=GL_INCR; break;
-		case IDriver::decr:		glZFail=GL_DECR; break;
-		case IDriver::invert:	glZFail=GL_INVERT; break;
-		default: nlstop;
-	}
-
-	switch(zpass)
-	{
-		case IDriver::keep:		glZPass=GL_KEEP; break;
-		case IDriver::zero:		glZPass=GL_ZERO; break;
-		case IDriver::replace:	glZPass=GL_REPLACE; break;
-		case IDriver::incr:		glZPass=GL_INCR; break;
-		case IDriver::decr:		glZPass=GL_DECR; break;
-		case IDriver::invert:	glZPass=GL_INVERT; break;
-		default: nlstop;
-	}
-
-	_DriverGLStates.stencilOp(glFail, glZFail, glZPass);
-}
-
-// ***************************************************************************
-void CDriverGL3::stencilMask(uint mask)
-{
-	H_AUTO_OGL(CDriverGL3_CDriverGL)
-
-	_DriverGLStates.stencilMask((GLuint)mask);
-}
-
-// ***************************************************************************
 void CDriverGL3::getNumPerStageConstant(uint &lightedMaterial, uint &unlightedMaterial) const
 {
 	lightedMaterial = IDRV_MAT_MAXTEXTURES;
@@ -2099,31 +1869,6 @@ void CDriverGL3::beginDialogMode()
 // ***************************************************************************
 void CDriverGL3::endDialogMode()
 {
-}
-
-CProgramDrvInfosGL3::CProgramDrvInfosGL3(CDriverGL3 *drv, ItGPUPrgDrvInfoPtrList it) :
-IProgramDrvInfos(drv, it)
-{
-	programId = 0;
-	lightTableBlockIndex = GL_INVALID_INDEX;
-	cameraBlockIndex = GL_INVALID_INDEX;
-	objectBlockIndex = GL_INVALID_INDEX;
-	materialBlockIndex = GL_INVALID_INDEX;
-}
-
-CProgramDrvInfosGL3::~CProgramDrvInfosGL3()
-{
-	// FIXME GL3: Is this not released?!
-	programId = 0;
-}
-
-uint CProgramDrvInfosGL3::getUniformIndex(const char *name) const
-{
-	int idx = nglGetUniformLocation(programId, name);
-	if (idx == -1)
-		return ~0;
-	else
-		return idx;
 }
 
 // ***************************************************************************

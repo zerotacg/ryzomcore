@@ -444,7 +444,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 
 	// Set the vertex buffer preferred memory
 	bool avoidVBHard= _Skinned || ( _MeshMorpher && !_MeshMorpher->BlendShapes.empty() );
-	_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::StaticPreferred, false);
+	_VBuffer.setBufferUsage (avoidVBHard?CVertexBuffer::CpuReadWrite:CVertexBuffer::Immutable, false);
 
 	// End!!
 	// Some runtime not serialized compilation
@@ -538,7 +538,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 
 	// Soft vb if not supported by the driver
 	if (drv->slowUnlockVertexBufferHard())
-		_VBuffer.setPreferredMemory (CVertexBuffer::RAMPreferred, false);
+		_VBuffer.setBufferUsage (CVertexBuffer::CpuReadWrite, false);
 
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
@@ -1068,7 +1068,7 @@ void	CMeshGeom::compileRunTime()
 		_SupportMBRFlags|= MBRSortPerMaterial;
 
 	bool avoidVBHard= _Skinned || ( _MeshMorpher && !_MeshMorpher->BlendShapes.empty() );
-	_VBuffer.setPreferredMemory (avoidVBHard?CVertexBuffer::RAMPreferred:CVertexBuffer::StaticPreferred, false);
+	_VBuffer.setBufferUsage (avoidVBHard?CVertexBuffer::CpuReadWrite:CVertexBuffer::Immutable, false);
 }
 
 // ***************************************************************************
@@ -2079,7 +2079,7 @@ void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans,
 			_VBuffer.getVertexFormat(), triCount);
 
 		// VBHard
-		if(_VBuffer.getPreferredMemory()!=CVertexBuffer::RAMPreferred)
+		if(_VBuffer.getBufferUsage()!=CVertexBuffer::CpuReadWrite)
 			rdrTrav->Scene->BenchRes.NumMeshVBufferHard++;
 		else
 			rdrTrav->Scene->BenchRes.NumMeshVBufferStd++;

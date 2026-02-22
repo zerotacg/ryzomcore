@@ -322,7 +322,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	if (vb.getName().empty()) vb.setName("CDRU::drawBitmap");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (4);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -341,7 +341,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawBitmap");
 	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes (6);
-	pb.setPreferredMemory (CIndexBuffer::RAMVolatile, false);
+	pb.setBufferUsage (CIndexBuffer::SmallStream, false);
 	{
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);
@@ -376,7 +376,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	if (vb.getName().empty()) vb.setName("CDRU::drawLine");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (2);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -389,7 +389,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawLine");
 	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes (2);
-	pb.setPreferredMemory (CIndexBuffer::RAMVolatile, false);
+	pb.setBufferUsage (CIndexBuffer::SmallStream, false);
 	{
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);
@@ -423,7 +423,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	if (vb.getName().empty()) vb.setName("CDRU::drawTriangle");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (3);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -437,7 +437,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	if (pb.getName().empty()) NL_SET_IB_NAME(pb, "CDRU::drawTriangle");
 	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes (3);
-	pb.setPreferredMemory (CIndexBuffer::RAMVolatile, false);
+	pb.setBufferUsage (CIndexBuffer::SmallStream, false);
 	{
 		CIndexBufferReadWrite iba;
 		pb.lock (iba);
@@ -472,7 +472,7 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	if (vb.getName().empty()) vb.setName("CDRU::drawQuad");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -509,7 +509,7 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 	if (vb.getName().empty()) vb.setName("CDRU::drawQuad");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);
@@ -559,12 +559,12 @@ void			CDRU::drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, 
 	if (vb.getName().empty()) vb.setName("CDRU::drawTrianglesUnlit");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (ntris*3);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 
 	static	CIndexBuffer pb;
 	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes(ntris*3);
-	pb.setPreferredMemory (CIndexBuffer::RAMVolatile, false);
+	pb.setBufferUsage (CIndexBuffer::SmallStream, false);
 	if (pb.getFormat() == CIndexBuffer::Indices16)
 	{
 		nlassert(ntris * 3 <= 0xffff);
@@ -609,12 +609,12 @@ void			CDRU::drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMateria
 	if (vb.getName().empty()) vb.setName("CDRU::drawLinesUnlit");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (nlines*2);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 
 	static	CIndexBuffer pb;
 	pb.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	pb.setNumIndexes(nlines*2);
-	pb.setPreferredMemory (CIndexBuffer::RAMVolatile, false);
+	pb.setBufferUsage (CIndexBuffer::SmallStream, false);
 
 
 	{
@@ -682,7 +682,7 @@ void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA
 	if (vb.getName().empty()) vb.setName("CDRU::drawQuad");
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 	vb.setNumVertices (4);
-	vb.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	vb.setBufferUsage (CVertexBuffer::SmallStream, false);
 	{
 		CVertexBufferReadWrite vba;
 		vb.lock (vba);

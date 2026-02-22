@@ -109,11 +109,11 @@ static void buildSphere(CVertexBuffer &vb, CIndexBuffer &ib, float radius, uint 
 	uint numTris = stacks * slices * 2;
 
 	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::PrimaryColorFlag);
-	vb.setPreferredMemory(CVertexBuffer::StaticPreferred, false);
+	vb.setBufferUsage(CVertexBuffer::Immutable, false);
 	vb.setNumVertices(numVerts);
 
 	ib.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-	ib.setPreferredMemory(CIndexBuffer::StaticPreferred, false);
+	ib.setBufferUsage(CIndexBuffer::Immutable, false);
 	ib.setNumIndexes(numTris * 3);
 
 	{
@@ -182,11 +182,11 @@ static void buildCylinder(CVertexBuffer &vb, CIndexBuffer &ib, float radius, flo
 	uint numTris = segments + segments + segments * 2;
 
 	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag);
-	vb.setPreferredMemory(CVertexBuffer::StaticPreferred, false);
+	vb.setBufferUsage(CVertexBuffer::Immutable, false);
 	vb.setNumVertices(numVerts);
 
 	ib.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-	ib.setPreferredMemory(CIndexBuffer::StaticPreferred, false);
+	ib.setBufferUsage(CIndexBuffer::Immutable, false);
 	ib.setNumIndexes(numTris * 3);
 
 	float halfH = height * 0.5f;
@@ -290,11 +290,11 @@ static void buildCylinder(CVertexBuffer &vb, CIndexBuffer &ib, float radius, flo
 static void buildFloor(CVertexBuffer &vb, CIndexBuffer &ib, float halfSize, CRGBA color)
 {
 	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::PrimaryColorFlag);
-	vb.setPreferredMemory(CVertexBuffer::StaticPreferred, false);
+	vb.setBufferUsage(CVertexBuffer::Immutable, false);
 	vb.setNumVertices(4);
 
 	ib.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-	ib.setPreferredMemory(CIndexBuffer::StaticPreferred, false);
+	ib.setBufferUsage(CIndexBuffer::Immutable, false);
 	ib.setNumIndexes(6);
 
 	{

@@ -189,6 +189,8 @@ extern PFNGLGETPROGRAMIVPROC							nglGetProgramiv;
 extern PFNGLGETPROGRAMINFOLOGPROC						nglGetProgramInfoLog;
 extern PFNGLGETSHADERIVPROC								nglGetShaderiv;
 extern PFNGLGETSHADERINFOLOGPROC						nglGetShaderInfoLog;
+extern PFNGLGETACTIVEUNIFORMPROC						nglGetActiveUniform;
+extern PFNGLGETACTIVEUNIFORMSIVPROC					nglGetActiveUniformsiv;
 extern PFNGLGETUNIFORMLOCATIONPROC						nglGetUniformLocation;
 extern PFNGLISPROGRAMPROC								nglIsProgram;
 extern PFNGLISSHADERPROC								nglIsShader;
@@ -236,6 +238,7 @@ extern PFNGLUNMAPBUFFERPROC								nglUnmapBuffer;
 extern PFNGLGETBUFFERPARAMETERIVPROC					nglGetBufferParameteriv;
 extern PFNGLGETBUFFERPOINTERVPROC						nglGetBufferPointerv;
 
+extern PFNGLCOPYBUFFERSUBDATAPROC						nglCopyBufferSubData;
 extern PFNGLMAPBUFFERRANGEPROC							nglMapBufferRange;
 extern PFNGLFLUSHMAPPEDBUFFERRANGEPROC					nglFlushMappedBufferRange;
 
@@ -294,6 +297,7 @@ extern PFNGLGETSYNCIVPROC								nglGetSynciv;
 extern PFNGLUSEPROGRAMSTAGESPROC						nglUseProgramStages;
 extern PFNGLACTIVESHADERPROGRAMPROC						nglActiveShaderProgram;
 extern PFNGLCREATESHADERPROGRAMVPROC					nglCreateShaderProgramv;
+extern PFNGLPROGRAMPARAMETERIPROC					nglProgramParameteri;
 extern PFNGLBINDPROGRAMPIPELINEPROC						nglBindProgramPipeline;
 extern PFNGLDELETEPROGRAMPIPELINESPROC					nglDeleteProgramPipelines;
 extern PFNGLGENPROGRAMPIPELINESPROC						nglGenProgramPipelines;

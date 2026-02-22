@@ -67,7 +67,7 @@ void *CUniformBuffer::lock()
 #if NL3D_UNIFORM_BUFFER_DEBUG
 	++Locked;
 #endif
-	return m_HostMemory.data();
+	return &m_HostMemory[0];
 }
 
 void CUniformBuffer::unlock()

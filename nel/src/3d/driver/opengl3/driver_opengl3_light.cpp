@@ -171,8 +171,6 @@ void	CDriverGL3::setLightTableSize(uint count)
 	H_AUTO_OGL(CDriverGL3_setLightTableSize)
 	_LightTable.resize(count);
 	_LightTableDirty = true;
-	// Invalidate cached lightmap dynamic light table index (may have been in the old table range)
-	_LightMapDynLightTableIndex = -1;
 }
 
 // ***************************************************************************
@@ -294,110 +292,7 @@ void	CDriverGL3::setAmbientColor (CRGBA color)
 }
 
 
-// ***************************************************************************
-void			CDriverGL3::setLightMapDynamicLight (bool enable, const CLight& light)
-{
-	H_AUTO_OGL(CDriverGL3_setLightMapDynamicLight)
-	// just store, for future setup in lightmap material rendering
-	_LightMapDynamicLightEnabled= enable;
-	_LightMapDynamicLight= light;
-	_LightMapDynamicLightDirty= true;
-}
-
-
-// ***************************************************************************
-void			CDriverGL3::setupLightMapDynamicLighting(bool enable)
-{
-	H_AUTO_OGL(CDriverGL3_setupLightMapDynamicLighting)
-
-	// start lightmap dynamic lighting
-	if (enable)
-	{
-		// disable all lights but the 0th.
-		for (uint i = 1; i < MaxLight; ++i)
-			enableLightInternal(i, false);
-
-		// if the dynamic light is really enabled
-		if (_LightMapDynamicLightEnabled)
-		{
-			// then setup and enable
-			setLightInternal(0, _LightMapDynamicLight);
-			enableLightInternal(0, true);
-		}
-		// else just disable also the light 0
-		else
-		{
-			enableLightInternal(0, false);
-		}
-
-		// In table mode, uploadObjectUBO() reads _LightTableObjIndices instead of
-		// _LightEnable/_UserLight. Register the dynamic light in the table so the
-		// UBO path can reference it.
-		if (_LightTableMode)
-		{
-			// Clear all per-object table slots
-			for (uint i = 0; i < MaxLight; ++i)
-			{
-				_LightTableObjIndices[i] = -1;
-				_LightTableObjFactors[i] = 0.0f;
-			}
-
-			if (_LightMapDynamicLightEnabled)
-			{
-				// Lazily register the dynamic light in the table (once per table batch)
-				if (_LightMapDynLightTableIndex < 0)
-				{
-					_LightMapDynLightTableIndex = (sint16)_LightTable.size();
-					_LightTable.push_back(_LightMapDynamicLight);
-					_LightTableDirty = true;
-				}
-				else
-				{
-					// Update the existing table entry (light may have changed)
-					_LightTable[_LightMapDynLightTableIndex] = _LightMapDynamicLight;
-					_LightTableDirty = true;
-				}
-
-				_LightTableObjIndices[0] = _LightMapDynLightTableIndex;
-				_LightTableObjFactors[0] = 1.0f;
-			}
-		}
-
-		// ok it has been setup
-		_LightMapDynamicLightDirty = false;
-	}
-	// restore old lighting
-	else
-	{
-		// restore the light 0
-		setLightInternal(0, _UserLight0);
-
-		// restore all standard light enable states from _UserLightEnable
-		// (which is never modified by enableLightInternal, only by the public enableLight API)
-		for (uint i = 0; i < MaxLight; ++i)
-			enableLightInternal(i, _UserLightEnable[i]);
-	}
-}
-
-// ***************************************************************************
-// CPU-side struct matching the std140 NlLightInfo layout (96 bytes)
-struct CLightTableEntry
-{
-	float dirOrPos[3];     // 0
-	sint32 mode;           // 12
-	float diffuse[4];      // 16
-	float specular[4];     // 32
-	float constAttn;       // 48
-	float linAttn;         // 52
-	float quadAttn;        // 56
-	float spotExp;         // 60
-	float spotDir[3];      // 64
-	float spotCutoff;      // 76
-	float ambient[4];      // 80
-};                         // 96 bytes
-static_assert(sizeof(CLightTableEntry) == 96, "CLightTableEntry must match std140 NlLightInfo layout");
-
-static void packLightToEntry(CLightTableEntry &e, const CLight &light)
+static void packLightToEntry(CLightTableUBOEntry &e, const CLight &light)
 {
 	CLight::TLightMode lmode = light.getMode();
 	e.mode = (sint32)lmode;
@@ -447,10 +342,87 @@ static void packLightToEntry(CLightTableEntry &e, const CLight &light)
 	e.ambient[3] = amb.A;
 }
 
-static void uploadLightUBOData(const CLightTableEntry *entries, sint count, GLuint uboId, sint &uboCapacity)
+// ***************************************************************************
+void			CDriverGL3::setLightMapDynamicLight (bool enable, const CLight& light)
 {
-	GLsizeiptr dataSize = count * sizeof(CLightTableEntry);
-	nglBindBuffer(GL_UNIFORM_BUFFER, uboId);
+	H_AUTO_OGL(CDriverGL3_setLightMapDynamicLight)
+	// just store, for future setup in lightmap material rendering
+	_LightMapDynamicLightEnabled= enable;
+	_LightMapDynamicLight= light;
+	_LightMapDynamicLightDirty= true;
+}
+
+
+// ***************************************************************************
+void			CDriverGL3::setupLightMapDynamicLighting(bool enable)
+{
+	H_AUTO_OGL(CDriverGL3_setupLightMapDynamicLighting)
+
+	// start lightmap dynamic lighting
+	if (enable)
+	{
+		// disable all lights but the 0th.
+		for (uint i = 1; i < MaxLight; ++i)
+			enableLightInternal(i, false);
+
+		// if the dynamic light is really enabled
+		if (_LightMapDynamicLightEnabled)
+		{
+			// then setup and enable
+			setLightInternal(0, _LightMapDynamicLight);
+			enableLightInternal(0, true);
+		}
+		// else just disable also the light 0
+		else
+		{
+			enableLightInternal(0, false);
+		}
+
+		// Stage the dynamic light into the dedicated 1-light UBO.
+		// During lightmap passes, uploadLightTableUBO() will bind this
+		// instead of the main light table, avoiding pollution of _LightTable.
+		// The per-object UBO references index 0 in this 1-entry table.
+		for (uint i = 0; i < MaxLight; ++i)
+		{
+			_LightTableObjIndices[i] = -1;
+			_LightTableObjFactors[i] = 0.0f;
+		}
+
+		if (_LightMapDynamicLightEnabled)
+		{
+			packLightToEntry(_LightMapDynUBOEntry, _LightMapDynamicLight);
+			_LightTableObjIndices[0] = 0; // Index 0 in the 1-entry table
+			_LightTableObjFactors[0] = 1.0f;
+		}
+
+		_LightMapDynUBODirty = true;
+		_UseLightMapDynUBO = true;
+
+		// ok it has been setup
+		_LightMapDynamicLightDirty = false;
+	}
+	// restore old lighting
+	else
+	{
+		// Stop using the dedicated lightmap UBO.
+		// uploadLightTableUBO() always ensures the correct binding,
+		// so no need to force a re-upload of unchanged data.
+		_UseLightMapDynUBO = false;
+
+		// restore the light 0
+		setLightInternal(0, _UserLight0);
+
+		// restore all standard light enable states from _UserLightEnable
+		// (which is never modified by enableLightInternal, only by the public enableLight API)
+		for (uint i = 0; i < MaxLight; ++i)
+			enableLightInternal(i, _UserLightEnable[i]);
+	}
+}
+
+static void uploadLightUBOData(CDriverGLStates3 &glStates, const CLightTableUBOEntry *entries, sint count, GLuint uboId, sint &uboCapacity)
+{
+	GLsizeiptr dataSize = count * sizeof(CLightTableUBOEntry);
+	glStates.forceBindUniformBuffer(uboId);
 
 	if (count > uboCapacity)
 	{
@@ -461,19 +433,31 @@ static void uploadLightUBOData(const CLightTableEntry *entries, sint count, GLui
 	else
 	{
 		// Orphan + rewrite (avoids GPU sync)
-		nglBufferData(GL_UNIFORM_BUFFER, uboCapacity * sizeof(CLightTableEntry), NULL, GL_STREAM_DRAW);
+		nglBufferData(GL_UNIFORM_BUFFER, uboCapacity * sizeof(CLightTableUBOEntry), NULL, GL_STREAM_DRAW);
 		nglBufferSubData(GL_UNIFORM_BUFFER, 0, dataSize, entries);
 	}
 
-	nglBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	// Bind to the light table binding point
-	nglBindBufferBase(GL_UNIFORM_BUFFER, NL_BUILTIN_LIGHT_TABLE_BINDING, uboId);
+	glStates.forceBindUniformBuffer(0);
 }
 
 void CDriverGL3::uploadLightTableUBO()
 {
 	H_AUTO_OGL(CDriverGL3_uploadLightTableUBO)
+
+	// During lightmap passes, bind the dedicated 1-light UBO instead of the main table.
+	if (_UseLightMapDynUBO)
+	{
+		if (_LightMapDynUBODirty)
+		{
+			_DriverGLStates.forceBindUniformBuffer(_LightMapDynUBOId);
+			nglBufferData(GL_UNIFORM_BUFFER, sizeof(CLightTableUBOEntry),
+			    &_LightMapDynUBOEntry, GL_STREAM_DRAW);
+			_DriverGLStates.forceBindUniformBuffer(0);
+			_LightMapDynUBODirty = false;
+		}
+		_DriverGLStates.bindUniformBufferBase(NL_BUILTIN_LIGHT_TABLE_BINDING, _LightMapDynUBOId);
+		return;
+	}
 
 	if (!_LightTableUBOId)
 		return;
@@ -481,481 +465,37 @@ void CDriverGL3::uploadLightTableUBO()
 	if (_LightTableMode)
 	{
 		// Light table mode: upload from _LightTable[]
-		if (!_LightTableDirty)
-			return;
-
-		sint count = (sint)_LightTable.size();
-		if (count == 0)
+		if (_LightTableDirty)
 		{
+			sint count = (sint)_LightTable.size();
+			const sint maxLights = 128;
+			if (count > maxLights)
+				count = maxLights;
+
+			if (count > 0)
+			{
+				for (sint i = 0; i < count; ++i)
+					packLightToEntry(_LightTableUBOStaging[i], _LightTable[i]);
+				uploadLightUBOData(_DriverGLStates, _LightTableUBOStaging, count, _LightTableUBOId, _LightTableUBOCapacity);
+			}
 			_LightTableDirty = false;
-			return;
 		}
-
-		// Cap at max UBO size (128 lights × 96 bytes = 12288, fits in GL 3.3 min 16KB)
-		const sint maxLights = 128;
-		if (count > maxLights)
-			count = maxLights;
-
-		std::vector<CLightTableEntry> entries(count);
-		for (sint i = 0; i < count; ++i)
-			packLightToEntry(entries[i], _LightTable[i]);
-
-		uploadLightUBOData(&entries[0], count, _LightTableUBOId, _LightTableUBOCapacity);
-		_LightTableDirty = false;
 	}
 	else
 	{
 		// Non-table mode: upload _UserLight[0..MaxLight-1] as a small 8-entry UBO
-		if (!_UserLightUBODirty)
-			return;
-
-		CLightTableEntry entries[MaxLight];
-		for (uint i = 0; i < MaxLight; ++i)
-			packLightToEntry(entries[i], _UserLight[i]);
-
-		uploadLightUBOData(entries, MaxLight, _LightTableUBOId, _LightTableUBOCapacity);
-		_UserLightUBODirty = false;
-	}
-}
-
-// ***************************************************************************
-// Camera UBO data layout (std140, 240 bytes, matches GLSL NlCamera block)
-struct CCameraUBOData
-{
-	float viewMatrix[16];    // 64
-	float fogColor[4];       // 16
-	float pzbCameraPos[3];   // 12
-	float fogDensity;        //  4
-	float fogParams[2];      //  8
-	sint32 fogMode;          //  4
-	sint32 clipPlaneMask;    //  4
-	float clipPlane[6][4];   // 96
-	float cameraWorldPos[3]; // 12  (inverse view translation: actual camera world position)
-	float _pad0;             //  4
-};                           // 224
-static_assert(sizeof(CCameraUBOData) == 224, "Camera UBO layout mismatch");
-
-void CDriverGL3::uploadCameraUBO()
-{
-	H_AUTO_OGL(CDriverGL3_uploadCameraUBO)
-
-	if (!_CameraUBOId || !_CameraUBODirty)
-		return;
-
-	CCameraUBOData data;
-
-	// View matrix (column-major, CMatrix::get() returns column-major)
-	const float *vm = _ViewMtx.get();
-	memcpy(data.viewMatrix, vm, 16 * sizeof(float));
-
-	// Fog color
-	memcpy(data.fogColor, _CurrentFogColor, 4 * sizeof(float));
-
-	// PZB camera position
-	data.pzbCameraPos[0] = _PZBCameraPos.x;
-	data.pzbCameraPos[1] = _PZBCameraPos.y;
-	data.pzbCameraPos[2] = _PZBCameraPos.z;
-
-	// Fog density
-	data.fogDensity = _FogDensity;
-
-	// Fog params (start, end)
-	data.fogParams[0] = _FogStart;
-	data.fogParams[1] = _FogEnd;
-
-	// Fog mode and clip plane mask
-	data.fogMode = (sint32)_FogMode;
-	// Compute real mask from _ClipPlaneEnabled[] — m_VPBuiltinCurrent.ClipPlaneMask
-	// may be zeroed when PP clip planes are active (VP doesn't use it in that mode).
-	{
-		sint32 mask = 0;
-		for (uint i = 0; i < MaxClipPlanes; ++i)
-			if (_ClipPlaneEnabled[i]) mask |= (1 << i);
-		data.clipPlaneMask = mask;
-	}
-
-	// Clip planes
-	for (uint i = 0; i < MaxClipPlanes; ++i)
-		memcpy(data.clipPlane[i], _ClipPlaneEye[i], 4 * sizeof(float));
-
-	// Camera world position: -transpose(mat3(V)) * V[3]
-	// With PZB: V[3]=0 → (0,0,0). Without PZB: actual camera world position.
-	{
-		CMatrix invView = _ViewMtx;
-		invView.invert();
-		CVector cwp = invView.getPos();
-		data.cameraWorldPos[0] = cwp.x;
-		data.cameraWorldPos[1] = cwp.y;
-		data.cameraWorldPos[2] = cwp.z;
-		data._pad0 = 0.f;
-	}
-
-	// Upload
-	const GLsizeiptr dataSize = sizeof(CCameraUBOData);
-	nglBindBuffer(GL_UNIFORM_BUFFER, _CameraUBOId);
-
-	if (_CameraUBOCapacity < (sint)dataSize)
-	{
-		nglBufferData(GL_UNIFORM_BUFFER, dataSize, &data, GL_STREAM_DRAW);
-		_CameraUBOCapacity = (sint)dataSize;
-	}
-	else
-	{
-		// Orphan + rewrite
-		nglBufferData(GL_UNIFORM_BUFFER, _CameraUBOCapacity, NULL, GL_STREAM_DRAW);
-		nglBufferSubData(GL_UNIFORM_BUFFER, 0, dataSize, &data);
-	}
-
-	nglBindBuffer(GL_UNIFORM_BUFFER, 0);
-	nglBindBufferBase(GL_UNIFORM_BUFFER, NL_BUILTIN_CAMERA_BINDING, _CameraUBOId);
-
-	_CameraUBODirty = false;
-}
-
-// ***************************************************************************
-void CDriverGL3::enableClipPlane(uint index, bool enable)
-{
-	H_AUTO_OGL(CDriverGL3_enableClipPlane)
-
-	if (index >= MaxClipPlanes) return;
-
-	_ClipPlaneEnabled[index] = enable;
-
-	// Enable/disable GL clip distance (for builtin VPs that write gl_ClipDistance)
-	if (!m_PPClipPlanes)
-	{
-		if (enable)
-			glEnable(GL_CLIP_DISTANCE0 + index);
-		else
-			glDisable(GL_CLIP_DISTANCE0 + index);
-	}
-
-	// Trigger VP regeneration to include/exclude gl_ClipDistance output
-	touchClipPlaneVP(index, enable);
-	_CameraUBODirty = true;
-}
-
-// ***************************************************************************
-void CDriverGL3::setClipPlane(uint index, const NLMISC::CPlane &plane)
-{
-	H_AUTO_OGL(CDriverGL3_setClipPlane)
-
-	if (index >= MaxClipPlanes) return;
-
-	// Plane is in NeL world space. Adjust d for _PZBCameraPos precision optimization,
-	// then transform to eye space for the vertex shader.
-	float pa = plane.a;
-	float pb = plane.b;
-	float pc = plane.c;
-	float pd = plane.d + pa * _PZBCameraPos.x + pb * _PZBCameraPos.y + pc * _PZBCameraPos.z;
-
-	// Transform plane from PZB-adjusted world space to eye space:
-	// plane_eye = transpose(inverse(_ViewMtx)) * plane_pzb_world
-	// For rigid body transform V: (V^-1)^T maps covariant vectors (planes/normals).
-	CMatrix invView = _ViewMtx;
-	invView.invert();
-	CVector invI = invView.getI();
-	CVector invJ = invView.getJ();
-	CVector invK = invView.getK();
-	CVector invPos = invView.getPos();
-
-	_ClipPlaneEye[index][0] = invI.x * pa + invI.y * pb + invI.z * pc;
-	_ClipPlaneEye[index][1] = invJ.x * pa + invJ.y * pb + invJ.z * pc;
-	_ClipPlaneEye[index][2] = invK.x * pa + invK.y * pb + invK.z * pc;
-	_ClipPlaneEye[index][3] = invPos.x * pa + invPos.y * pb + invPos.z * pc + pd;
-	_CameraUBODirty = true;
-}
-
-// ***************************************************************************
-// Per-Object UBO data layout (std140, 304 bytes, matches GLSL NlModel block)
-struct CObjectUBOData
-{
-	float modelViewProjection[16]; // 64
-	float modelView[16];           // 64
-	float normalMatrix[12];        // 48 (3 cols × {x,y,z,pad} for std140 mat3)
-	sint32 lightIndices01[4];      // 16
-	sint32 lightIndices45[4];      // 16
-	float lightFactors01[4];       // 16
-	float lightFactors45[4];       // 16
-	float selfIllumination[4];     // 16
-	sint32 texGenMode[4];          // 16
-	sint32 lighting;               // 4
-	sint32 vertexColorLighted;     // 4
-	sint32 vertexFormat;           // 4
-	sint32 worldSpaceNormal;       // 4
-	sint32 worldSpacePosition;     // 4
-	sint32 numPerPixelLights;      // 4
-	sint32 fogEnabled;             // 4
-	sint32 _pad[1];                // 4 (pad to 16-byte std140 alignment)
-};                                 // 304
-static_assert(sizeof(CObjectUBOData) == 304, "Object UBO layout mismatch");
-
-void CDriverGL3::uploadObjectUBO()
-{
-	H_AUTO_OGL(CDriverGL3_uploadObjectUBO)
-
-	if (!_ObjectUBOId)
-		return;
-
-	CMaterial &mat = *_CurrentMaterial;
-
-	CObjectUBOData data;
-
-	// ModelViewProjection
-	CMatrix mvp = _GLProjMat * _ChangeBasis * _ModelViewMatrix;
-	memcpy(data.modelViewProjection, mvp.get(), 16 * sizeof(float));
-
-	// ModelView
-	memcpy(data.modelView, _ModelViewMatrix.get(), 16 * sizeof(float));
-
-	// NormalMatrix (3×3 → std140 mat3 = 3 columns of vec4, padded)
-	const float *mv = _ModelViewMatrix.get();
-	// Column 0
-	data.normalMatrix[0] = mv[0]; data.normalMatrix[1] = mv[1]; data.normalMatrix[2] = mv[2]; data.normalMatrix[3] = 0.0f;
-	// Column 1
-	data.normalMatrix[4] = mv[4]; data.normalMatrix[5] = mv[5]; data.normalMatrix[6] = mv[6]; data.normalMatrix[7] = 0.0f;
-	// Column 2
-	data.normalMatrix[8] = mv[8]; data.normalMatrix[9] = mv[9]; data.normalMatrix[10] = mv[10]; data.normalMatrix[11] = 0.0f;
-
-	// Light indices and factors (packed into ivec4 / vec4)
-	for (uint i = 0; i < NL_OPENGL3_MAX_LIGHT; ++i)
-	{
-		sint32 lightIdx;
-		float lightFactor;
-		if (_LightTableMode)
+		if (_UserLightUBODirty)
 		{
-			lightIdx = (sint32)_LightTableObjIndices[i];
-			lightFactor = _LightMapUBOOverride.Active && _LightMapUBOOverride.ZeroLightFactors
-				? 0.0f : _LightTableObjFactors[i];
-		}
-		else
-		{
-			lightIdx = _LightEnable[i] ? (sint32)i : -1;
-			lightFactor = _LightMapUBOOverride.Active && _LightMapUBOOverride.ZeroLightFactors
-				? 0.0f : 1.0f;
-		}
-
-		if (i < 4)
-		{
-			data.lightIndices01[i] = lightIdx;
-			data.lightFactors01[i] = lightFactor;
-		}
-		else
-		{
-			data.lightIndices45[i - 4] = lightIdx;
-			data.lightFactors45[i - 4] = lightFactor;
+			CLightTableUBOEntry entries[MaxLight];
+			for (uint i = 0; i < MaxLight; ++i)
+				packLightToEntry(entries[i], _UserLight[i]);
+			uploadLightUBOData(_DriverGLStates, entries, MaxLight, _LightTableUBOId, _LightTableUBOCapacity);
+			_UserLightUBODirty = false;
 		}
 	}
 
-	// Self illumination (precomputed on CPU, or overridden for lightmap passes)
-	if (_LightMapUBOOverride.Active)
-	{
-		memcpy(data.selfIllumination, _LightMapUBOOverride.SelfIllumination, sizeof(data.selfIllumination));
-	}
-	else
-	{
-		NLMISC::CRGBAF selfIllumination = NLMISC::CRGBAF(_AmbientGlobal);
-		for (uint i = 0; i < NL_OPENGL3_MAX_LIGHT; ++i)
-		{
-			if (_LightEnable[i])
-				selfIllumination += NLMISC::CRGBAF(_UserLight[i].getAmbiant());
-		}
-		selfIllumination *= NLMISC::CRGBAF(mat.getAmbient());
-		if (mat.getShader() != CMaterial::LightMap)
-			selfIllumination += NLMISC::CRGBAF(mat.getEmissive());
-		data.selfIllumination[0] = selfIllumination.R;
-		data.selfIllumination[1] = selfIllumination.G;
-		data.selfIllumination[2] = selfIllumination.B;
-		data.selfIllumination[3] = 0.0f;
-	}
-
-	// TexGen modes
-	for (int i = 0; i < IDRV_MAT_MAXTEXTURES; ++i)
-		data.texGenMode[i] = m_VPBuiltinCurrent.TexGenMode[i];
-
-	// Scalar state
-	data.lighting = m_VPBuiltinCurrent.Lighting ? 1 : 0;
-	data.vertexColorLighted = m_VPBuiltinCurrent.VertexColorLighted ? 1 : 0;
-	data.vertexFormat = (sint32)m_VPBuiltinCurrent.VertexFormat;
-	data.worldSpaceNormal = m_VPNormalOutput ? 1 : 0;
-	data.worldSpacePosition = m_VPWorldSpacePositionOutput ? 1 : 0;
-	data.numPerPixelLights = (sint32)m_VPBuiltinCurrent.NumPerPixelLights;
-	data.fogEnabled = m_VPBuiltinCurrent.Fog ? 1 : 0;
-	data._pad[0] = 0;
-
-	// Upload
-	const GLsizeiptr dataSize = sizeof(CObjectUBOData);
-	nglBindBuffer(GL_UNIFORM_BUFFER, _ObjectUBOId);
-
-	if (_ObjectUBOCapacity < (sint)dataSize)
-	{
-		nglBufferData(GL_UNIFORM_BUFFER, dataSize, &data, GL_STREAM_DRAW);
-		_ObjectUBOCapacity = (sint)dataSize;
-	}
-	else
-	{
-		// Orphan + rewrite
-		nglBufferData(GL_UNIFORM_BUFFER, _ObjectUBOCapacity, NULL, GL_STREAM_DRAW);
-		nglBufferSubData(GL_UNIFORM_BUFFER, 0, dataSize, &data);
-	}
-
-	nglBindBuffer(GL_UNIFORM_BUFFER, 0);
-	nglBindBufferBase(GL_UNIFORM_BUFFER, NL_BUILTIN_MODEL_BINDING, _ObjectUBOId);
-}
-
-// ***************************************************************************
-// Per-Material UBO data layout (std140, 96 bytes, matches GLSL NlMaterial block)
-struct CMaterialUBOData
-{
-	float materialColor[4];        // 16
-	float materialDiffuse[4];      // 16
-	float materialSpecular[4];     // 16
-	float materialShininess;       // 4
-	float alphaRef;                // 4
-	sint32 nlShader;               // 4
-	sint32 nlTextureActive;        // 4
-	sint32 nlAlphaTest;            // 4
-	uint32 nlTexEnvMode[4];        // 16 (4 separate uint in GLSL, not an array — avoids std140 vec4 padding)
-	float nlLightMapScale;         // 4
-	sint32 _pad[2];               // 8
-};                                 // 96
-static_assert(sizeof(CMaterialUBOData) == 96, "Material UBO layout mismatch");
-
-void CDriverGL3::uploadMaterialUBO()
-{
-	H_AUTO_OGL(CDriverGL3_uploadMaterialUBO)
-
-	CMaterial &mat = *_CurrentMaterial;
-	CMaterialDrvInfosGL3 *matDrv = static_cast<CMaterialDrvInfosGL3 *>((IMaterialDrvInfos *)(mat._MatDrvInfo));
-	if (!matDrv) return;
-
-	// Lightmap multipass: upload to global override buffer, not per-material cache.
-	// This avoids corrupting the per-material MaterialUBOId with per-pass overrides
-	// (materialDiffuse/Specular change per pass). TextureActive also changes per
-	// lightmap pass (via checkDriverMaterialStateTouched) but is read from PPBuiltin.
-	if (_LightMapUBOOverride.Active)
-	{
-		CMaterialUBOData data;
-
-		// Material color (from material)
-		CRGBA col = mat.getColor();
-		data.materialColor[0] = col.R / 255.0f;
-		data.materialColor[1] = col.G / 255.0f;
-		data.materialColor[2] = col.B / 255.0f;
-		data.materialColor[3] = col.A / 255.0f;
-
-		// Overridden diffuse and specular
-		memcpy(data.materialDiffuse, _LightMapUBOOverride.MaterialDiffuse, sizeof(data.materialDiffuse));
-		memcpy(data.materialSpecular, _LightMapUBOOverride.MaterialSpecular, sizeof(data.materialSpecular));
-
-		data.materialShininess = mat.getShininess();
-		data.alphaRef = mat.getAlphaTestThreshold();
-
-		int shaderInt = 0;
-		switch (matDrv->PPBuiltin.Shader)
-		{
-		case CMaterial::Normal:    shaderInt = 0; break;
-		case CMaterial::UserColor: shaderInt = 1; break;
-		case CMaterial::Specular:  shaderInt = 2; break;
-		case CMaterial::LightMap:  shaderInt = 3; break;
-		default:                   shaderInt = 0; break;
-		}
-		data.nlShader = shaderInt;
-		data.nlTextureActive = (sint32)matDrv->PPBuiltin.TextureActive;
-		data.nlAlphaTest = (matDrv->PPBuiltin.Flags & IDRV_MAT_ALPHA_TEST) ? 1 : 0;
-		for (int i = 0; i < IDRV_MAT_MAXTEXTURES; ++i)
-			data.nlTexEnvMode[i] = matDrv->PPBuiltin.TexEnvMode[i];
-		data.nlLightMapScale = _LightMapUBOOverride.LightMapScale;
-		data._pad[0] = 0; data._pad[1] = 0;
-
-		const GLsizeiptr dataSize = sizeof(CMaterialUBOData);
-		nglBindBuffer(GL_UNIFORM_BUFFER, _OverrideMaterialUBOId);
-		nglBufferData(GL_UNIFORM_BUFFER, dataSize, &data, GL_STREAM_DRAW);
-		nglBindBuffer(GL_UNIFORM_BUFFER, 0);
-		nglBindBufferBase(GL_UNIFORM_BUFFER, NL_BUILTIN_MATERIAL_BINDING, _OverrideMaterialUBOId);
-		return;
-	}
-
-	// Per-material cache: skip re-pack if nothing changed since last upload.
-	// MaterialUBODirty is set by setupMaterial() (CMaterial property changes) and
-	// by PP setup (PPBuiltin.MaterialUBOTouched for shader/flags/textureActive/texEnvMode).
-	if (!matDrv->MaterialUBODirty && matDrv->MaterialUBOId)
-	{
-		// Just bind the existing buffer
-		nglBindBufferBase(GL_UNIFORM_BUFFER, NL_BUILTIN_MATERIAL_BINDING, matDrv->MaterialUBOId);
-		return;
-	}
-
-	// Create buffer if needed
-	if (!matDrv->MaterialUBOId)
-		nglGenBuffers(1, &matDrv->MaterialUBOId);
-
-	CMaterialUBOData data;
-
-	// Material color
-	CRGBA col = mat.getColor();
-	data.materialColor[0] = col.R / 255.0f;
-	data.materialColor[1] = col.G / 255.0f;
-	data.materialColor[2] = col.B / 255.0f;
-	data.materialColor[3] = col.A / 255.0f;
-
-	// Material diffuse (raw, not adjusted for vertexColorLighted)
-	CRGBA diff = mat.getDiffuse();
-	data.materialDiffuse[0] = diff.R / 255.0f;
-	data.materialDiffuse[1] = diff.G / 255.0f;
-	data.materialDiffuse[2] = diff.B / 255.0f;
-	data.materialDiffuse[3] = diff.A / 255.0f;
-
-	// Material specular
-	CRGBA spec = mat.getSpecular();
-	data.materialSpecular[0] = spec.R / 255.0f;
-	data.materialSpecular[1] = spec.G / 255.0f;
-	data.materialSpecular[2] = spec.B / 255.0f;
-	data.materialSpecular[3] = spec.A / 255.0f;
-
-	// Material shininess
-	data.materialShininess = mat.getShininess();
-
-	// Alpha ref
-	data.alphaRef = mat.getAlphaTestThreshold();
-
-	// Shader type
-	int shaderInt = 0;
-	switch (matDrv->PPBuiltin.Shader)
-	{
-	case CMaterial::Normal:    shaderInt = 0; break;
-	case CMaterial::UserColor: shaderInt = 1; break;
-	case CMaterial::Specular:  shaderInt = 2; break;
-	case CMaterial::LightMap:  shaderInt = 3; break;
-	default:                   shaderInt = 0; break;
-	}
-	data.nlShader = shaderInt;
-
-	// Texture active
-	data.nlTextureActive = (sint32)matDrv->PPBuiltin.TextureActive;
-
-	// Alpha test
-	data.nlAlphaTest = (matDrv->PPBuiltin.Flags & IDRV_MAT_ALPHA_TEST) ? 1 : 0;
-
-	// TexEnv modes
-	for (int i = 0; i < IDRV_MAT_MAXTEXTURES; ++i)
-		data.nlTexEnvMode[i] = matDrv->PPBuiltin.TexEnvMode[i];
-
-	// Lightmap scale (1.0 default; override path sets per-pass value)
-	data.nlLightMapScale = 1.0f;
-
-	// Padding
-	data._pad[0] = 0;
-	data._pad[1] = 0;
-
-	// Upload
-	const GLsizeiptr dataSize = sizeof(CMaterialUBOData);
-	nglBindBuffer(GL_UNIFORM_BUFFER, matDrv->MaterialUBOId);
-	nglBufferData(GL_UNIFORM_BUFFER, dataSize, &data, GL_STREAM_DRAW);
-	nglBindBuffer(GL_UNIFORM_BUFFER, 0);
-	nglBindBufferBase(GL_UNIFORM_BUFFER, NL_BUILTIN_MATERIAL_BINDING, matDrv->MaterialUBOId);
-
-	matDrv->MaterialUBODirty = false;
+	// Always ensure correct binding (may have been stolen by lightmap UBO)
+	_DriverGLStates.bindUniformBufferBase(NL_BUILTIN_LIGHT_TABLE_BINDING, _LightTableUBOId);
 }
 
 } // NLDRIVERGL3

@@ -27,6 +27,7 @@ SOURCE_GROUP("" FILES
 
 SOURCE_GROUP(rendering FILES
 		driver_opengl3_rendering.cpp
+		driver_opengl3_render_state.cpp
 		driver_opengl3_material.cpp
 		driver_opengl3_texture.cpp
 		driver_opengl3_light.cpp
@@ -40,7 +41,8 @@ SOURCE_GROUP(program FILES
 		driver_opengl3_vertex_program.cpp
 		driver_opengl3_pixel_program.cpp
 		driver_opengl3_vertex_mega_program.cpp
-		driver_opengl3_pixel_mega_program.cpp)
+		driver_opengl3_pixel_mega_program.cpp
+		driver_opengl3_nelvp.cpp)
 
 SOURCE_GROUP(vertex FILES
 		driver_opengl3_vertex.cpp
@@ -120,7 +122,7 @@ IF(WITH_PCH)
 ENDIF()
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC_DRIVERS)
-  INSTALL(TARGETS ${NLDRV_OGL_LIB} LIBRARY DESTINATION ${NL_DRIVER_PREFIX} ARCHIVE DESTINATION ${NL_LIB_PREFIX} RUNTIME DESTINATION ${NL_DRIVER_PREFIX} COMPONENT drivers3d)
+  INSTALL(TARGETS ${NLDRV_OGL_LIB} EXPORT "${project_export_name}" LIBRARY DESTINATION ${NL_DRIVER_PREFIX} ARCHIVE DESTINATION ${NL_LIB_PREFIX} RUNTIME DESTINATION ${NL_DRIVER_PREFIX} COMPONENT drivers3d)
   IF(WITH_MAXPLUGIN)
     INSTALL(TARGETS ${NLDRV_OGL_LIB} RUNTIME DESTINATION maxplugin COMPONENT drivers3d)
   ENDIF()

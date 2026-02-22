@@ -370,7 +370,7 @@ void CDecal::renderTriCache(NL3D::IDriver &drv,   NL3D::CShadowPolyReceiver &/* 
 	if (_TriCache.empty()) return;
 	if (!_VBInitialized)
 	{
-		_VB.setPreferredMemory(CVertexBuffer::AGPVolatile, false);
+		_VB.setBufferUsage(CVertexBuffer::FullStream, false);
 		_VB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 		_VBInitialized = true;
 	}

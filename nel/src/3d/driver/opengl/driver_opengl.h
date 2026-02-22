@@ -727,7 +727,7 @@ public:
 #endif
 
 private:
-	virtual class IVertexBufferHardGL	*createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb);
+	virtual class IVertexBufferHardGL	*createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TBufferUsage vbType, CVertexBuffer *vb);
 	friend class					CTextureDrvInfosGL;
 	friend class					CVertexProgamDrvInfosGL;
 	friend class					CPixelProgamDrvInfosGL;

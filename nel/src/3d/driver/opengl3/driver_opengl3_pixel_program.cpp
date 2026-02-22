@@ -30,44 +30,6 @@
 namespace NL3D {
 namespace NLDRIVERGL3 {
 
-namespace /* anonymous */ {
-
-uint maxTextures(CMaterial::TShader shader)
-{
-	switch (shader)
-	{
-	case CMaterial::Specular:
-	case CMaterial::UserColor: // UserColor has the same texture set up twice
-		return 2;
-	default:
-		return IDRV_MAT_MAXTEXTURES;
-	}
-}
-
-uint maxSamplers(CMaterial::TShader shader, CGlExtensions &glext)
-{
-	switch (shader)
-	{
-	case CMaterial::LightMap:
-		return std::min((GLint)IDRV_PROGRAM_MAXSAMPLERS, glext.MaxFragmentTextureImageUnits);
-	default:
-		return maxTextures(shader);
-	}
-}
-
-bool useTexEnv(CMaterial::TShader shader)
-{
-	return shader == CMaterial::Normal
-		|| shader == CMaterial::UserColor;
-}
-
-bool useTex(const CPPBuiltin &desc, uint stage)
-{
-	return (desc.TextureActive & (1 << stage)) != 0;
-}
-
-} /* anonymous namespace */
-
 bool operator<(const CPPBuiltin &left, const CPPBuiltin &right)
 {	
 	// Material state
@@ -148,12 +110,7 @@ bool operator==(const CPPBuiltin &left, const CPPBuiltin &right)
 	return true;
 }
 
-} // NLDRIVERGL3
-} // NL3D
-
-namespace std {
-
-size_t hash<NL3D::NLDRIVERGL3::CPPBuiltin>::operator()(const NL3D::NLDRIVERGL3::CPPBuiltin & v) const
+size_t CPPBuiltinHashTraits::operator()(const CPPBuiltin & v) const
 {
 #if defined(_WIN64) || (defined(HAVE_X86_64) && !defined(_WIN32))
 	uint32 h32;
@@ -196,7 +153,8 @@ size_t hash<NL3D::NLDRIVERGL3::CPPBuiltin>::operator()(const NL3D::NLDRIVERGL3::
 #endif
 }
 
-}
+} // NLDRIVERGL3
+} // NL3D
 
 namespace NL3D {
 namespace NLDRIVERGL3 {
@@ -217,19 +175,8 @@ const char *s_ShaderNames[] =
 	"Water"
 };
 
-CMaterial::TShader getSupportedShader(CMaterial::TShader shader)
-{
-	switch (shader)
-	{
-	case CMaterial::Normal:
-	case CMaterial::UserColor:
-	case CMaterial::Specular:
-	case CMaterial::LightMap:
-		return shader;
-	default:
-		return CMaterial::Normal;
-	}
-}
+// Canonical getSupportedShader is CDriverGL3::getSupportedShader in driver_opengl3_material.cpp.
+// setupMaterial writes PPBuiltin.Shader; downstream code reads it from there.
 	
 void ppTexEnv(std::stringstream &ss, const CPPBuiltin &desc)
 {
@@ -347,10 +294,10 @@ void ppTexEnv(std::stringstream &ss, const CPPBuiltin &desc)
 				switch (alphaOp) // SrcColor=0, InvSrcColor, SrcAlpha, InvSrcAlpha
 				{
 				case CMaterial::SrcColor:
-					ss << alphaArgVec.str() << ".r";
+					ss << alphaArgVec.str() << ".a";
 					break;
 				case CMaterial::InvSrcColor:
-					ss << "1.0 - " << alphaArgVec.str() << ".r";
+					ss << "1.0 - " << alphaArgVec.str() << ".a";
 					break;
 				case CMaterial::SrcAlpha:
 					ss << alphaArgVec.str() << ".a";
@@ -450,7 +397,7 @@ void ppTexEnv(std::stringstream &ss, const CPPBuiltin &desc)
 			case CMaterial::InterpolateDiffuse:
 			case CMaterial::InterpolatePrevious:
 			case CMaterial::InterpolateTexture:
-				ss << "texop" << stage << "arg0.a * texop" << stage << "rgbAs + texop" << stage << "arg1.a * (1.0 - texop" << stage << "rgbAs)";
+				ss << "texop" << stage << "arg0.a * texop" << stage << "alphaAs + texop" << stage << "arg1.a * (1.0 - texop" << stage << "alphaAs)";
 				break;
 			case CMaterial::Mad:
 				ss << "texop" << stage << "arg0.a * texop" << stage << "arg1.a + texop" << stage << "arg2.a";
@@ -631,14 +578,13 @@ void ppGenerate(std::string &result, const CPPBuiltin &desc, CGlExtensions &glex
 		ss << "uniform int nlClipPlaneMask;" << std::endl;
 		for (int i = 0; i < 6; ++i)
 			ss << "uniform vec4 clipPlane" << i << ";" << std::endl;
-		if (desc.WorldSpacePosition)
-			ss << "uniform mat4 viewMatrix;" << std::endl;
 		ss << std::endl;
 	}
 
 	// PPL varyings and uniforms
 	if (desc.PPL)
 	{
+		ss << "layout(location = " << VaryingLocationWorldPos << ") smooth in vec4 worldPos;" << std::endl;
 		ss << "layout(location = " << VaryingLocationNormal << ") smooth in vec4 normal;" << std::endl;
 		if (desc.PPLVertexColor)
 			ss << "layout(location = " << VaryingLocationVertexColor << ") smooth in vec4 vertexColor;" << std::endl;
@@ -703,15 +649,10 @@ void ppGenerate(std::string &result, const CPPBuiltin &desc, CGlExtensions &glex
 		ss << "uniform vec4 fogColor;" << std::endl;
 		if (desc.FogMode != 0) // Exp or Exp2
 			ss << "uniform float fogDensity;" << std::endl;
-		if (desc.WorldSpacePosition)
-			ss << "uniform vec3 cameraForward;" << std::endl;
 
 		ss << "vec4 applyFog(vec4 col)" << std::endl;
 		ss << "{" << std::endl;
-		if (desc.WorldSpacePosition)
-			ss << "  float z = abs(dot(ecPos.xyz / ecPos.w - cameraWorldPos, cameraForward));" << std::endl;
-		else
-			ss << "  float z = abs(ecPos.y / ecPos.w);" << std::endl;
+		ss << "  float z = abs(ecPos.y / ecPos.w);" << std::endl;
 		switch (desc.FogMode)
 		{
 		default: // Linear
@@ -743,15 +684,7 @@ void ppGenerate(std::string &result, const CPPBuiltin &desc, CGlExtensions &glex
 	if (desc.PPClipPlane)
 	{
 		ss << "{" << std::endl;
-		ss << "  vec4 clipPos;" << std::endl;
-		if (desc.WorldSpacePosition)
-		{
-			ss << "  clipPos = viewMatrix * vec4(ecPos.xyz / ecPos.w, 1.0);" << std::endl;
-		}
-		else
-		{
-			ss << "  clipPos = vec4(ecPos.xyz / ecPos.w, 1.0);" << std::endl;
-		}
+		ss << "  vec4 clipPos = vec4(ecPos.xyz / ecPos.w, 1.0);" << std::endl;
 		for (int i = 0; i < 6; ++i)
 			ss << "  if ((nlClipPlaneMask & " << (1 << i) << ") != 0 && dot(clipPlane" << i << ", clipPos) < 0.0) discard;" << std::endl;
 		ss << "}" << std::endl;
@@ -765,7 +698,7 @@ void ppGenerate(std::string &result, const CPPBuiltin &desc, CGlExtensions &glex
 	{
 		ss << "vec4 pplSpecAccum = vec4(0.0);" << std::endl;
 		ss << "if (nlNumPerPixelLights > 0) {" << std::endl;
-		ss << "  vec3 wsPos = ecPos.xyz / ecPos.w;" << std::endl;
+		ss << "  vec3 wsPos = worldPos.xyz / worldPos.w;" << std::endl;
 		ss << "  vec3 wsNormal = normalize(normal.xyz);" << std::endl;
 		ss << "  vec3 eyeDir = normalize(cameraWorldPos - wsPos);" << std::endl;
 		ss << "  vec4 pplDiff = vec4(0.0);" << std::endl;
@@ -870,7 +803,7 @@ void CDriverGL3::generateBuiltinPixelProgram(CMaterial &mat)
 	CMaterialDrvInfosGL3 *matDrv = static_cast<CMaterialDrvInfosGL3 *>((IMaterialDrvInfos *)(mat._MatDrvInfo));
 	nlassert(matDrv);
 
-	std::unordered_set<CPPBuiltin>::iterator it = m_PPBuiltinCache.find(matDrv->PPBuiltin);
+	CHashSet<CPPBuiltin, CPPBuiltinHashTraits>::iterator it = m_PPBuiltinCache.find(matDrv->PPBuiltin);
 	if (it != m_PPBuiltinCache.end())
 	{
 		matDrv->PPBuiltin.PixelProgram = it->PixelProgram;
@@ -962,9 +895,14 @@ void CPPBuiltin::checkDriverStateTouched(CDriverGL3 *driver) // MUST NOT depend 
 	}
 }
 
-void CPPBuiltin::checkDriverMaterialStateTouched(CDriverGL3 *driver, CMaterial &mat)
+// TODO: Restructure — material-derived PPBuiltin state (Shader, Flags, TextureActive,
+// TexSamplerMode, TexEnvMode) should be pushed directly from setupMaterial.
+// LightMap texture state (TextureActive, TexSamplerMode from _CurrentTexture[])
+// should be pushed from setupLightmapPass.
+// These functions are no longer called; kept for reference during restructuring.
+#if 0
+void CPPBuiltin::checkDriverMaterialStateTouched(CDriverGL3 *driver, CMaterial::TShader shader)
 {
-	CMaterial::TShader shader = getSupportedShader(mat.getShader());
 	switch (shader)
 	{
 	case CMaterial::LightMap:
@@ -985,7 +923,6 @@ void CPPBuiltin::checkDriverMaterialStateTouched(CDriverGL3 *driver, CMaterial &
 		{
 			TextureActive = textureActive;
 			Touched = true;
-			MaterialUBOTouched = true;
 		}
 		if (TexSamplerMode != texSamplerMode)
 		{
@@ -996,46 +933,39 @@ void CPPBuiltin::checkDriverMaterialStateTouched(CDriverGL3 *driver, CMaterial &
 	}
 }
 
-void CPPBuiltin::checkMaterialStateTouched(CMaterial &mat) // MUST NOT depend on any state set by checkDriverStateTouched
+void CPPBuiltin::checkMaterialStateTouched(CMaterial &mat, CMaterial::TShader shader)
 {
-	// Optimize
 	uint32 touched = !PixelProgram ? IDRV_TOUCHED_ALL : mat.getTouched();
 	if (touched == 0) return;
 
-	// Compare values
-	CMaterial::TShader shader = getSupportedShader(mat.getShader());
 	if (Shader != shader)
 	{
 		Shader = shader;
 		Touched = true;
-		MaterialUBOTouched = true;
 	}
 	uint32 flags = mat.getFlags();
-	flags &= IDRV_MAT_ALPHA_TEST; // TODO: |= with the wanted flags from the VP when flags are added to the VP
+	flags &= IDRV_MAT_ALPHA_TEST;
 	if (Flags != flags)
 	{
 		Flags = flags;
 		Touched = true;
-		MaterialUBOTouched = true;
 	}
 	uint maxTex = maxTextures(shader);
-	if (touched & IDRV_TOUCHED_ALLTEX) // Note: There is a case where textures are provided where no texture coordinates are provided, this is handled gracefully by the pixel program generation (it will use a vec(0) texture coordinate). The inverse is an optimization issue
+	if (touched & IDRV_TOUCHED_ALLTEX)
 	{
 		switch (shader)
 		{
 		case CMaterial::LightMap:
 			break;
 		default:
-			// Use textures directly from the CMaterial
 			uint32 textureActive = 0;
 			uint64 texSamplerMode = 0;
-			for (uint stage = 0; stage < maxTex; ++stage) // NB: Limited to IDRV_MAT_MAXTEXTURES here
+			for (uint stage = 0; stage < maxTex; ++stage)
 			{
 				NL3D::ITexture *tex = mat._Textures[stage];
 				if (tex)
 				{
 					textureActive |= (1 << stage);
-					// Issue: Due to the IDRV_TOUCHED_ALLTEX check, the sampler mode of an ITexture cannot be modified after it has been added to the CMaterial
 					texSamplerMode |= (tex->isTextureCube() ? SamplerCube : Sampler2D) << (stage * 2);
 				}
 			}
@@ -1043,7 +973,6 @@ void CPPBuiltin::checkMaterialStateTouched(CMaterial &mat) // MUST NOT depend on
 			{
 				TextureActive = textureActive;
 				Touched = true;
-				MaterialUBOTouched = true;
 			}
 			if (TexSamplerMode != texSamplerMode)
 			{
@@ -1061,14 +990,13 @@ void CPPBuiltin::checkMaterialStateTouched(CMaterial &mat) // MUST NOT depend on
 			{
 				TexEnvMode[stage] = mat._TexEnvs[stage].EnvPacked;
 				Touched = true;
-				MaterialUBOTouched = true;
 			}
 		}
 	}
 
-	// Optimize
 	mat.clearTouched(0xFFFFFFFF);
 }
+#endif
 
 } // NLDRIVERGL3
 } // NL3D

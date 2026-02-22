@@ -35,7 +35,7 @@ void CDriverGL3::setFrustum(float left, float right, float bottom, float top, fl
 		_GLProjMat.ortho(left, right, bottom, top, znear, zfar);
 
 	_OODeltaZ = 1 / (zfar - znear);
-
+	_CameraUBODirty = true;
 }
 
 // ***************************************************************************
@@ -45,6 +45,7 @@ void CDriverGL3::setFrustumMatrix(CMatrix &frustumMatrix)
 	H_AUTO_OGL(CDriverGL3_setFrustum)
 
 	_GLProjMat = frustumMatrix;
+	_CameraUBODirty = true;
 }
 
 // ***************************************************************************

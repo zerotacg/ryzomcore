@@ -761,7 +761,7 @@ void CStereoOVR::renderGUI()
 		static CIndexBuffer ib; // STATIC GPU RESOURCE: Blocks multiple driver instances
 
 		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
+		vb.setBufferUsage(CVertexBuffer::SmallStream, false);
 		vb.setNumVertices((nbQuads + 1) * 2);
 
 		{
@@ -786,7 +786,7 @@ void CStereoOVR::renderGUI()
 		}
 
 		ib.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-		ib.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+		ib.setBufferUsage(CIndexBuffer::SmallStream, false);
 		ib.setNumIndexes(nbQuads * 6);
 
 		{

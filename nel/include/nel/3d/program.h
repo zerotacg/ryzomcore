@@ -36,7 +36,10 @@
 
 namespace NL3D {
 
-static const uint32 IDRV_PROGRAM_MAXSAMPLERS = 32;
+// Max sampler/constant stages for the GL3 driver.
+// Raising this increases megashader code size (unrolled per-stage) and material UBO size.
+// GL 3.3 guarantees 16 fragment texture units; some hardware supports 32.
+static const uint32 IDRV_PROGRAM_MAXSAMPLERS = 8;
 
 // List typedef.
 class	IDriver;
@@ -75,7 +78,7 @@ public:
 // Note: May need additional flags related to scene sorting, etcetera.
 struct CProgramFeatures
 {
-	CProgramFeatures() : DriverFlags(0), MaterialFlags(0), VPVertexFormat(0), OutputsSpecularColor(false), OutputsWorldSpacePosition(false), InputsWorldSpaceNormal(false), InputsWorldSpacePosition(false), SupportPPL(false), NoUniforms(false), NoBuiltinUniforms(false), OnlyUBOs(false), UsesLightTableUBO(false), UsesCameraUBO(false), UsesObjectUBO(false), UsesMaterialUBO(false) { }
+	CProgramFeatures() : DriverFlags(0), MaterialFlags(0), VPVertexFormat(0), NelvpRegisterCount(0), OutputsSpecularColor(false), OutputsWorldSpacePosition(false), InputsWorldSpaceNormal(false), InputsWorldSpacePosition(false), SupportPPL(false), NoUniforms(false), NoBuiltinUniforms(false), OnlyUBOs(false), UsesLightTableUBO(false), UsesCameraUBO(false), UsesObjectUBO(false), UsesMaterialUBO(false) { }
 
 	// Driver builtin parameters
 	enum TDriverFlags
@@ -100,6 +103,10 @@ struct CProgramFeatures
 	/// VP output varyings as CVertexBuffer vertex format flags.
 	/// When a user VP is active, the builtin PP uses this to declare matching inputs.
 	uint16 VPVertexFormat;
+
+	/// Number of nelvp constant registers used by a converted nelvp program.
+	/// Determines the UBO size (N * 16 bytes). 0 means not a nelvp-converted program.
+	uint16 NelvpRegisterCount;
 
 	/// Whether this VP outputs a separate specular color varying (for post-texture addition).
 	bool OutputsSpecularColor;
@@ -456,6 +463,7 @@ struct CProgramIndex
 		NlWorldSpacePosition,
 		NlNumPerPixelLights,
 		NlFogEnabled,
+		NlUVRouting,
 		CameraForward,
 		SamplerCube0,
 		SamplerCube1,
@@ -485,6 +493,7 @@ struct CProgramIndex
 		PzbCameraPos,
 		CameraWorldPos,
 		NlLightMapScale,
+		SpecularTexMtx,
 
 		// Per-pixel lighting uniforms for pixel programs (raw values, not pre-multiplied)
 		NlPpLightMode0, NlPpLightMode1, NlPpLightMode2, NlPpLightMode3,
@@ -574,6 +583,9 @@ public:
 		glsl330v = 0x65010330, // GLSL vertex program version 330
 		glsl330f = 0x65020330, // GLSL fragment program version 330
 		glsl330g = 0x65030330, // GLSL geometry program version 330
+		glsl300esv = 0x65010300, // GLSL ES 300 vertex program (pipeline stage, for linking)
+		glsl300esf = 0x65020300, // GLSL ES 300 fragment program (pipeline stage, for linking)
+		glsl300es  = 0x65000300, // GLSL ES 300 linked program (combined VP+PP)
 	};
 
 	struct CSource : public NLMISC::CRefCount
@@ -626,7 +638,7 @@ public:
 	// Get feature information of the current program
 	inline CSource *source() const { return m_Source; };
 	inline const CProgramFeatures &features() const { return m_Source->Features; };
-	inline TProfile profile() const { return m_Source->Profile; }
+	inline TProfile profile() const { return m_Source->Features.NelvpRegisterCount > 0 ? nelvp : m_Source->Profile; }
 
 	// Build feature info, called automatically by the driver after compile succeeds
 	void buildInfo(CSource *source);
@@ -650,6 +662,27 @@ public:
 	bool m_CompileFailed;
 
 }; /* class IProgram */
+
+/**
+ * \brief CShaderProgram
+ * A combined linked VP+PP shader program (non-SSO).
+ * Wraps a single GPU program containing both vertex and fragment stages.
+ * A single buildInfo() call resolves all uniforms from both stages.
+ * Stores separate VP and PP feature copies for per-stage UBO flag queries.
+ * Only used internally by the driver implementations; not exposed to user code.
+ */
+class CShaderProgram : public IProgram
+{
+public:
+	CShaderProgram();
+	virtual ~CShaderProgram();
+
+	/// VP-side features (for per-stage UBO flag queries)
+	CProgramFeatures VPFeatures;
+
+	/// PP-side features (for per-stage UBO flag queries)
+	CProgramFeatures PPFeatures;
+};
 
 } /* namespace NL3D */
 

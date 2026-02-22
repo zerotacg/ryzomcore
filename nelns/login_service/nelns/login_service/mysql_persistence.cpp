@@ -54,9 +54,9 @@ pair<optional<LoginUserProjection>, string> CMysqlPersistence::findUserByLogin(c
 	}
 
 	LoginUserProjection user {
-		.uid = -1,
-		.password = row[1],
-		.state = row[2]
+		-1,
+		row[1],
+		row[2]
 	};
 	NLMISC::fromString(row[0], user.uid);
 
@@ -86,9 +86,9 @@ pair<vector<OnlineShardProjection>, string> CMysqlPersistence::findOnlineShardsB
 		// serial the name of the shard
 
 		shards.push_back({
-		    .sid = (static_cast<uint32>(atoi(row[0]))),
-		    .name = (ucstring::makeFromUtf8(row[1])),
-		    .nbplayers = (static_cast<uint8>(atoi(row[2]))),
+		    static_cast<uint32>(atoi(row[0])),
+		    ucstring::makeFromUtf8(row[1]),
+		    static_cast<uint8>(atoi(row[2])),
 		});
 		row = mysql_fetch_row(result);
 	}
@@ -130,10 +130,10 @@ pair<vector<AuthorizedUserProjection>, string> CMysqlPersistence::findAuthorized
 		cookie.setFromString(row[1]);
 
 		users.push_back({
-		    .uid = row[0],
-		    .cookie = cookie,
-		    .privilege = row[2],
-		    .extendedPrivilege = row[3],
+		    row[0],
+		    cookie,
+		    row[2],
+		    row[3],
 		});
 		row = mysql_fetch_row(result);
 	}
@@ -203,9 +203,9 @@ pair<vector<NotOfflineUserProjection>, string> CMysqlPersistence::findNotOffline
 		cookie.setFromString(row[2]);
 
 		users.push_back({
-			.uid = row[0],
-			.state = row[1],
-			.cookie = cookie
+			row[0],
+			row[1],
+			cookie
 		});
 		row = mysql_fetch_row(result);
 	}

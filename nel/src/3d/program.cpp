@@ -362,6 +362,7 @@ const char *CProgramIndex::Names[NUM_UNIFORMS] =
 	"nlWorldSpacePosition",
 	"nlNumPerPixelLights",
 	"nlFogEnabled",
+	"nlUVRouting",
 	"cameraForward",
 	"samplerCube0",
 	"samplerCube1",
@@ -391,6 +392,7 @@ const char *CProgramIndex::Names[NUM_UNIFORMS] =
 	"pzbCameraPos",
 	"cameraWorldPos",
 	"nlLightMapScale",
+	"specularTexMtx",
 
 	// Per-pixel lighting uniforms for pixel programs (raw values, not pre-multiplied)
 	"nlPpLightMode0", "nlPpLightMode1", "nlPpLightMode2", "nlPpLightMode3",
@@ -432,7 +434,17 @@ void IProgram::buildInfo(CSource *source)
 
 void IProgram::buildInfo()
 {
-	
+
+}
+
+// ***************************************************************************
+
+CShaderProgram::CShaderProgram()
+{
+}
+
+CShaderProgram::~CShaderProgram()
+{
 }
 
 } /* namespace NL3D */

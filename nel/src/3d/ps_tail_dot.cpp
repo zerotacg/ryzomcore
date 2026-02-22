@@ -415,7 +415,7 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 		/// In the case of a ribbon with color and fading, we encode the fading in a texture
 		/// If the ribbon has fading, but only a global color, we encode it in the primary color
 		CVertexBuffer &vb = VBnPB.VB;
-		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true);
+		vb.setBufferUsage(CVertexBuffer::FullStream, true);
 		vb.setVertexFormat(CVertexBuffer::PositionFlag
 						   |(_ColorScheme || _ColorFading ? CVertexBuffer::PrimaryColorFlag : 0)
 						   | (_ColorScheme && _ColorFading ? CVertexBuffer::TexCoord0Flag : 0));

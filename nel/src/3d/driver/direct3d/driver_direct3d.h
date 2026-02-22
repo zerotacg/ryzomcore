@@ -1486,7 +1486,7 @@ public:
 		IDirect3DVertexBuffer9			*VertexBuffer;
 		UINT							Offset;
 		UINT							Stride;
-		CVertexBuffer::TPreferredMemory	PrefferedMemory;
+		CVertexBuffer::TBufferUsage		PrefferedMemory;
 		DWORD							Usage; // d3d vb usage
 		uint							ColorOffset; // Fix for Radeon 7xxx series (see remark in CDriverD3D::createVertexDeclaration)
 		virtual void apply(CDriverD3D *driver);
@@ -1943,7 +1943,7 @@ public:
 	}
 
 	// Set the vertex buffer
-	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage, uint colorOffset)
+	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TBufferUsage pm, DWORD usage, uint colorOffset)
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexBuffer);
 		nlassert (_DeviceInterface);

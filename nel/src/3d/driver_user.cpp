@@ -168,13 +168,13 @@ CDriverUser::CDriverUser (uintptr_t windowIcon, TDriver driver, emptyProc exitFu
 	_VBUv.setNumVertices(4);
 	_VBColorUv.setNumVertices(4);
 	// memory management
-	_VBFlat.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
-	_VBColor.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
-	_VBUv.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
-	_VBColorUv.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
-	_VBQuadsColUv.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
-	_VBTrisColUv.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
-	_VBQuadsColUv2.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	_VBFlat.setBufferUsage(CVertexBuffer::SmallStream, false);
+	_VBColor.setBufferUsage(CVertexBuffer::SmallStream, false);
+	_VBUv.setBufferUsage(CVertexBuffer::SmallStream, false);
+	_VBColorUv.setBufferUsage(CVertexBuffer::SmallStream, false);
+	_VBQuadsColUv.setBufferUsage (CVertexBuffer::SmallStream, false);
+	_VBTrisColUv.setBufferUsage (CVertexBuffer::SmallStream, false);
+	_VBQuadsColUv2.setBufferUsage (CVertexBuffer::SmallStream, false);
 	// names
 	_VBFlat.setName("_VBFlat");
 	_VBColor.setName("_VBColor");

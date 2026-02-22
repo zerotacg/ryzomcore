@@ -264,7 +264,7 @@ CLandscape::CLandscape() :
 		CLandscapeGlobals::PassTriArray.setNumIndexes( 1000 );
 
 	// set volatile index buffer to avoid stalls
-	CLandscapeGlobals::PassTriArray.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+	CLandscapeGlobals::PassTriArray.setBufferUsage(CIndexBuffer::SmallStream, false);
 
 	_LockCount = 0;
 
@@ -1205,27 +1205,42 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	{
 		bool uprogstate = driver->isUniformProgramState();
 		uint nbvp = uprogstate ? CLandscapeVBAllocator::MaxVertexProgram : 1;
-		for (uint i = 0; i < nbvp; ++i)
-		{
-			CVertexProgramLandscape *program = _TileVB.getVP(i);
-			if (program)
-			{
-				// activate the program to set the uniforms in the program state for all programs
-				// note: when uniforms are driver state, the indices must be the same across programs
-				_TileVB.activateVP(i);
 
-				// c[0..3] take the ModelViewProjection Matrix.
-				driver->setUniformMatrix(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::ModelViewProjection), IDriver::ModelViewProjection, IDriver::Identity);
-				// c[4] take useful constants.
-				driver->setUniform4f(IDriver::VertexProgram, program->idx().ProgramConstants0, 0, 1, 0.5f, 0);
-				// c[5] take RefineCenter
-				driver->setUniform3f(IDriver::VertexProgram, program->idx().RefineCenter, refineCenter);
-				// c[6] take info for Geomorph trnasition to TileNear.
-				driver->setUniform2f(IDriver::VertexProgram, program->idx().TileDist, CLandscapeGlobals::TileDistFarSqr, CLandscapeGlobals::OOTileDistDeltaSqr);
-				// c[10] take the fog vector.
-				driver->setUniformFog(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::Fog));
-				// c[12] take the current landscape Center / delta Pos to apply
-				driver->setUniform3f(IDriver::VertexProgram, program->idx().PZBModelPosition, _PZBModelPosition);
+		// Helper lambda to set uniforms on all VPs of a given VB allocator
+		CLandscapeVBAllocator *vbAllocs[] = { &_TileVB, NULL, NULL };
+		// When uniforms are per-program state, Far0/Far1 VPs need their own uniforms
+		// (when driver-state, setting on TileVB is enough for all VPs)
+		if (uprogstate)
+		{
+			vbAllocs[1] = &_Far0VB;
+			vbAllocs[2] = &_Far1VB;
+		}
+
+		for (uint a = 0; a < 3 && vbAllocs[a]; ++a)
+		{
+			CLandscapeVBAllocator &vb = *vbAllocs[a];
+			for (uint i = 0; i < nbvp; ++i)
+			{
+				CVertexProgramLandscape *program = vb.getVP(i);
+				if (program)
+				{
+					// activate the program to set the uniforms in the program state for all programs
+					// note: when uniforms are driver state, the indices must be the same across programs
+					vb.activateVP(i);
+
+					// c[0..3] take the ModelViewProjection Matrix.
+					driver->setUniformMatrix(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::ModelViewProjection), IDriver::ModelViewProjection, IDriver::Identity);
+					// c[4] take useful constants.
+					driver->setUniform4f(IDriver::VertexProgram, program->idx().ProgramConstants0, 0, 1, 0.5f, 0);
+					// c[5] take RefineCenter
+					driver->setUniform3f(IDriver::VertexProgram, program->idx().RefineCenter, refineCenter);
+					// c[6] take info for Geomorph trnasition to TileNear.
+					driver->setUniform2f(IDriver::VertexProgram, program->idx().TileDist, CLandscapeGlobals::TileDistFarSqr, CLandscapeGlobals::OOTileDistDeltaSqr);
+					// c[10] take the fog vector.
+					driver->setUniformFog(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::Fog));
+					// c[12] take the current landscape Center / delta Pos to apply
+					driver->setUniform3f(IDriver::VertexProgram, program->idx().PZBModelPosition, _PZBModelPosition);
+				}
 			}
 		}
 	}

@@ -54,7 +54,7 @@ const uint32 IDRV_TOUCHED_ALPHA_TEST		=	0x00000800;
 const uint32 IDRV_TOUCHED_ALPHA_TEST_THRE	=	0x00001000;
 const uint32 IDRV_TOUCHED_TEXENV			=	0x00002000;
 const uint32 IDRV_TOUCHED_TEXGEN			=	0x00004000;
-
+const uint32 IDRV_TOUCHED_TEXMAT			=	0x00008000;
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
@@ -121,6 +121,8 @@ public:
 	IMaterialDrvInfos(IDriver	*drv, ItMatDrvInfoPtrList it) {_Driver= drv; _DriverIterator= it;}
 	// The virtual dtor is important.
 	virtual ~IMaterialDrvInfos();
+
+	inline IDriver *getDriver() { return _Driver; }
 
 };
 

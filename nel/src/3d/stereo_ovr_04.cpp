@@ -305,7 +305,7 @@ CStereoOVR::CStereoOVR(const CStereoOVRDeviceFactory *factory) : m_DevicePtr(NUL
 
 		// create distortion mesh vertex buffer
 		m_VB[eye].setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag | CVertexBuffer::TexCoord2Flag | CVertexBuffer::PrimaryColorFlag);
-		m_VB[eye].setPreferredMemory(CVertexBuffer::StaticPreferred, true);
+		m_VB[eye].setBufferUsage(CVertexBuffer::Immutable, true);
 		m_VB[eye].setNumVertices(meshData.VertexCount);
 		{
 			CVertexBufferReadWrite vba;
@@ -336,7 +336,7 @@ CStereoOVR::CStereoOVR(const CStereoOVRDeviceFactory *factory) : m_DevicePtr(NUL
 
 		// create distortion mesh index buffer
 		m_IB[eye].setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-		m_IB[eye].setPreferredMemory(CIndexBuffer::StaticPreferred, true);
+		m_IB[eye].setBufferUsage(CIndexBuffer::Immutable, true);
 		m_IB[eye].setNumIndexes(meshData.IndexCount);
 		{
 			CIndexBufferReadWrite iba;
@@ -906,7 +906,7 @@ void CStereoOVR::renderGUI()
 		static CIndexBuffer ib; // STATIC GPU RESOURCE: Blocks multiple driver instances
 
 		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
+		vb.setBufferUsage(CVertexBuffer::SmallStream, false);
 		vb.setNumVertices((nbQuads + 1) * 2);
 
 		{
@@ -931,7 +931,7 @@ void CStereoOVR::renderGUI()
 		}
 
 		ib.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-		ib.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+		ib.setBufferUsage(CIndexBuffer::SmallStream, false);
 		ib.setNumIndexes(nbQuads * 6);
 
 		{

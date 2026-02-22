@@ -41,15 +41,15 @@ jobs:
          # - macos-15
         include:
           - os: windows-2022
-            cmake_preset: windows-client
+            cmake_preset: ci-windows-ryzom-client-hunter
           - os: windows-2025
-            cmake_preset: windows-client
+            cmake_preset: ci-windows-ryzom-client-hunter
           - os: ubuntu-22.04
             ubuntu_version: 22.04
-            cmake_preset: linux-client
+            cmake_preset: ci-linux-ryzom-client-hunter
           - os: ubuntu-24.04
             ubuntu_version: 24.04
-            cmake_preset: linux-client
+            cmake_preset: ci-linux-ryzom-client-hunter
 
     steps:
     - uses: actions/checkout@v4
@@ -59,11 +59,11 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "hunter-dir=${{ github.workspace }}/.hunter" >> "$GITHUB_OUTPUT"
+        echo "hunter-dir=${{ github.workspace }}/build/.hunter" >> "$GITHUB_OUTPUT"
 
     - uses: lukka/get-cmake@latest
       with:
-        cmakeVersion: 3.31.6
+        cmakeVersion: 3.31.11
 
     - name: Dependencies Linux
       if: runner.os == 'Linux'
@@ -127,10 +127,10 @@ jobs:
     - name: Build
       env:
         MACOSX_DEPLOYMENT_TARGET: 10.13
-      run: cmake --build --preset client
+      run: cmake --build --preset ci-ryzom-client
 
     - name: Package
-      run: cmake --build --preset client --target package
+      run: cpack --preset ci-ryzom-client
 
     - uses: actions/upload-artifact@v4
       if: ${{ failure() }}
@@ -141,5 +141,5 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-client-package
-        path: build/ryzomcore-*
+        path: build/ryzom-client/ryzomcore-*
         if-no-files-found: error

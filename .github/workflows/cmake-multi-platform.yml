@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: lukka/get-cmake@latest
         with:
-          cmakeVersion: 3.31.6
+          cmakeVersion: 3.31.11
 
       - uses: actions/checkout@v4
 

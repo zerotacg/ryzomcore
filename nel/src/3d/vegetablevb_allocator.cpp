@@ -266,6 +266,7 @@ void			CVegetableVBAllocator::flushVertex(uint i)
 		CHECK_VBA_RANGE(_VBAHard, (uint8 *) dst, size);
 		CHECK_VBA_RANGE(_VBASoft, (uint8 *) src, size);
 		memcpy(dst, src, size);
+		_VBHard.invalidateRange(i, i + 1);
 	}
 }
 
@@ -346,7 +347,7 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 			if(numVertices <= _MaxVertexInBufferHard)
 			{
 				_VBHard = _VBSoft;
-				_VBHard.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+				_VBHard.setBufferUsage(CVertexBuffer::PartialWrite, false);
 				_VBHard.setNumVertices (_MaxVertexInBufferHard);
 
 				// Force this VB to be hard
@@ -379,6 +380,7 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 
 		// copy all the vertices to AGP.
 		memcpy(_AGPBufferPtr, _RAMBufferPtr, _VBSoft.getVertexSize() * numVertices);
+		_VBHard.invalidateRange(0, numVertices);
 
 		// If was not locked before, unlock this VB
 		if(!wasLocked)

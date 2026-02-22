@@ -148,8 +148,9 @@ void testUniformBufferFormat(CUniformBufferFormat &ubf);
 
 } /* namespace NL3D */
 
+#if defined(NL_CPP11)
 namespace std {
-	
+
 template <>
 struct hash<NL3D::CUniformBufferFormat>
 {
@@ -157,6 +158,7 @@ struct hash<NL3D::CUniformBufferFormat>
 };
 
 } /* namespace std */
+#endif
 
 #endif /* #ifndef NL_UNIFORM_BUFFER_FORMAT_H */
 

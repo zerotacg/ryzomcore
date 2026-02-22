@@ -41,6 +41,8 @@
 #include "nel/3d/driver_user.h"
 #include "nel/3d/u_texture.h"
 #include "nel/3d/render_target_manager.h"
+#include "nel/3d/uniform_buffer_format.h"
+#include "nel/3d/uniform_buffer.h"
 
 using namespace std;
 // using namespace NLMISC;
@@ -49,6 +51,18 @@ namespace NL3D {
 
 namespace {
 #include "fxaa_program.h"
+
+// FXAA PP UBO format and offsets
+struct CFXAAUBOOffsets
+{
+	sint RcpFrame;
+	sint Subpix;
+	sint EdgeThreshold;
+	sint EdgeThresholdMin;
+};
+static CFXAAUBOOffsets s_FXAAUBOOffsets;
+static NLMISC::CSmartPtr<CUniformBufferFormat> s_FXAAUBFormat;
+static NLMISC::CSmartPtr<CUniformBuffer> s_FXAAUB;
 } /* anonymous namespace */
 
 class CVertexProgramFXAA : public CVertexProgram
@@ -62,6 +76,8 @@ public:
 	virtual void buildInfo()
 	{
 		CVertexProgram::buildInfo();
+		if (source() && source()->Features.OnlyUBOs)
+			return;
 		if (profile() == nelvp || profile() == arbvp1 || profile() == vs_2_0)
 		{
 			m_Idx.ModelViewProjection = 0;
@@ -92,6 +108,8 @@ public:
 	virtual void buildInfo()
 	{
 		CPixelProgram::buildInfo();
+		if (source() && source()->Features.OnlyUBOs)
+			return;
 		if (profile() == arbfp1 || profile() == ps_2_0)
 		{
 			m_Idx.RcpFrame = 0;
@@ -132,7 +150,32 @@ CFXAA::CFXAA(NL3D::UDriver *driver) : m_Driver(driver), m_VP(NULL), m_PP(NULL), 
 	if (drv->supportBloomEffect() && drv->supportNonPowerOfTwoTextures())
 	{
 		m_PP = new CPixelProgramFXAA();
-		// glsl330f
+		// Build FXAA PP UBO format (once)
+		if (!s_FXAAUBFormat)
+		{
+			CUniformBufferFormat *fmt = new CUniformBufferFormat();
+			fmt->Name = "NlFXAA";
+			s_FXAAUBOOffsets.RcpFrame = fmt->push("fxaaQualityRcpFrame", CUniformBufferFormat::FloatVec2);
+			s_FXAAUBOOffsets.Subpix = fmt->push("fxaaQualitySubpix", CUniformBufferFormat::Float);
+			s_FXAAUBOOffsets.EdgeThreshold = fmt->push("fxaaQualityEdgeThreshold", CUniformBufferFormat::Float);
+			s_FXAAUBOOffsets.EdgeThresholdMin = fmt->push("fxaaQualityEdgeThresholdMin", CUniformBufferFormat::Float);
+			s_FXAAUBFormat = fmt;
+			s_FXAAUB = new CUniformBuffer();
+			s_FXAAUB->Format = *fmt;
+		}
+		// glsl300esf — pipeline stage UBO source (preferred for linked program path)
+		{
+			IProgram::CSource *source = new IProgram::CSource();
+			source->Features.MaterialFlags = CProgramFeatures::TextureStages;
+			source->Features.OnlyUBOs = true;
+			source->Features.NoBuiltinUniforms = true;
+			source->UniformBufferFormats[UBBindingPixelProgram] = s_FXAAUBFormat;
+			source->Profile = IProgram::glsl300esf;
+			source->DisplayName = "glsl300esf/FXAA_PP/UBO";
+			source->setSource(std::string(a_glsl300esf) + a_fxaaBody);
+			m_PP->addSource(source);
+		}
+		// glsl330f — SSO fallback
 		{
 			IProgram::CSource *source = new IProgram::CSource();
 			source->Features.MaterialFlags = CProgramFeatures::TextureStages;
@@ -178,7 +221,18 @@ CFXAA::CFXAA(NL3D::UDriver *driver) : m_Driver(driver), m_VP(NULL), m_PP(NULL), 
 	// create vp
 	{
 		m_VP = new CVertexProgramFXAA();
-		// glsl330v
+		// glsl300esv — pipeline stage UBO source (preferred for linked program path)
+		{
+			IProgram::CSource *source = new IProgram::CSource();
+			source->Features.MaterialFlags = CProgramFeatures::TextureStages;
+			source->Features.OnlyUBOs = true;
+			source->Features.UsesObjectUBO = true;
+			source->Profile = IProgram::glsl300esv;
+			source->DisplayName = "glsl300esv/FXAA_VP/UBO";
+			source->setSourcePtr(a_glsl300esv);
+			m_VP->addSource(source);
+		}
+		// glsl330v — SSO fallback
 		{
 			IProgram::CSource *source = new IProgram::CSource();
 			source->Features.MaterialFlags = CProgramFeatures::TextureStages;
@@ -254,7 +308,7 @@ CFXAA::CFXAA(NL3D::UDriver *driver) : m_Driver(driver), m_VP(NULL), m_PP(NULL), 
 		vb.addValueEx(CVertexBuffer::TexCoord0, CVertexBuffer::Float2);
 		vb.addValueEx(CVertexBuffer::TexCoord1, CVertexBuffer::Float4);
 		vb.initEx();
-		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
+		vb.setBufferUsage(CVertexBuffer::SmallStream, false);
 		vb.setNumVertices(4);*/
 	}
 }
@@ -345,12 +399,33 @@ void CFXAA::applyEffect()
 	nlassert(vpok);
 	bool ppok = drv->activePixelProgram(m_PP);
 	nlassert(ppok);
-	const CPixelProgramFXAA::CIdx &ppIdx = static_cast<CPixelProgramFXAA *>(m_PP)->idx();
-	drv->setUniform2f(IDriver::PixelProgram, ppIdx.RcpFrame, 1.0f / fwidth, 1.0f / fheight);
-	drv->setUniform1f(IDriver::PixelProgram, ppIdx.Subpix, 0.75f);
-	drv->setUniform1f(IDriver::PixelProgram, ppIdx.EdgeThreshold, 0.166f);
-	drv->setUniform1f(IDriver::PixelProgram, ppIdx.EdgeThresholdMin, 0.0833f);
-	drv->setUniformMatrix(IDriver::VertexProgram, static_cast<CVertexProgramFXAA *>(m_VP)->idx().ModelViewProjection, IDriver::ModelViewProjection, IDriver::Identity);
+
+	bool ppUBO = m_PP->source() && m_PP->source()->Features.OnlyUBOs;
+	bool vpUBO = m_VP->source() && m_VP->source()->Features.OnlyUBOs;
+
+	if (ppUBO)
+	{
+		s_FXAAUB->lock();
+		s_FXAAUB->set(s_FXAAUBOOffsets.RcpFrame, 1.0f / fwidth, 1.0f / fheight);
+		s_FXAAUB->set(s_FXAAUBOOffsets.Subpix, 0.75f);
+		s_FXAAUB->set(s_FXAAUBOOffsets.EdgeThreshold, 0.166f);
+		s_FXAAUB->set(s_FXAAUBOOffsets.EdgeThresholdMin, 0.0833f);
+		s_FXAAUB->unlock();
+		drv->bindUniformBuffer(UBBindingPixelProgram, s_FXAAUB);
+	}
+	else
+	{
+		const CPixelProgramFXAA::CIdx &ppIdx = static_cast<CPixelProgramFXAA *>(m_PP)->idx();
+		drv->setUniform2f(IDriver::PixelProgram, ppIdx.RcpFrame, 1.0f / fwidth, 1.0f / fheight);
+		drv->setUniform1f(IDriver::PixelProgram, ppIdx.Subpix, 0.75f);
+		drv->setUniform1f(IDriver::PixelProgram, ppIdx.EdgeThreshold, 0.166f);
+		drv->setUniform1f(IDriver::PixelProgram, ppIdx.EdgeThresholdMin, 0.0833f);
+	}
+
+	if (!vpUBO)
+	{
+		drv->setUniformMatrix(IDriver::VertexProgram, static_cast<CVertexProgramFXAA *>(m_VP)->idx().ModelViewProjection, IDriver::ModelViewProjection, IDriver::Identity);
+	}
 
 	// render effect
 	m_Mat.getObjectPtr()->setTexture(0, otherRenderTarget->getITexture());
@@ -362,6 +437,7 @@ void CFXAA::applyEffect()
 	// deactivate program
 	drv->activeVertexProgram(NULL);
 	drv->activePixelProgram(NULL);
+	if (ppUBO) drv->bindUniformBuffer(UBBindingPixelProgram, NULL);
 
 	// restore
 	m_Driver->enableFog(fogEnabled);

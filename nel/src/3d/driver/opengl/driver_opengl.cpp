@@ -298,7 +298,8 @@ CDriverGL::CDriverGL()
 	_AnisotropicFilter = 0.f;
 
 	// Compute the Flag which say if one texture has been changed in CMaterial.
-	_MaterialAllTextureTouchedFlag= 0;
+	// Also include TEXMAT — legacy driver polls tex matrices every frame, so ignore the touch flag.
+	_MaterialAllTextureTouchedFlag= IDRV_TOUCHED_TEXMAT;
 	for(i = 0; i < IDRV_MAT_MAXTEXTURES; i++)
 	{
 		_MaterialAllTextureTouchedFlag |= IDRV_TOUCHED_TEX[i];

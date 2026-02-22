@@ -300,7 +300,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	unlockBuffer();
 
 	// This always works.
-	_VB.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+	_VB.setBufferUsage(CVertexBuffer::PartialWrite, false);
 	_VB.setNumVertices(numVertices);
 	_VB.setName (_VBName);
 }

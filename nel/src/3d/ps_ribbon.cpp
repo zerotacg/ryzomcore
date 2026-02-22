@@ -964,7 +964,7 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 		CVBnPB &VBnPB = map[VBnPDIndex]; // make an entry
 		CIndexBuffer &pb = VBnPB.PB;
 		CVertexBuffer &vb = VBnPB.VB;
-		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true); // keep local memory because of interleaved format
+		vb.setBufferUsage(CVertexBuffer::FullStream, true); // keep local memory because of interleaved format
 		/// set the vb format & size
 		/// In the case of a ribbon with color and fading, we encode the fading in a texture
 		/// If the ribbon has fading, but only a global color, we encode it in the primary color

@@ -1992,7 +1992,7 @@ void			CMeshMRMSkinnedGeom::renderShadowSkinPrimitives(CMeshMRMSkinnedInstance	*
 
 	// TODO_SHADOW: optim: Special triangle cache for shadow!
 	static	CIndexBuffer		shiftedTris; // STATIC GPU RESOURCE: Blocks multiple driver instances
-	shiftedTris.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+	shiftedTris.setBufferUsage(CIndexBuffer::SmallStream, false);
 	if (shiftedTris.getName().empty()) NL_SET_IB_NAME(shiftedTris, "CMeshMRMSkinnedGeom::renderShadowSkinPrimitives::shiftedTris");
 	//if(shiftedTris.getNumIndexes()<_ShadowSkin.Triangles.size())
 	//{

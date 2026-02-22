@@ -183,7 +183,7 @@ void CSegRemanence::render(IDriver *drv, CMaterial &mat)
 	nlassert(_NumCorners >= 2);
 	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);
 	// resize before locking because of volatile vb
-	_VB.setPreferredMemory(CVertexBuffer::AGPVolatile, false);
+	_VB.setBufferUsage(CVertexBuffer::FullStream, false);
 	_VB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
 	_VB.setNumVertices(_NumCorners * (_NumSlices + 1));
 	const uint vertexSize = _VB.getVertexSize();
@@ -236,7 +236,7 @@ void CSegRemanence::render(IDriver *drv, CMaterial &mat)
 	uint numQuads = (_NumCorners - 1) * _NumSlices;
 	// Fill Index Buffer part
 	{
-		_IB.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+		_IB.setBufferUsage(CIndexBuffer::SmallStream, false);
 		_IB.setFormat(CIndexBuffer::Indices16);
 		_IB.setNumIndexes(numQuads * 6);
 		//

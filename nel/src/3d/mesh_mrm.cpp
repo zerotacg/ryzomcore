@@ -2502,7 +2502,7 @@ void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tra
 			_VBufferFinal.getVertexFormat(), triCount);
 
 		// VBHard
-		if(_VBufferFinal.getPreferredMemory()!=CVertexBuffer::RAMPreferred)
+		if(_VBufferFinal.getBufferUsage()!=CVertexBuffer::CpuReadWrite)
 			rdrTrav->Scene->BenchRes.NumMeshMRMVBufferHard++;
 		else
 			rdrTrav->Scene->BenchRes.NumMeshMRMVBufferStd++;
@@ -3501,7 +3501,7 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 		shiftedTris.setFormat(NL_MESH_MRM_INDEX_FORMAT);
 		shiftedTris.setNumIndexes((uint32)_ShadowSkin.Triangles.size());
 	}
-	shiftedTris.setPreferredMemory(CIndexBuffer::RAMVolatile, false);
+	shiftedTris.setBufferUsage(CIndexBuffer::SmallStream, false);
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);

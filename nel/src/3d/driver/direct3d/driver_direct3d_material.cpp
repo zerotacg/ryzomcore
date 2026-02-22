@@ -829,10 +829,12 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 	if (_CurrentMaterial != &mat)
 	{
 		// Material has changed ?
-		// Restore fog state to its current value
+		// Restore fog state and color to current values
 		{
 			H_AUTO_D3D(CDriverD3D_setupMaterial_updateFog)
 			setRenderState (D3DRS_FOGENABLE, _FogEnabled?TRUE:FALSE);
+			if (_FogEnabled)
+				setRenderState (D3DRS_FOGCOLOR, _FogColor);
 		}
 
 		// Flags
@@ -929,10 +931,10 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 
 		{
 			H_AUTO_D3D(CDriverD3D_setupMaterial_disableFog)
-			// Disable fog if dest blend is ONE
-			if (blend && (pShader->DstBlend == D3DBLEND_ONE))
+			// Use black fog color for additive blend to avoid brightening the scene with fog
+			if (blend && (pShader->DstBlend == D3DBLEND_ONE) && _FogEnabled)
 			{
-				setRenderState (D3DRS_FOGENABLE, FALSE);
+				setRenderState (D3DRS_FOGCOLOR, 0);
 			}
 		}
 

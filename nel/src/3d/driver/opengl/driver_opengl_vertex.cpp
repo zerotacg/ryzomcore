@@ -153,25 +153,24 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 			CVBDrvInfosGL *info = new CVBDrvInfosGL(this, it, &VB);
 			*it= VB.DrvInfos = info;
 
-			// Preferred memory, AGPVolatile only goes through when ARBMapBufferRange is available
-			CVertexBuffer::TPreferredMemory preferred = VB.getPreferredMemory ();
-			if ((preferred == CVertexBuffer::RAMVolatile) || (preferred == CVertexBuffer::AGPVolatile && !_Extensions.ARBMapBufferRange))
-				preferred = CVertexBuffer::RAMPreferred;
 			const uint size = VB.capacity()*VB.getVertexSize();
-			uint preferredMemory = _Extensions.DisableHardwareVertexArrayAGP ? CVertexBuffer::RAMPreferred : preferred;
-			while (preferredMemory != CVertexBuffer::RAMPreferred)
-			{
-				// Vertex buffer hard
-				info->_VBHard = createVertexBufferHard(size, VB.capacity(), (CVertexBuffer::TPreferredMemory)preferredMemory, &VB);
-				if (info->_VBHard)
-					break;
+			CVertexBuffer::TBufferUsage usage = VB.getBufferUsage();
 
-				if ((CVertexBuffer::TPreferredMemory)preferredMemory == CVertexBuffer::AGPVolatile)
-				{
-					preferredMemory = CVertexBuffer::RAMPreferred;
-					break;
-				}
-				preferredMemory--;
+			// SmallStream doesn't use hardware VBs
+			if (usage == CVertexBuffer::SmallStream)
+				usage = CVertexBuffer::CpuReadWrite;
+			// FullStream requires ARBMapBufferRange
+			if (usage == CVertexBuffer::FullStream && !_Extensions.ARBMapBufferRange)
+				usage = CVertexBuffer::CpuReadWrite;
+
+			if (_Extensions.DisableHardwareVertexArrayAGP)
+				usage = CVertexBuffer::CpuReadWrite;
+
+			if (usage != CVertexBuffer::CpuReadWrite)
+			{
+				info->_VBHard = createVertexBufferHard(size, VB.capacity(), usage, &VB);
+				if (!info->_VBHard)
+					usage = CVertexBuffer::CpuReadWrite; // fallback to system RAM
 			}
 
 			// No memory found ? Use system memory
@@ -181,8 +180,19 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 				info->_SystemMemory = new uint8[size];
 			}
 
-			// Upload the data
-			VB.setLocation(preferredMemory == CVertexBuffer::AGPVolatile ? CVertexBuffer::AGPResident : (CVertexBuffer::TLocation)preferredMemory);
+			// Set location
+			CVertexBuffer::TLocation loc;
+			switch (usage) {
+			case CVertexBuffer::Immutable:
+				loc = getStaticMemoryToVRAM() ? CVertexBuffer::VRAMResident : CVertexBuffer::AGPResident; break;
+			case CVertexBuffer::FullStream:
+			case CVertexBuffer::FullRewrite:
+			case CVertexBuffer::PartialWrite:
+				loc = CVertexBuffer::AGPResident; break;
+			default:
+				loc = CVertexBuffer::RAMResident; break;
+			}
+			VB.setLocation(loc);
 		}
 	}
 
@@ -774,18 +784,19 @@ uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
 
 
 // ***************************************************************************
-IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb)
+IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TBufferUsage vbType, CVertexBuffer *vb)
 {
 	H_AUTO_OGL(CDriverGL_createVertexBufferHard)
 	// choose the VertexArrayRange of good type
 	IVertexArrayRange	*vertexArrayRange= NULL;
 	switch(vbType)
 	{
-	case CVertexBuffer::AGPVolatile:
-	case CVertexBuffer::AGPPreferred:
+	case CVertexBuffer::FullStream:
+	case CVertexBuffer::FullRewrite:
+	case CVertexBuffer::PartialWrite:
 		vertexArrayRange= _AGPVertexArrayRange;
 		break;
-	case CVertexBuffer::StaticPreferred:
+	case CVertexBuffer::Immutable:
 		if (getStaticMemoryToVRAM())
 			vertexArrayRange= _VRAMVertexArrayRange;
 		else
@@ -1742,7 +1753,7 @@ bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
 		agpMem= max(agpMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(agpMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_AGPVertexArrayRange->allocate(agpMem, CVertexBuffer::AGPPreferred))
+			if(_AGPVertexArrayRange->allocate(agpMem, CVertexBuffer::FullRewrite))
 			{
 				nlinfo("3D: %.u vertices supported", _MaxVerticesByVBHard);
 				nlinfo("3D: Success to allocate %.1f Mo of AGP VAR Ram", agpMem / 1000000.f);
@@ -1771,7 +1782,7 @@ bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
 		vramMem= max(vramMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(vramMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_VRAMVertexArrayRange->allocate(vramMem, CVertexBuffer::StaticPreferred))
+			if(_VRAMVertexArrayRange->allocate(vramMem, CVertexBuffer::Immutable))
 				break;
 			else
 			{

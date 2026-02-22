@@ -66,7 +66,7 @@ void CWaterModel::setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, I
 	{
 		vb.setNumVertices(0);
 		vb.setName("Water");
-		vb.setPreferredMemory(CVertexBuffer::AGPPreferred, false);
+		vb.setBufferUsage(CVertexBuffer::FullRewrite, false);
 		if (drv->supportWaterShader())
 		{
 			vb.setVertexFormat(CVertexBuffer::PositionFlag);
@@ -956,25 +956,59 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 		}
 	}
 	shape->envMapUpdate();
-	if (shape->_ColorMap)
-	{
-		// setup 2x3 matrix for lookup in diffuse map
-		updateDiffuseMapMatrix();
-		drv->setUniform4f(IDriver::VertexProgram, program->idx().DiffuseMapVector0, _ColorMapMatColumn0.x, _ColorMapMatColumn1.x, 0, _ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x);
-		drv->setUniform4f(IDriver::VertexProgram, program->idx().DiffuseMapVector1, _ColorMapMatColumn0.y, _ColorMapMatColumn1.y, 0, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y);
-	}
-	// set builtins
-	drv->setUniformMatrix(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::ModelViewProjection), IDriver::ModelViewProjection, IDriver::Identity);
-	drv->setUniformFog(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::Fog));
 	// retrieve current time
 	double date  = scene->getCurrentTime();
-	// set bumpmaps pos
-	drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap0Offset, fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].x, 1), fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].y, 1), 0.f, 1.f); // bump map 0 offset
-	drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap0Scale, shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
-	drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap1Offset, fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].x, 1), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].y, 1), 0.f, 1.f); // bump map 1 offset
-	drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap1Scale, shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
-	drv->setUniform4f(IDriver::VertexProgram, program->idx().ObserverHeight, 0, 0, obsPos.z - zHeight, 1.f);
-	drv->setUniform4f(IDriver::VertexProgram, program->idx().ScaleReflectedRay, 0.5f, 0.5f, 0.f, 1.f); // used to scale reflected ray into the envmap
+
+	// Check if the compiled VP uses the UBO path
+	bool vpUBO = program->source() && program->source()->Features.OnlyUBOs;
+
+	if (vpUBO)
+	{
+		// UBO path: write water params into user VP UBO
+		CWaterShape::_WaterVPUB->lock();
+		CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.BumpMap0Scale, shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0.f, 0.f);
+		CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.BumpMap0Offset,
+			fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].x, 1),
+			fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].y, 1), 0.f, 1.f);
+		CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.BumpMap1Scale, shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0.f, 0.f);
+		CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.BumpMap1Offset,
+			fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].x, 1),
+			fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].y, 1), 0.f, 1.f);
+		CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.ObserverHeight, 0.f, 0.f, obsPos.z - zHeight, 1.f);
+		CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.ScaleReflectedRay, 0.5f, 0.5f, 0.f, 1.f);
+		if (shape->_ColorMap)
+		{
+			updateDiffuseMapMatrix();
+			CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.DiffuseMapVector0,
+				_ColorMapMatColumn0.x, _ColorMapMatColumn1.x, 0.f,
+				_ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x);
+			CWaterShape::_WaterVPUB->set(CWaterShape::_WaterVPUBOOffsets.DiffuseMapVector1,
+				_ColorMapMatColumn0.y, _ColorMapMatColumn1.y, 0.f,
+				_ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y);
+		}
+		CWaterShape::_WaterVPUB->unlock();
+		drv->bindUniformBuffer(UBBindingVertexProgram, CWaterShape::_WaterVPUB);
+	}
+	else
+	{
+		// Legacy path: individual uniforms
+		if (shape->_ColorMap)
+		{
+			updateDiffuseMapMatrix();
+			drv->setUniform4f(IDriver::VertexProgram, program->idx().DiffuseMapVector0, _ColorMapMatColumn0.x, _ColorMapMatColumn1.x, 0, _ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x);
+			drv->setUniform4f(IDriver::VertexProgram, program->idx().DiffuseMapVector1, _ColorMapMatColumn0.y, _ColorMapMatColumn1.y, 0, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y);
+		}
+		// set builtins
+		drv->setUniformMatrix(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::ModelViewProjection), IDriver::ModelViewProjection, IDriver::Identity);
+		drv->setUniformFog(IDriver::VertexProgram, program->getUniformIndex(CProgramIndex::Fog));
+		// set bumpmaps pos
+		drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap0Offset, fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].x, 1), fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[0].y, 1), 0.f, 1.f); // bump map 0 offset
+		drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap0Scale, shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
+		drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap1Offset, fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].x, 1), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + (float) fmod(date * shape->_HeightMapSpeed[1].y, 1), 0.f, 1.f); // bump map 1 offset
+		drv->setUniform4f(IDriver::VertexProgram, program->idx().BumpMap1Scale, shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
+		drv->setUniform4f(IDriver::VertexProgram, program->idx().ObserverHeight, 0, 0, obsPos.z - zHeight, 1.f);
+		drv->setUniform4f(IDriver::VertexProgram, program->idx().ScaleReflectedRay, 0.5f, 0.5f, 0.f, 1.f); // used to scale reflected ray into the envmap
+	}
 }
 
 //================================================
@@ -1670,6 +1704,7 @@ void	CWaterModel::traverseRender()
 			drv->activeVertexBuffer(vb);
 			drv->renderRawTriangles(CWaterModel::_WaterMat, _StartTri, _NumTris);
 			drv->activeVertexProgram(NULL);
+			drv->bindUniformBuffer(UBBindingVertexProgram, NULL);
 		}
 		else
 		{

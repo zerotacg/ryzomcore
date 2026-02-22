@@ -137,6 +137,8 @@ bool CDriverGL3::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 {
 	H_AUTO_OGL(CDriverGL3_renderSimpleTriangles);
 
+	setupBuiltinPrograms();
+
 	nlassert(ntris>0);
 
 	if (_CurrentVertexBufferGL && _CurrentVertexBufferGL->isInvalid()) return true;

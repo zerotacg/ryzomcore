@@ -178,8 +178,9 @@ void CDriverD3D::setUniform4uiv(TProgram program, uint index, size_t num, const 
 
 void CDriverD3D::setUniformMatrix(NL3D::IDriver::TProgram program, uint index, NL3D::IDriver::TMatrix matrix, NL3D::IDriver::TTransform transform)
 {
+	if (index == ~0u) return;
 	H_AUTO_D3D(CDriverD3D_setUniformMatrix);
-	
+
 	D3DXMATRIX mat;
 	D3DXMATRIX *matPtr = NULL;
 	switch (matrix)
@@ -219,6 +220,7 @@ void CDriverD3D::setUniformMatrix(NL3D::IDriver::TProgram program, uint index, N
 
 void CDriverD3D::setUniformFog(NL3D::IDriver::TProgram program, uint index)
 {
+	if (index == ~0u) return;
 	H_AUTO_D3D(CDriverD3D_setUniformFog)
 
 	/* "oFog" must always be between [1, 0] what ever you set in D3DRS_FOGSTART and D3DRS_FOGEND (1 for no fog, 0 for full fog).

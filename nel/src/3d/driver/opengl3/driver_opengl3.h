@@ -39,7 +39,6 @@
 #	endif //XF86VIDMODE
 #endif // NL_OS_UNIX
 
-#include <unordered_set>
 
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
@@ -221,42 +220,181 @@ public:
 	virtual void	unlock (uint first, uint last);
 };
 
+// ***************************************************************************
+// Camera UBO data layout (std140, 288 bytes, matches GLSL NlCamera block)
+struct CCameraUBOData
+{
+	float viewMatrix[16];    // 64
+	float fogColor[4];       // 16
+	float pzbCameraPos[3];   // 12
+	float fogDensity;        //  4
+	float fogParams[2];      //  8
+	sint32 fogMode;          //  4
+	sint32 clipPlaneMask;    //  4
+	float clipPlane[6][4];   // 96
+	float cameraWorldPos[3]; // 12  (inverse view translation: actual camera world position)
+	float _pad0;             //  4
+	float specularTexMtx[16]; // 64  (inverse view rotation: eye-space reflection → world-space cubemap lookup)
+	float inverseProjectionBasis[16]; // 64  inv(Projection * ChangeBasis): clip-space → NeL eye-space for nelvp ecPos
+};                           // 352
+nlctassert(sizeof(CCameraUBOData) == 352);
+
+// ***************************************************************************
+// CPU-side struct matching the std140 NlLightInfo layout (96 bytes)
+struct CLightTableUBOEntry
+{
+	float dirOrPos[3];     // 0
+	sint32 mode;           // 12
+	float diffuse[4];      // 16
+	float specular[4];     // 32
+	float constAttn;       // 48
+	float linAttn;         // 52
+	float quadAttn;        // 56
+	float spotExp;         // 60
+	float spotDir[3];      // 64
+	float spotCutoff;      // 76
+	float ambient[4];      // 80
+};                         // 96 bytes
+nlctassert(sizeof(CLightTableUBOEntry) == 96);
+
+// ***************************************************************************
+// Per-Object UBO data layout (std140, 304 bytes, matches GLSL NlModel block)
+struct CObjectUBOData
+{
+	float modelViewProjection[16]; // 64
+	float modelView[16];           // 64
+	float normalMatrix[12];        // 48 (3 cols × {x,y,z,pad} for std140 mat3)
+	sint32 lightIndices01[4];      // 16
+	sint32 lightIndices45[4];      // 16
+	float lightFactors01[4];       // 16
+	float lightFactors45[4];       // 16
+	float selfIllumination[4];     // 16
+	sint32 uvRouting[4];           // 16 (VB texcoord routing per stage)
+	sint32 texGenMode[4];          // 16
+	sint32 lighting;               // 4
+	sint32 vertexColorLighted;     // 4
+	sint32 vertexFormat;           // 4
+	sint32 worldSpaceNormal;       // 4
+	sint32 worldSpacePosition;     // 4
+	sint32 numPerPixelLights;      // 4
+	sint32 fogEnabled;             // 4
+	sint32 _pad[1];                // 4
+};                                 // 320
+nlctassert(sizeof(CObjectUBOData) == 320);
+
+// ***************************************************************************
+// Per-Material UBO data layout (std140, 96 bytes, matches GLSL NlMaterial block)
+struct CMaterialUBOData
+{
+	float materialColor[4];        // 16 (from materialSetup)
+	float materialDiffuse[4];      // 16 (from materialSetup)
+	float materialSpecular[4];     // 16 (from materialSetup)
+	float materialShininess;       // 4 (from materialSetup)
+	float alphaRef;                // 4 (from materialSetup)
+	sint32 nlShader;               // 4 (from materialSetup)
+	sint32 nlTextureActive;        // 4 (from materialSetup)
+	sint32 nlAlphaTest;            // 4 (from materialSetup)
+	float nlLightMapScale;         // 4 (default 1.0f, only used in lightmap material UBO)
+	sint32 _pad[2];               // 8
+	// TexEnv block (from setupNormalPass / setupLightmapPass)
+	uint32 nlTexEnvMode[4];        // 16 (4 separate uint in GLSL, not an array — avoids std140 vec4 padding)
+	// constant[0-3]: TexEnv constant colors (Normal/UserColor shaders)
+	// constant[4-7]: EMBM matrices (Normal/UserColor) OR lightmap factors (LightMap shader)
+	//               — mutually exclusive by shader type, so they share the same slots
+	float constant[IDRV_PROGRAM_MAXSAMPLERS][4]; // 128
+	float texMatrix[4][16];        // 256 (texture matrices, VP — mat4 stored column-major)
+};                                 // 480
+nlctassert(sizeof(CMaterialUBOData) == 480);
+
+// ***************************************************************************
+namespace /* anonymous */ {
+
+uint maxTextures(CMaterial::TShader shader)
+{
+	switch (shader)
+	{
+	case CMaterial::Specular:
+	case CMaterial::UserColor: // UserColor has the same texture set up twice
+		return 2;
+	default:
+		return IDRV_MAT_MAXTEXTURES;
+	}
+}
+
+uint maxSamplers(CMaterial::TShader shader, CGlExtensions &glext)
+{
+	switch (shader)
+	{
+	case CMaterial::LightMap:
+		return std::min((GLint)IDRV_PROGRAM_MAXSAMPLERS, glext.MaxFragmentTextureImageUnits);
+	default:
+		return maxTextures(shader);
+	}
+}
+
+bool useTexEnv(CMaterial::TShader shader)
+{
+	return shader == CMaterial::Normal
+		|| shader == CMaterial::UserColor;
+}
+
+bool useTex(const CPPBuiltin &desc, uint stage)
+{
+	return (desc.TextureActive & (1 << stage)) != 0;
+}
+
+} /* anonymous namespace */
 
 // ***************************************************************************
 class CMaterialDrvInfosGL3 : public IMaterialDrvInfos
 {
 public:
+	// Driver state staging area
 	GLenum		SrcBlend;
 	GLenum		DstBlend;
 	GLenum		ZComp;
+	
+	NLMISC::CRGBAF Emissive;
+	NLMISC::CRGBAF Ambient;
+	// GLfloat		Emissive[4];
+	// GLfloat		Ambient[4];
+	// GLfloat		Diffuse[4];
+	// GLfloat		Specular[4];
+	// // For fast comp.
+	// uint32		PackedEmissive;
+	// uint32		PackedAmbient;
+	// uint32		PackedDiffuse;
+	// uint32		PackedSpecular;
 
-	GLfloat		Emissive[4];
-	GLfloat		Ambient[4];
-	GLfloat		Diffuse[4];
-	GLfloat		Specular[4];
-	// For fast comp.
-	uint32		PackedEmissive;
-	uint32		PackedAmbient;
-	uint32		PackedDiffuse;
-	uint32		PackedSpecular;
+	// Forwarded touch flags to other staging functions
+	uint32 SetupMaterialTouched; // if anything messed with staging set by setupMaterial and didn't restore it, flag here
+	uint32 SetupPass0Touched; // changes forwarded from setupMaterial to setupPass, including CMaterial::touched(), excluding SetupMaterialTouched
 
-	// The supported Shader type.
-	CMaterial::TShader	SupportedShader;
-
-	// PP builtin
+	// PP builtin staging area, parameters for shader generation or selection
+	// Touched tracking field is only useful for skipping generated shader lookup
 	CPPBuiltin	PPBuiltin;
 
-	// Material UBO (per-material GL buffer for NlMaterial block).
-	// Dirty sources: CMaterial._Touched flags (color, lighting, alphaRef) in setupMaterial(),
-	// and PPBuiltin.MaterialUBOTouched (shader, flags, textureActive, texEnvMode) in PP setup.
-	// Lightmap multipass bypasses this cache entirely via _OverrideMaterialUBOId.
-	GLuint	MaterialUBOId;          // 0 = not created
-	bool	MaterialUBODirty;       // Needs re-upload
+	// Material UBO staging area, with additional entries for multiple passes
+	uint                           MaterialUBOCurrent;
+	std::vector<CMaterialUBOData>  MaterialUBO;
+	std::vector<GLuint>	           MaterialUBOId;       // 0 = not uploaded
+	std::vector<bool>	           MaterialUBOTouched;  // Needs re-upload
 
-	CMaterialDrvInfosGL3(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it), MaterialUBOId(0), MaterialUBODirty(true) {}
+	// EMBM: true if any texenv stage uses OpRGB == EMBM. Updated when TEXENV is touched.
+	bool HasEMBM;
+	bool TexEnvMatDefault;
+
+	CMaterialDrvInfosGL3(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it),
+		SrcBlend(GL_SRC_ALPHA), DstBlend(GL_ONE_MINUS_SRC_ALPHA), ZComp(GL_LEQUAL),
+		SetupMaterialTouched(0), SetupPass0Touched(0), MaterialUBOCurrent(0), HasEMBM(false), TexEnvMatDefault(false)
+	{
+		MaterialUBO.resize(1);
+		MaterialUBOId.resize(1);
+		MaterialUBOTouched.resize(1);
+		MaterialUBO[0].nlLightMapScale = 1.0f;
+	}
 	~CMaterialDrvInfosGL3();
 };
-
 
 // ***************************************************************************
 /// Info for the last VertexBuffer setuped (iether normal or hard).
@@ -387,17 +525,15 @@ public:
 	/// Setup texture env functions. Used by setupMaterial
 	void					setTexGenFunction(uint stage, CMaterial& mat);
 
-	/// setup the texture matrix for a given number of stages (starting from 0)
-	void					setupUserTextureMatrix(uint numStages, CMaterial& mat);
-
-	/// disable all texture matrix
-	void					disableUserTextureMatrix();
+	// Texture matrices are now read directly from the material in setupNormalPass.
+	// void					setupUserTextureMatrix(uint numStages, CMaterial& mat);
+	// void					disableUserTextureMatrix();
 
 	virtual bool			setupMaterial(CMaterial& mat);
 	// void					generateShaderDesc(CShaderDesc &desc, CMaterial &mat);
 	bool					setupBuiltinPrograms();
-	bool					setupBuiltinVertexProgram();
-	bool					setupBuiltinPixelProgram();
+	bool					setupBuiltinVertexProgram(CVertexProgram *effectiveVP, CPixelProgram *effectivePP);
+	bool					setupBuiltinPixelProgram(CPixelProgram *effectivePP);
 	bool					setupUniforms();
 	void					setupUniforms(TProgram program);
 	void					setupInitialUniforms(IProgram *program);
@@ -418,13 +554,15 @@ public:
 	// Megashader support
 	bool					initMegaVertexPrograms();
 	bool					initMegaPixelPrograms();
+	bool					initMegaLinkedPrograms();
 	bool					setupMegaVertexProgram();
 	bool					setupMegaPixelProgram();
+	bool					setupMegaLinkedPrograms();
 	void					setupMegaVPUniforms();
 	void					setupMegaPPUniforms();
 
-	virtual void			startSpecularBatch();
-	virtual void			endSpecularBatch();
+	virtual void			startSpecularBatch() { }
+	virtual void			endSpecularBatch() { }
 
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective = true);
 	virtual	void			setFrustumMatrix(CMatrix &frust);
@@ -745,8 +883,9 @@ public:
 #endif
 
 private:
-	virtual class IVertexBufferGL3	*createVertexBufferGL(uint size, uint numVertices, CVertexBuffer::TPreferredMemory preferred, CVertexBuffer *vb);
+	virtual class IVertexBufferGL3	*createVertexBufferGL(uint size, uint numVertices, CVertexBuffer::TBufferUsage preferred, CVertexBuffer *vb);
 	friend class					CTextureDrvInfosGL3;
+	friend class					CMaterialDrvInfosGL3;
 	friend class					CVertexProgamDrvInfosGL3;
 	friend class					CDepthStencilFBO;
 
@@ -890,9 +1029,6 @@ private:
 	// @}
 
 
-	// Default VAO (required for core profile)
-	GLuint					_DefaultVAO;
-
 	// The forceNormalize() state.
 	bool					_ForceNormalize;
 
@@ -926,6 +1062,7 @@ private:
 	TFogMode				_FogMode;
 	float					_FogDensity;
 	GLfloat					_CurrentFogColor[4];
+	bool					_FogColorOverrideBlack; // Lightmap multi-pass: additive passes use black fog
 
 
 
@@ -952,7 +1089,13 @@ private:
 	CLight						_LightMapDynamicLight;
 	bool						_LightMapDynamicLightEnabled;
 	bool						_LightMapDynamicLightDirty;
-	sint16						_LightMapDynLightTableIndex; // Table-mode: cached index of dynamic light in _LightTable (-1 = not registered)
+	// Dedicated 1-light UBO for the lightmap dynamic light.
+	// During lightmap passes, this is bound to the light table binding point
+	// instead of the main _LightTableUBOId, avoiding pollution of _LightTable.
+	GLuint						_LightMapDynUBOId;
+	CLightTableUBOEntry			_LightMapDynUBOEntry;  // Packed light data (staging)
+	bool						_LightMapDynUBODirty;  // Needs re-upload
+	bool						_UseLightMapDynUBO;    // Bind this instead of main table
 	// this is the backup of standard lighting (cause GL states may be modified by Lightmap Dynamic Lighting)
 	CLight						_UserLight0;
 	CLight						_UserLight[MaxLight];
@@ -969,6 +1112,7 @@ private:
 	bool						_LightTableDirty; // Light table entries changed
 	bool						_UserLightUBODirty; // _UserLight[] changed (for non-table UBO mode)
 	sint						_LightTableUBOCapacity; // Current GPU buffer capacity (entries)
+	CLightTableUBOEntry			_LightTableUBOStaging[128]; // Persistent staging buffer (avoids per-frame heap alloc)
 	void						uploadLightTableUBO();
 
 	// Per-object light table selection (set by setLights, used by setupUniforms)
@@ -979,9 +1123,12 @@ private:
 
 	// Camera/global state UBO (viewMatrix, fog, clipPlanes, pzbCameraPos)
 	GLuint						_CameraUBOId;
-	bool						_CameraUBODirty;
-	sint						_CameraUBOCapacity; // Current GPU buffer capacity (bytes)
-	void						uploadCameraUBO();
+	bool						_CameraUBODirty;        // Driver state changed — need to re-stage _CameraUBOData
+	bool						_CameraUBOUploadDirty;  // Staged data changed — need to re-upload to GPU
+	sint						_CameraUBOCapacity;     // Current GPU buffer capacity (bytes)
+	CCameraUBOData				_CameraUBOData;         // Persistent staging area (single source of truth for fog etc.)
+	void						stageCameraUBO();       // Populate _CameraUBOData from driver state
+	void						uploadCameraUBO();      // Upload _CameraUBOData to GPU if upload dirty
 
 	// Clip planes (in eye space, pre-transformed for shader)
 	enum { MaxClipPlanes = 6 };
@@ -1142,7 +1289,9 @@ private:
 	CIndexBufferInfo		_LastIB;
 
 	/// Sets up the rendering parameters for the normal shader
-	void setupNormalPass();
+	void setupNormalMaterial();
+	/// Sets up the rendering parameters for the specular shader
+	void setupSpecularMaterial();
 
 
 	/// \name Lightmap.
@@ -1159,21 +1308,7 @@ private:
 	// This array is the LUT from lmapId in [0, _NLightMaps[, to original lightmap id in material.
 	std::vector<uint>		_LightMapLUT;
 
-	// last stage env.
-	CMaterial::CTexEnv	_LightMapLastStageEnv;
-
 	// @}
-
-	/// \name Specular.
-	// @{
-	sint			beginSpecularMultiPass();
-	void			setupSpecularPass(uint pass);
-	void			endSpecularMultiPass();
-	void			setupSpecularBegin();
-	void			setupSpecularEnd();
-	bool			_SpecularBatchOn;
-	// @}
-
 
 	/// \name Water
 	// @{
@@ -1182,31 +1317,26 @@ private:
 	void			endWaterMultiPass();
 	// Water fragment programs: [fog | diffuse<<1]
 	NLMISC::CSmartPtr<CPixelProgram>	_WaterFP[4];
+	// Water PP UBO format (bump scale/bias parameters)
+	NLMISC::CSmartPtr<CUniformBufferFormat> _WaterUBFormat;
+	struct CWaterUBOOffsets {
+		sint Bump0ScaleBias;
+		sint Bump1ScaleBias;
+	} _WaterUBOOffsets;
+	NLMISC::CSmartPtr<CUniformBuffer> _WaterUB;
 	// @}
 
-	/// \name Per pixel lighting
-	// @{
-	// per pixel lighting with specular
-	sint			beginPPLMultiPass();
-	void			setupPPLPass(uint pass);
-	void			endPPLMultiPass();
-
-	// per pixel lighting, no specular
-	sint			beginPPLNoSpecMultiPass();
-	void			setupPPLNoSpecPass(uint pass);
-	void			endPPLNoSpecMultiPass();
+	// PPL, PPLNoSpec, Cloud, and Caustics shaders are deprecated and folded to Normal.
+	// sint			beginPPLMultiPass();
+	// void			setupPPLPass(uint pass);
+	// void			endPPLMultiPass();
+	// sint			beginPPLNoSpecMultiPass();
+	// void			setupPPLNoSpecPass(uint pass);
+	// void			endPPLNoSpecMultiPass();
+	// void			setupCloudPass();
 
 	typedef NLMISC::CSmartPtr<CTextureCube> TSPTextureCube;
 	typedef std::vector<TSPTextureCube> TTexCubeVect;
-
-
-	// @}
-
-	// Caustics shader is deprecated and will not be supported in the GL3 driver.
-
-	/// \name Cloud Shader
-	void			setupCloudPass();
-	// @}
 
 
 	/// setup GL arrays, with a vb info.
@@ -1227,7 +1357,7 @@ private:
 
 	// The VertexBufferHardGL activated.
 	IVertexBufferGL3					*_CurrentVertexBufferGL;
-	GLenum							vertexBufferUsageGL3(CVertexBuffer::TPreferredMemory usage);
+	GLenum							vertexBufferUsageGL3(CVertexBuffer::TBufferUsage usage);
 
 	// Handle lost buffers
 	void							updateLostBuffers();
@@ -1279,6 +1409,9 @@ private:
 	bool			supportVertexProgram(CVertexProgram::TProfile profile) const;
 
 	bool			compileVertexProgram(CVertexProgram *program);
+	bool			convertNelvpToGLSL(CVertexProgram *program, bool linked);
+	CUniformBuffer	*getNelvpUB(TProgram program) const;
+	void			flushNelvpUserVP();
 
 	bool			activeVertexProgram(CVertexProgram *program);
 	bool			activeVertexProgram(CVertexProgram *program, bool driver);
@@ -1325,7 +1458,7 @@ private:
 	void			setUniformMatrix(TProgram program, uint index, TMatrix matrix, TTransform transform);
 	void			setUniformFog(TProgram program, uint index);
 
-	bool			isUniformProgramState() { return false; }
+	bool			isUniformProgramState() { return true; }
 
 	virtual bool	bindUniformBuffer(TUBBinding binding, CUniformBuffer *ub) NL_OVERRIDE;
 
@@ -1354,8 +1487,9 @@ private:
 	uint							_ForceTextureResizePower;
 
 	// user texture matrix
-	NLMISC::CMatrix		_UserTexMat[IDRV_MAT_MAXTEXTURES];
-	uint				_UserTexMatEnabled; // bitm ask for user texture coords
+	// Texture matrices are now read directly from the material in setupNormalPass.
+	// NLMISC::CMatrix		_UserTexMat[IDRV_MAT_MAXTEXTURES];
+	// uint				_UserTexMatEnabled;
 
 	// Static const
 	static const uint NumCoordinatesType[CVertexBuffer::NumType];
@@ -1368,9 +1502,10 @@ private:
 	// Caustics shader is deprecated and will not be supported in the GL3 driver.
 
 
-	NLMISC::CRGBA					_CurrentBlendConstantColor;
-
-private:	
+private:
+	bool compileProgram(IProgram *program, GLenum shaderType,
+		IProgram::TProfile linkedProfile, IProgram::TProfile ssoProfile,
+		const char *stageName);
 	bool initProgramPipeline();
 
 	uint32 ppoId;
@@ -1379,32 +1514,51 @@ private:
 	NLMISC::CRefPtr<CGeometryProgram> m_UserGeometryProgram;
 	NLMISC::CRefPtr<CPixelProgram> m_UserPixelProgram;
 
+	// Material programs: set by material pass (water, etc.), lower priority than user programs
+	NLMISC::CRefPtr<CVertexProgram> m_MaterialVertexProgram;
+	NLMISC::CRefPtr<CPixelProgram> m_MaterialPixelProgram;
+
 	NLMISC::CRefPtr<CVertexProgram> m_DriverVertexProgram;
 	NLMISC::CRefPtr<CGeometryProgram> m_DriverGeometryProgram;
 	NLMISC::CRefPtr<CPixelProgram> m_DriverPixelProgram;
+	NLMISC::CRefPtr<CShaderProgram> m_DriverShaderProgram; // Combined linked VP+PP program (non-SSO path)
 
 	friend class CPPBuiltin;
-	std::unordered_set<CPPBuiltin> m_PPBuiltinCache;
-
-	std::unordered_set<CVPBuiltin> m_VPBuiltinCache;
+	CHashSet<CPPBuiltin, CPPBuiltinHashTraits> m_PPBuiltinCache;
+	CHashSet<CVPBuiltin, CVPBuiltinHashTraits> m_VPBuiltinCache;
 	CVPBuiltin m_VPBuiltinCurrent;
 	bool m_VPBuiltinTouched;
 
 	// Megashader support:
-	// m_MegaVP[fogOrPpl][hwClip][tableUBO][cameraUBO][objectUBO][materialUBO]
-	// m_MegaPP[fogOrPpl][cube][specular][ppClip][tableUBO][cameraUBO][objectUBO][materialUBO]
+	// m_MegaVP[linked][fogOrPpl][hwClip][tableUBO][cameraUBO][objectUBO][materialUBO]
+	// m_MegaPP[linked][fogOrPpl][cube][specular][ppClip][tableUBO][cameraUBO][objectUBO][materialUBO]
+	//   linked: 0=separable SSO programs; 1=single-stage linked programs (for combining into VP+PP pairs)
 	//   fogOrPpl: 0=no ecPos/fog/PPL (UI/sky); 1=has ecPos, fog+PPL runtime-gated
 	//   ppClip: 0=no PP clip; 1=PP-based clip plane discard (implies fogOrPpl=1)
 	//   tableUBO: 0=non-table lights; 1=light table UBO
 	bool m_BuildUnusedPrograms;
 	bool m_PPClipPlanes;            // Use PP-based clip plane discard instead of native gl_ClipDistance
+	bool m_LinkedMegaShaders;       // Use linked VP+PP programs instead of SSO for mega path
+	bool m_SupportSSO;              // Support separable shader objects
+	// bool m_SupportNonUBOs;          // Support programs with non-ubo uniforms // TODO
 	bool m_UseMegaShaders;          // Select mega VP/PP variants (false = per-material compiled shaders)
 	bool m_UseMegaLightTableUBO;    // Select mega VP/PP variants with light table UBO
 	bool m_UseMegaCameraUBO;        // Select mega VP/PP variants with camera state UBO
 	bool m_UseMegaObjectUBO;        // Select mega VP/PP variants with per-object UBO (implies table+camera)
 	bool m_UseMegaMaterialUBO;      // Select mega VP/PP variants with per-material UBO
-	NLMISC::CRefPtr<CVertexProgram> m_MegaVP[2][2][2][2][2][2];
-	NLMISC::CRefPtr<CPixelProgram> m_MegaPP[2][2][2][2][2][2][2][2];
+	bool m_PPOBound;                // Track whether PPO is currently bound (vs linked program via glUseProgram)
+	NLMISC::CRefPtr<CVertexProgram> m_MegaVP[2][2][2][2][2][2][2];
+	NLMISC::CRefPtr<CPixelProgram> m_MegaPP[2][2][2][2][2][2][2][2][2];
+
+	// Linked mega shader programs (combined VP+PP, always UBO-backed)
+	// m_MegaLinked[fogOrPpl][hwClip][cube][specular][ppClip]
+	NLMISC::CSmartPtr<CShaderProgram> m_MegaLinked[2][2][2][2][2];
+
+	// User VP/PP linked program helpers
+	CShaderProgram *linkPrograms(
+		IProgram *vpProg, const CProgramFeatures &vpFeatures,
+		IProgram *ppProg, const CProgramFeatures &ppFeatures);
+	bool setupUserLinkedPrograms(CVertexProgram *vpProg, CPixelProgram *ppProg);
 
 	// Whether the currently active VP outputs specularColor at VaryingLocationSpecularColor
 	bool m_VPSpecularOutput;
@@ -1427,11 +1581,12 @@ private:
 	bool m_ProgramUsesCameraUBO[NumTProgram];     // Program reads camera/fog/clip from NlCamera UBO
 	bool m_ProgramUsesObjectUBO[NumTProgram];     // Program reads from NlModel UBO
 	bool m_ProgramUsesMaterialUBO[NumTProgram];   // Program reads from NlMaterial UBO
+	CUniformBuffer *m_NelvpActiveUB;              // Non-null when active VP is nelvp-converted
 
 	// Per-Object UBO (runtime state of currently bound program)
 	GLuint  _ObjectUBOId;           // Global GL buffer
 	sint    _ObjectUBOCapacity;     // Current GPU buffer capacity (bytes)
-	GLuint  _OverrideMaterialUBOId; // Global buffer for per-pass material overrides (lightmap)
+	// GLuint  _OverrideMaterialUBOId; // Global buffer for per-pass material overrides (lightmap) — replaced by per-material UBO slots
 	void    uploadObjectUBO();
 	void    uploadMaterialUBO();
 
@@ -1440,15 +1595,17 @@ private:
 	GLuint           _UserUBBoundId[UBBindingCount];  // GL buffer ID currently at each GL binding point (0 = unbound)
 	void    flushUserUBOs();
 
-	// Lightmap UBO override (set before setupBuiltinPrograms for lightmap passes)
+	// Lightmap object UBO override (staged by setupLightMapPass, read by setupBuiltinPrograms in setupPass)
+	// Material-level fields (diffuse, specular, lightmapscale, constants) moved to per-material UBO slots.
 	struct CLightMapUBOOverride
 	{
 		bool  Active;
 		float SelfIllumination[4];
 		bool  ZeroLightFactors;       // Zero all light factors (pass > 0)
-		float MaterialDiffuse[4];
-		float MaterialSpecular[4];
-		float LightMapScale;          // x2 mode scale factor (1.0 or 2.0)
+		// float MaterialDiffuse[4];  // Now in matDrv->MaterialUBO[slot]
+		// float MaterialSpecular[4]; // Now in matDrv->MaterialUBO[slot]
+		// float LightMapScale;       // Now in matDrv->MaterialUBO[slot]
+		// float Constants[IDRV_MAT_MAXTEXTURES][4]; // Now in matDrv->MaterialUBO[slot]
 	} _LightMapUBOOverride;
 
 	// EMBM support
@@ -1528,6 +1685,23 @@ public:
 	void setObjectBlockIndex(GLuint idx) { objectBlockIndex = idx; }
 	GLuint getMaterialBlockIndex() const { return materialBlockIndex; }
 	void setMaterialBlockIndex(GLuint idx) { materialBlockIndex = idx; }
+
+	// Linked program cache for user VP + mega PP combinations
+	// Indexed by [fogOrPpl][cube][specular][ppClip]
+	NLMISC::CSmartPtr<CShaderProgram> LinkedVPMegaPP[2][2][2][2];
+
+	// Linked program cache for mega VP + user PP combinations
+	// Indexed by [fogOrPpl][hwClip]
+	NLMISC::CSmartPtr<CShaderProgram> LinkedMegaVPPP[2][2];
+
+	// Linked program cache for user VP + user PP combinations
+	// Keyed by the other program's drvinfo pointer
+	std::map<CProgramDrvInfosGL3*, NLMISC::CSmartPtr<CShaderProgram> > LinkedUserVPPP;
+
+	// nelvp-converted program state
+	bool isNelvpConverted;                                // True if this VP was converted from nelvp
+	NLMISC::CSmartPtr<CUniformBuffer> NelvpConstantUB;   // UBO for nelvp constant registers (96 + 4 modelView)
+	std::map<std::string, uint> NelvpParamIndices;        // ParamIndices from nelvp source (name → register index)
 
 private:
 	GLuint programId;

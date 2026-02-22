@@ -31,6 +31,8 @@
 
 #include "nel/3d/bloom_effect.h"
 #include "nel/3d/vertex_program.h"
+#include "nel/3d/uniform_buffer_format.h"
+#include "nel/3d/uniform_buffer.h"
 
 
 using namespace NLMISC;
@@ -96,6 +98,41 @@ static const char *TextureOffsetGLSL =
 	"  texCoord3 = vec4(vtexCoord0.xy + offset3, 0.0, 0.0);\n"
 	"}\n";
 
+// Pipeline-stage UBO body for Bloom VP.
+// All params come from NlBloom user UBO (UBBindingVertexProgram).
+static const char *TextureOffsetGLSL_UBO =
+	"#version 300 es\n"
+	"precision highp float;\n"
+	"precision highp int;\n"
+	"layout(location = 0) in vec4 vposition;\n"
+	"layout(location = 8) in vec4 vtexCoord0;\n"
+	"smooth out vec4 diffuseColor;\n"
+	"smooth out vec4 texCoord0;\n"
+	"smooth out vec4 texCoord1;\n"
+	"smooth out vec4 texCoord2;\n"
+	"smooth out vec4 texCoord3;\n"
+	"// color, posW, offset0-3 from NlBloom UBO\n"
+	"void main()\n"
+	"{\n"
+	"  gl_Position = vec4(vposition.xyz, posW.w);\n"
+	"  diffuseColor = clamp(color, 0.0, 1.0);\n"
+	"  texCoord0 = vec4(vtexCoord0.xy + offset0, 0.0, 0.0);\n"
+	"  texCoord1 = vec4(vtexCoord0.xy + offset1, 0.0, 0.0);\n"
+	"  texCoord2 = vec4(vtexCoord0.xy + offset2, 0.0, 0.0);\n"
+	"  texCoord3 = vec4(vtexCoord0.xy + offset3, 0.0, 0.0);\n"
+	"}\n";
+
+// Bloom VP UBO format and offsets
+struct CBloomUBOOffsets
+{
+	sint Color;
+	sint PosW;
+	sint Offset[4];
+};
+static CBloomUBOOffsets s_BloomUBOOffsets;
+static NLMISC::CSmartPtr<CUniformBufferFormat> s_BloomUBFormat;
+static NLMISC::CSmartPtr<CUniformBuffer> s_BloomUB;
+
 class CVertexProgramTextureOffset : public CVertexProgram
 {
 public:
@@ -111,6 +148,8 @@ public:
 	virtual void buildInfo()
 	{
 		CVertexProgram::buildInfo();
+		if (source() && source()->Features.OnlyUBOs)
+			return;
 		if (profile() == nelvp || profile() == arbvp1 || profile() == vs_2_0)
 		{
 			m_Idx.Color = 8;
@@ -148,15 +187,47 @@ CBloomEffect::CBloomEffect()
 	{
 		TextureOffsetVertexProgram = new CVertexProgramTextureOffset(TextureOffset);
 
-		// Add GLSL 330 source for GL3 driver
-		IProgram::CSource *glslSrc = new IProgram::CSource();
-		glslSrc->Profile = CVertexProgram::glsl330v;
-		glslSrc->DisplayName = "TextureOffset/glsl330v";
-		glslSrc->setSourcePtr(TextureOffsetGLSL);
-		glslSrc->Features.VPVertexFormat = CVertexBuffer::TexCoord0Flag
-			| CVertexBuffer::TexCoord1Flag | CVertexBuffer::TexCoord2Flag
-			| CVertexBuffer::TexCoord3Flag;
-		TextureOffsetVertexProgram->addSource(glslSrc);
+		// Build Bloom VP UBO format (once)
+		if (!s_BloomUBFormat)
+		{
+			CUniformBufferFormat *fmt = new CUniformBufferFormat();
+			fmt->Name = "NlBloom";
+			s_BloomUBOOffsets.Color = fmt->push("color", CUniformBufferFormat::FloatVec4);
+			s_BloomUBOOffsets.PosW = fmt->push("posW", CUniformBufferFormat::FloatVec4);
+			s_BloomUBOOffsets.Offset[0] = fmt->push("offset0", CUniformBufferFormat::FloatVec2);
+			s_BloomUBOOffsets.Offset[1] = fmt->push("offset1", CUniformBufferFormat::FloatVec2);
+			s_BloomUBOOffsets.Offset[2] = fmt->push("offset2", CUniformBufferFormat::FloatVec2);
+			s_BloomUBOOffsets.Offset[3] = fmt->push("offset3", CUniformBufferFormat::FloatVec2);
+			s_BloomUBFormat = fmt;
+			s_BloomUB = new CUniformBuffer();
+			s_BloomUB->Format = *fmt;
+		}
+
+		// glsl300esv — pipeline stage UBO source (preferred for linked program path)
+		{
+			IProgram::CSource *src = new IProgram::CSource();
+			src->Profile = CVertexProgram::glsl300esv;
+			src->Features.OnlyUBOs = true;
+			src->UniformBufferFormats[UBBindingVertexProgram] = s_BloomUBFormat;
+			src->DisplayName = "TextureOffset/glsl300esv/UBO";
+			src->Features.VPVertexFormat = CVertexBuffer::TexCoord0Flag
+				| CVertexBuffer::TexCoord1Flag | CVertexBuffer::TexCoord2Flag
+				| CVertexBuffer::TexCoord3Flag;
+			src->setSourcePtr(TextureOffsetGLSL_UBO);
+			TextureOffsetVertexProgram->addSource(src);
+		}
+
+		// glsl330v — SSO fallback
+		{
+			IProgram::CSource *glslSrc = new IProgram::CSource();
+			glslSrc->Profile = CVertexProgram::glsl330v;
+			glslSrc->DisplayName = "TextureOffset/glsl330v";
+			glslSrc->setSourcePtr(TextureOffsetGLSL);
+			glslSrc->Features.VPVertexFormat = CVertexBuffer::TexCoord0Flag
+				| CVertexBuffer::TexCoord1Flag | CVertexBuffer::TexCoord2Flag
+				| CVertexBuffer::TexCoord3Flag;
+			TextureOffsetVertexProgram->addSource(glslSrc);
+		}
 	}
 
 	_Driver = NULL;
@@ -399,8 +470,24 @@ void CBloomEffect::applyBlur()
 
 	// initialize vertex program
 	drvInternal->activeVertexProgram(TextureOffsetVertexProgram);
-	drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().Color, 255.f, 255.f, 255.f, 255.f);
-	drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().PosW, 0.0f, 0.f, 0.f, 1.f);
+	bool vpUBO = TextureOffsetVertexProgram->source() && TextureOffsetVertexProgram->source()->Features.OnlyUBOs;
+	if (vpUBO)
+	{
+		s_BloomUB->lock();
+		s_BloomUB->set(s_BloomUBOOffsets.Color, 255.f, 255.f, 255.f, 255.f);
+		s_BloomUB->set(s_BloomUBOOffsets.PosW, 0.0f, 0.f, 0.f, 1.f);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[0], 0.f, 0.f);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[1], 0.f, 0.f);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[2], 0.f, 0.f);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[3], 0.f, 0.f);
+		s_BloomUB->unlock();
+		drvInternal->bindUniformBuffer(UBBindingVertexProgram, s_BloomUB);
+	}
+	else
+	{
+		drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().Color, 255.f, 255.f, 255.f, 255.f);
+		drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().PosW, 0.0f, 0.f, 0.f, 1.f);
+	}
 
 	// initialize blur material
 	UMaterial displayBlurMat;
@@ -423,6 +510,7 @@ void CBloomEffect::applyBlur()
 
 	// disable vertex program
 	drvInternal->activeVertexProgram(NULL);
+	if (vpUBO) drvInternal->bindUniformBuffer(UBBindingVertexProgram, NULL);
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -459,8 +547,7 @@ void CBloomEffect::doBlur(bool horizontalBlur)
 
 	// initialize vertex program
 	drvInternal->activeVertexProgram(TextureOffsetVertexProgram);
-	drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().Color, 255.f, 255.f, 255.f, 255.f);
-	drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().PosW, 0.0f, 0.f, 0.f, 1.f);
+	bool vpUBO = TextureOffsetVertexProgram->source() && TextureOffsetVertexProgram->source()->Features.OnlyUBOs;
 
 	// set several decal constants in order to obtain in the render target texture a mix of color
 	// of a texel and its neighbored texels on the axe of the pass.
@@ -489,11 +576,29 @@ void CBloomEffect::doBlur(bool horizontalBlur)
 		decalR = 0.5f;
 		decal2R = 1.5f;
 	}
-	const CVertexProgramTextureOffset::CIdx &vpIdx = TextureOffsetVertexProgram->idx();
-	drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[0], (decalR/(float)_BlurWidth)*blurVec.x,		(decalR/(float)_BlurHeight)*blurVec.y);
-	drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[1], (decal2R/(float)_BlurWidth)*blurVec.x,		(decal2R/(float)_BlurHeight)*blurVec.y);
-	drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[2], (decalL/(float)_BlurWidth)*blurVec.x,		(decalL/(float)_BlurHeight)*blurVec.y);
-	drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[3], (decal2L/(float)_BlurWidth)*blurVec.x,		(decal2L/(float)_BlurHeight)*blurVec.y);
+
+	if (vpUBO)
+	{
+		s_BloomUB->lock();
+		s_BloomUB->set(s_BloomUBOOffsets.Color, 255.f, 255.f, 255.f, 255.f);
+		s_BloomUB->set(s_BloomUBOOffsets.PosW, 0.0f, 0.f, 0.f, 1.f);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[0], (decalR/(float)_BlurWidth)*blurVec.x,   (decalR/(float)_BlurHeight)*blurVec.y);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[1], (decal2R/(float)_BlurWidth)*blurVec.x,  (decal2R/(float)_BlurHeight)*blurVec.y);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[2], (decalL/(float)_BlurWidth)*blurVec.x,   (decalL/(float)_BlurHeight)*blurVec.y);
+		s_BloomUB->set(s_BloomUBOOffsets.Offset[3], (decal2L/(float)_BlurWidth)*blurVec.x,  (decal2L/(float)_BlurHeight)*blurVec.y);
+		s_BloomUB->unlock();
+		drvInternal->bindUniformBuffer(UBBindingVertexProgram, s_BloomUB);
+	}
+	else
+	{
+		drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().Color, 255.f, 255.f, 255.f, 255.f);
+		drvInternal->setUniform4f(IDriver::VertexProgram, TextureOffsetVertexProgram->idx().PosW, 0.0f, 0.f, 0.f, 1.f);
+		const CVertexProgramTextureOffset::CIdx &vpIdx = TextureOffsetVertexProgram->idx();
+		drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[0], (decalR/(float)_BlurWidth)*blurVec.x,		(decalR/(float)_BlurHeight)*blurVec.y);
+		drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[1], (decal2R/(float)_BlurWidth)*blurVec.x,		(decal2R/(float)_BlurHeight)*blurVec.y);
+		drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[2], (decalL/(float)_BlurWidth)*blurVec.x,		(decalL/(float)_BlurHeight)*blurVec.y);
+		drvInternal->setUniform2f(IDriver::VertexProgram, vpIdx.Offset[3], (decal2L/(float)_BlurWidth)*blurVec.x,		(decal2L/(float)_BlurHeight)*blurVec.y);
+	}
 
 	// initialize material textures
 	CMaterial * matObject = _BlurMat.getObjectPtr();
@@ -507,6 +612,7 @@ void CBloomEffect::doBlur(bool horizontalBlur)
 
 	// disable render target and vertex program
 	drvInternal->activeVertexProgram(NULL);
+	if (vpUBO) drvInternal->bindUniformBuffer(UBBindingVertexProgram, NULL);
 	CTextureUser cu;
 	((CDriverUser *)_Driver)->setRenderTarget(cu, 0, 0, 0, 0);
 }

@@ -122,13 +122,17 @@ bool CDriverGL3::setupVertexBuffer(CVertexBuffer& VB)
 			CVBDrvInfosGL3 *info = new CVBDrvInfosGL3(this, it, &VB);
 			*it= VB.DrvInfos = info;
 
-			// Preferred memory, reduce choices
-			CVertexBuffer::TPreferredMemory preferred = VB.getPreferredMemory();
+			// Buffer usage, reduce choices
+			CVertexBuffer::TBufferUsage preferred = VB.getBufferUsage();
 
 			const uint size = VB.capacity()*VB.getVertexSize();
 			
 			// Vertex buffer hard
 			info->_VBHard = createVertexBufferGL(size, VB.capacity(), preferred, &VB);
+
+			// Enable dirty tracking for shadow-buffered modes
+			if (preferred == CVertexBuffer::PartialWrite || preferred == CVertexBuffer::CpuReadWrite)
+				VB.setDirtyTracking(true);
 
 			// Upload the data
 			CVertexBuffer::TLocation location;
@@ -142,16 +146,19 @@ bool CDriverGL3::setupVertexBuffer(CVertexBuffer& VB)
 			{
 				switch (preferred)
 				{
-				case CVertexBuffer::StaticPreferred:
+				case CVertexBuffer::Immutable:
 					if (getStaticMemoryToVRAM())
 						location = CVertexBuffer::VRAMResident;
 					else
 						location = CVertexBuffer::AGPResident;
-				case CVertexBuffer::RAMVolatile:
-				case CVertexBuffer::RAMPreferred:
+					break;
+				case CVertexBuffer::SmallStream:
+				case CVertexBuffer::CpuReadWrite:
 					location = CVertexBuffer::RAMResident;
-				case CVertexBuffer::AGPPreferred:
-				case CVertexBuffer::AGPVolatile:
+					break;
+				case CVertexBuffer::FullRewrite:
+				case CVertexBuffer::PartialWrite:
+				case CVertexBuffer::FullStream:
 				default:
 					location = CVertexBuffer::AGPResident;
 				}
@@ -208,7 +215,7 @@ bool		CDriverGL3::activeVertexBuffer(CVertexBuffer& VB)
 	}
 	if (!info->_VBHard ||  (info->_VBHard && !info->_VBHard->isInvalid()))
 	{
-		// Upload shadow buffer to GL if dirty (RAMPreferred optimization)
+		// Upload shadow buffer to GL if dirty (CpuReadWrite optimization)
 		if (info->_VBHard)
 			info->_VBHard->flush();
 		setupGlArrays(_LastVB);
@@ -255,35 +262,38 @@ uint			CDriverGL3::getMaxVerticesByVertexBufferHard() const
 }
 
 // TODO: Move this to CVertexBufferGL3
-GLenum CDriverGL3::vertexBufferUsageGL3(CVertexBuffer::TPreferredMemory usage)
+GLenum CDriverGL3::vertexBufferUsageGL3(CVertexBuffer::TBufferUsage usage)
 {
 	switch (usage)
 	{
-	case CVertexBuffer::RAMPreferred:
-		return GL_STREAM_DRAW; // Shadow buffer: orphan + full upload each frame
-	case CVertexBuffer::AGPPreferred:
+	case CVertexBuffer::CpuReadWrite:
+		return GL_DYNAMIC_DRAW; // Shadow buffer: orphan + full upload, drawn from many times
+	case CVertexBuffer::FullRewrite:
 		return GL_DYNAMIC_DRAW;
-	case CVertexBuffer::StaticPreferred:
+	case CVertexBuffer::PartialWrite:
+		return GL_STATIC_DRAW; // Only written by GPU-side CopyBufferSubData from staging
+	case CVertexBuffer::Immutable:
 		return getStaticMemoryToVRAM() ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW;
-	case CVertexBuffer::RAMVolatile:
-	case CVertexBuffer::AGPVolatile:
+	case CVertexBuffer::SmallStream:
+	case CVertexBuffer::FullStream:
 		return GL_STREAM_DRAW;
 	default:
-		nlerror("Invalid preferred memory");
+		nlerror("Invalid buffer usage");
 		return GL_DYNAMIC_DRAW;
 	}
 }
 
 // ***************************************************************************
-IVertexBufferGL3	*CDriverGL3::createVertexBufferGL(uint size, uint numVertices, CVertexBuffer::TPreferredMemory preferred, CVertexBuffer *vb)
+IVertexBufferGL3	*CDriverGL3::createVertexBufferGL(uint size, uint numVertices, CVertexBuffer::TBufferUsage preferred, CVertexBuffer *vb)
 {
 	H_AUTO_OGL(CDriverGL3_createVertexBufferGL)
-	
+
 	IVertexBufferGL3 *result;
 
 	if (_Extensions.AMDPinnedMemory && (
-		preferred == CVertexBuffer::RAMPreferred
-		|| preferred == CVertexBuffer::AGPPreferred
+		preferred == CVertexBuffer::CpuReadWrite
+		|| preferred == CVertexBuffer::FullRewrite
+		|| preferred == CVertexBuffer::PartialWrite
 		))
 	{
 		result = new CVertexBufferAMDPinned(this, size, numVertices, preferred, vb);
@@ -432,7 +442,7 @@ void		CDriverGL3::setupGlArrays(CVertexBufferInfo &vb)
 	uint32	flags= vb.VertexFormat;
 
 	nlctassert(CVertexBuffer::NumValue == sizeof(ARBVertexProgramMustNormalizeAttrib) / sizeof(ARBVertexProgramMustNormalizeAttrib[0]));
-	_DriverGLStates.bindARBVertexBuffer(vb.VertexObjectId);
+	_DriverGLStates.bindArrayBuffer(vb.VertexObjectId);
 
 	{
 		// For each value
@@ -449,7 +459,7 @@ void		CDriverGL3::setupGlArrays(CVertexBufferInfo &vb)
 				// Not setuped value and used
 				if (flags & flag)
 				{
-					_DriverGLStates.enableVertexAttribArrayARB(glIndex, true);
+					_DriverGLStates.enableVertexAttribArray(glIndex, true);
 					GLboolean mustNormalize = GL_FALSE;
 					if (GLTypeIsIntegral[type])
 					{
@@ -459,7 +469,7 @@ void		CDriverGL3::setupGlArrays(CVertexBufferInfo &vb)
 				}
 				else
 				{
-					_DriverGLStates.enableVertexAttribArrayARB(glIndex, false);
+					_DriverGLStates.enableVertexAttribArray(glIndex, false);
 				}
 			}
 		}

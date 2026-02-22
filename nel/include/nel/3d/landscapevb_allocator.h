@@ -106,6 +106,7 @@ public:
 	void			lockBuffer(CNearVertexBufferInfo &tileVB);
 	void			unlockBuffer();
 	bool			bufferLocked() const {return _BufferLocked;}
+	CVertexBuffer	&getVertexBuffer() { return _VB; }
 
 	/** activate the VB or the VBHard in Driver setuped. nlassert if driver is NULL or if buffer is locked.
 	 * If vertexProgram possible, activate the vertexProgram too.

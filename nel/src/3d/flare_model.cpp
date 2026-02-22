@@ -354,7 +354,7 @@ void	CFlareModel::traverseRender()
 
 		// setup vertex buffer
 		vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-		vb.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
+		vb.setBufferUsage(CVertexBuffer::SmallStream, false);
 		vb.setNumVertices(4);
 		vb.setName("CFlareModel");
 		{
@@ -563,7 +563,7 @@ void CFlareModel::initStatics()
 		// setup vbs
 		_OcclusionQueryVB.setVertexFormat(CVertexBuffer::PositionFlag);
 		_OcclusionQueryVB.setName("CFlareModel::_OcclusionQueryVB");
-		_OcclusionQueryVB.setPreferredMemory(CVertexBuffer::RAMVolatile, false); // use ram to avoid stall, and don't want to setup a VB per flare!
+		_OcclusionQueryVB.setBufferUsage(CVertexBuffer::SmallStream, false); // use ram to avoid stall, and don't want to setup a VB per flare!
 		_OcclusionQueryVB.setNumVertices(1);
 		_OcclusionQuerySettuped = true;
 	}

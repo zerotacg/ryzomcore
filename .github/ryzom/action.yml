@@ -27,7 +27,7 @@ runs:
   steps:
     - uses: lukka/get-cmake@latest
       with:
-        cmakeVersion: "^3.31.6"
+        cmakeVersion: "^3.31.11"
 
     - name: Dependencies Linux
       if: runner.os == 'Linux'
