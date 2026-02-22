@@ -57,11 +57,6 @@ jobs:
         exclude:
           - os: ubuntu-22.04
             build-type: dynamic
-        include:
-          - os: ubuntu-24.04
-            build-type: hunter
-          - os: ubuntu-24.04
-            build-type: vcpkg
     steps:
       - uses: actions/checkout@v4
 
