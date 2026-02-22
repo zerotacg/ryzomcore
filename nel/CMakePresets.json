@@ -57,6 +57,26 @@
     },
     {
       "inherits": [
+        "hunter",
+        "nel",
+        "linux"
+      ],
+      "name": "ci-linux-nel-hunter"
+    },
+    {
+      "inherits": [
+        "vcpkg",
+        "nel",
+        "linux"
+      ],
+      "name": "ci-linux-nel-vcpkg",
+      "cacheVariables": {
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": true,
+        "VCPKG_MANIFEST_FEATURES": "nel"
+      }
+    },
+    {
+      "inherits": [
         "windows",
         "nel"
       ],
