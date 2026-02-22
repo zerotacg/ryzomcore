@@ -152,8 +152,7 @@
       "name": "ryzom-client-x86-mingw-vcpkg",
       "inherits": [
         "vcpkg",
-        "ryzom-client",
-        "macos"
+        "ryzom-client"
       ],
       "cacheVariables": {
         "MINGW": true,
