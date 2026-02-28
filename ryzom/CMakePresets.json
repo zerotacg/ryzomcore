@@ -141,6 +141,20 @@
         "WITH_EXTERNAL": false,
         "WITH_STATIC_CURL": false
       }
+    },
+    {
+      "name": "ci-x86-mingw-ryzom-client-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "ryzom-client",
+        "x86-mingw"
+      ],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x86-mingw-static",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/CMakeModules/toolchain-mingw.cmake",
+        "WITH_EXTERNAL": false,
+        "WITH_STATIC_CURL": false
+      }
     }
   ],
   "buildPresets": [

@@ -56,6 +56,11 @@ jobs:
             ubuntu_version: 24.04
             cmake_preset: ci-linux-ryzom-client-hunter
             ccache: true
+          - os: ubuntu-24.04
+            triplet: x64-windows-static
+            ubuntu_version: 24.04
+            cmake_preset: ci-x86-mingw-ryzom-client-vcpkg
+            vcpkg: true
           - os: macos-15
             cmake_preset: ci-macos-ryzom-client-vcpkg
             vcpkg: true
@@ -90,7 +95,7 @@ jobs:
         sudo apt update
         sudo apt remove --yes man-db
         sudo apt update
-        sudo apt install -y --no-install-recommends \
+        sudo apt install --yes --no-install-recommends \
           ccache \
           libasound2-dev \
           libgl1-mesa-dev \
@@ -99,6 +104,10 @@ jobs:
           libxrandr-dev \
           libxrender-dev \
           libxxf86vm-dev \
+          mingw-w64 \
+          mingw-w64-tools \
+          nsis \
+          autoconf autoconf-archive automake libtool nasm libltdl-dev \
           libmsquic
         wget https://raw.githubusercontent.com/microsoft/msquic/main/src/inc/msquic.h
         wget https://raw.githubusercontent.com/microsoft/msquic/main/src/inc/msquic_posix.h
@@ -187,6 +196,6 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-client-package
+        name: ${{ matrix.triplet || matrix.os }}-client-package
         path: build/ryzom-client/ryzom-client-*
         if-no-files-found: error
