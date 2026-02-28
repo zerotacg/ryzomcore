@@ -1850,6 +1850,25 @@ void			CVegetableManager::unlockBuffers()
 	}
 }
 
+// ***************************************************************************
+void			CVegetableManager::setUnsynchronizedMode(bool enable)
+{
+	// Only hard allocators use UnsynchronizedWrite; soft allocators stay as-is.
+	for(uint i=0; i <CVegetableVBAllocator::VBTypeCount; i++)
+	{
+		_VBHardAllocator[i].setUnsynchronizedMode(enable);
+	}
+}
+
+// ***************************************************************************
+void			CVegetableManager::processDeferredFrees(uint64 swapBufferInFlight)
+{
+	for(uint i=0; i <CVegetableVBAllocator::VBTypeCount; i++)
+	{
+		_VBHardAllocator[i].processDeferredFrees(swapBufferInFlight);
+	}
+}
+
 
 // ***************************************************************************
 class	CSortVSB

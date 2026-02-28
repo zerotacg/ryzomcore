@@ -188,6 +188,7 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 			case CVertexBuffer::FullStream:
 			case CVertexBuffer::FullRewrite:
 			case CVertexBuffer::PartialWrite:
+			case CVertexBuffer::UnsynchronizedWrite:
 				loc = CVertexBuffer::AGPResident; break;
 			default:
 				loc = CVertexBuffer::RAMResident; break;
@@ -794,6 +795,7 @@ IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertic
 	case CVertexBuffer::FullStream:
 	case CVertexBuffer::FullRewrite:
 	case CVertexBuffer::PartialWrite:
+	case CVertexBuffer::UnsynchronizedWrite:
 		vertexArrayRange= _AGPVertexArrayRange;
 		break;
 	case CVertexBuffer::Immutable:

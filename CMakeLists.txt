@@ -38,7 +38,6 @@ IF(HUNTER_ENABLED)
   # default options for hunterized build
   SET(WITH_STATIC         ON CACHE BOOL "static" FORCE)
   SET(WITH_STATIC_DRIVERS ON CACHE BOOL "static drivers" FORCE)
-  SET(WITH_STATIC_CURL    ON CACHE BOOL "static curl" FORCE)
   SET(WITH_STATIC_LIBXML2 ON CACHE BOOL "static libxml2" FORCE)
   SET(WITH_STATIC_EXTERNAL ON CACHE BOOL "static external" FORCE)
   SET(WITH_EXTERNAL       OFF CACHE BOOL "external libs" FORCE)
@@ -181,23 +180,33 @@ IF(HUNTER_ENABLED)
   IF(NOT CMAKE_CROSSCOMPILING)
     HUNTER_ADD_PACKAGE(OpenSSL)
   ENDIF()
-  FIND_PACKAGE(OpenSSL REQUIRED)
-  # TODO: is OpenSSL::Crypto only needed for WIN32?
-  SET(OPENSSL_LIBRARIES OpenSSL::SSL OpenSSL::Crypto)
+  FIND_PACKAGE(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
   # for precompiled headers, not needed if using TARGET_PRECOMPILE_HEADERS() from cmake 3.16+
   SET(ZLIB_INCLUDE_DIR ZLIB_ROOT/include)
 ELSE()
-FIND_PACKAGE(ZLIB REQUIRED)
-FIND_PACKAGE(LibXml2 REQUIRED)
-FIND_PACKAGE(PNG REQUIRED)
-FIND_PACKAGE(OpenSSL REQUIRED)
-FIND_PACKAGE(GIF)
-FIND_PACKAGE(JPEG)
-
-IF(WIN32)
-  SET(OPENSSL_LIBRARIES ${OPENSSL_LIBRARIES} Crypt32.lib)
+IF(EMSCRIPTEN)
+  # For Emscripten builds, zlib/libpng/libxml2 are not required for the sample demos.
+  # Create stub ZLIB::ZLIB imported target so nelmisc's TARGET_LINK_LIBRARIES doesn't
+  # error out. No actual zlib is linked; the stub is intentionally empty.
+  ADD_LIBRARY(ZLIB::ZLIB INTERFACE IMPORTED)
+  SET(ZLIB_FOUND TRUE)
+  SET(ZLIB_INCLUDE_DIRS "")
+  SET(ZLIB_LIBRARIES "")
+  # Do NOT create PNG::PNG - no libpng available, bitmap_png.cpp will be compiled out
+  SET(PNG_FOUND FALSE)
+  SET(LIBXML2_FOUND FALSE)
+  SET(LIBXML2_INCLUDE_DIR "")
+  SET(LIBXML2_LIBRARIES "")
+ELSE()
+  FIND_PACKAGE(ZLIB REQUIRED)
+  FIND_PACKAGE(LibXml2 REQUIRED)
+  FIND_PACKAGE(PNG REQUIRED)
+  FIND_PACKAGE(OpenSSL REQUIRED)
+  FIND_PACKAGE(GIF)
+  FIND_PACKAGE(JPEG)
 ENDIF()
+
 ENDIF() #hunter
 
 IF(WITH_LIBOVR)
@@ -211,13 +220,13 @@ ENDIF()
 NL_CONFIGURE_CHECKS()
 
 IF(WITH_STATIC_LIBXML2)
-  if(HUNTER_ENABLED)
+  if(HUNTER_ENABLED AND TARGET libxml2::libxml2)
       set_property(TARGET libxml2::libxml2
               APPEND
               PROPERTY INTERFACE_COMPILE_DEFINITIONS
               LIBXML_STATIC
       )
-  else()
+  elseif(TARGET LibXml2::LibXml2)
       set_property(TARGET LibXml2::LibXml2
               APPEND
               PROPERTY INTERFACE_COMPILE_DEFINITIONS
@@ -226,7 +235,9 @@ IF(WITH_STATIC_LIBXML2)
   endif ()
 ENDIF()
 
-FIND_PACKAGE(Iconv QUIET)
+IF(NOT EMSCRIPTEN)
+  FIND_PACKAGE(Iconv QUIET)
+ENDIF()
 IF(Iconv_FOUND)
   if(TARGET LibXml2::LibXml2 AND NOT HUNTER_ENABLED)
       set_property(TARGET LibXml2::LibXml2
@@ -341,94 +352,11 @@ IF(WITH_NEL)
       FIND_PACKAGE(Luabind REQUIRED)
     ENDIF()
 
-    FIND_PACKAGE(CURL REQUIRED)
-
-    IF((WIN32 OR CURL_LIBRARIES MATCHES "\\.a") AND WITH_STATIC_CURL)
-      SET(CURL_STATIC ON)
+    IF(EMSCRIPTEN)
+      # CURL not needed for Emscripten builds
     ELSE()
-      SET(CURL_STATIC OFF)
-    ENDIF()
-
-    IF(CURL_STATIC)
-      set_property(TARGET CURL::libcurl
-              APPEND
-              PROPERTY INTERFACE_COMPILE_DEFINITIONS
-              CURL_STATICLIB
-      )
-      set_property(TARGET CURL::libcurl
-              APPEND
-              PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-              ${OPENSSL_INCLUDE_DIR}
-      )
-      set_property(TARGET CURL::libcurl
-              APPEND
-              PROPERTY INTERFACE_LINK_LIBRARIES
-              ${OPENSSL_LIBRARIES}
-      )
-
-      IF(WIN32)
-        set_property(TARGET CURL::libcurl
-                APPEND
-                PROPERTY INTERFACE_LINK_LIBRARIES
-                Crypt32 Cryptui
-        )
-      ELSE()
-        # CURL depends on libidn
-        FIND_LIBRARY(IDN_LIBRARY idn)
-        IF(IDN_LIBRARY)
-          set_property(TARGET CURL::libcurl
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${IDN_LIBRARY}
-          )
-        ENDIF()
-
-        # CURL Macports version can depend on libidn, libidn2, libintl, libpsl and libiconv too
-        IF(APPLE)
-          FIND_LIBRARY(INTL_LIBRARY intl)
-          IF(INTL_LIBRARY)
-            set_property(TARGET CURL::libcurl
-                    APPEND
-                    PROPERTY INTERFACE_LINK_LIBRARIES
-                    ${INTL_LIBRARY}
-            )
-          ENDIF()
-
-          FIND_LIBRARY(IDN2_LIBRARY idn2)
-          IF(IDN2_LIBRARY)
-            set_property(TARGET CURL::libcurl
-                    APPEND
-                    PROPERTY INTERFACE_LINK_LIBRARIES
-                    ${IDN2_LIBRARY}
-            )
-          ENDIF()
-
-          FIND_LIBRARY(PSL_LIBRARY psl)
-          IF(PSL_LIBRARY)
-            set_property(TARGET CURL::libcurl
-                    APPEND
-                    PROPERTY INTERFACE_LINK_LIBRARIES
-                    ${PSL_LIBRARY}
-            )
-          ENDIF()
-
-          FIND_LIBRARY(UNISTRING_LIBRARY unistring)
-          IF(UNISTRING_LIBRARY)
-            set_property(TARGET CURL::libcurl
-                    APPEND
-                    PROPERTY INTERFACE_LINK_LIBRARIES
-                    ${UNISTRING_LIBRARY}
-            )
-          ENDIF()
-
-          set_property(TARGET CURL::libcurl
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${SECURITY_FRAMEWORK}
-          )
-        ENDIF()
-      ENDIF()
-    ENDIF()
+    FIND_PACKAGE(CURL REQUIRED)
+    ENDIF() # !EMSCRIPTEN
   ENDIF() #hunter
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/nel/include)

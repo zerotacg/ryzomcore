@@ -165,6 +165,7 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 CDriverD3D::CDriverD3D()
 {
 	_SwapBufferCounter = 0;
+	_MaxFrameLatency = 3;
 	_CurrentOcclusionQuery = NULL;
 	_D3D = NULL;
 	_HWnd = NULL;
@@ -1622,6 +1623,8 @@ bool CDriverD3D::setDisplay(nlWindow wnd, const GfxMode& mode, bool show, bool r
 		if (dummyQuery) dummyQuery->Release();
 	}
 
+	// D3D9 non-Ex always has a max frame latency of 3 (not queryable without CreateDeviceEx).
+	_MaxFrameLatency = 3;
 
 #ifdef NL_FORCE_TEXTURE_STAGE_COUNT
 	_NbNeLTextureStages = min ((uint)NL_FORCE_TEXTURE_STAGE_COUNT, (uint)IDRV_MAT_MAXTEXTURES);

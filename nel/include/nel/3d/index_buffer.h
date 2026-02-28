@@ -188,6 +188,11 @@ public:
 		/// (Replaces old RAMPreferred.)
 		CpuReadWrite,
 
+		/// Caller maps unsynchronized and guarantees no write conflicts with
+		/// in-flight GPU reads. Used with allocator-level deferred freeing.
+		/// Fallback: PartialWrite on legacy drivers.
+		UnsynchronizedWrite,
+
 		UsageCount
 	};
 

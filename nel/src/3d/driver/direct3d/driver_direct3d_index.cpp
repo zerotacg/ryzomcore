@@ -264,6 +264,7 @@ bool CDriverD3D::activeIndexBuffer(CIndexBuffer& IB)
 				break;
 			case CIndexBuffer::FullRewrite:
 			case CIndexBuffer::PartialWrite:
+			case CIndexBuffer::UnsynchronizedWrite:
 				location = CIndexBuffer::AGPResident;
 				info->Volatile = false;
 				break;

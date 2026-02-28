@@ -54,6 +54,7 @@ CVBDrvInfosD3D::CVBDrvInfosD3D(CDriverD3D *drv, ItVBDrvInfoPtrList it, CVertexBu
 	ColorOffset = 0;
 	VertexBuffer = NULL;
 	Usage = 0;
+	UnsynchronizedWrite = false;
 	VolatileVertexBuffer = NULL;
 	VertexDeclNoDiffuse = NULL;
 	#ifdef NL_DEBUG
@@ -177,7 +178,10 @@ uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 		}
 
 		void *pbData;
-		if (VertexBuffer->Lock ( begin, end-begin, &pbData, readOnly?D3DLOCK_READONLY:0) != D3D_OK)
+		DWORD lockFlags = readOnly ? D3DLOCK_READONLY : 0;
+		if (UnsynchronizedWrite && !readOnly)
+			lockFlags = D3DLOCK_NOOVERWRITE;
+		if (VertexBuffer->Lock ( begin, end-begin, &pbData, lockFlags) != D3D_OK)
 			return NULL;
 
 		// Lock Profile?
@@ -378,6 +382,11 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 			case CVertexBuffer::PartialWrite:
 				location = CVertexBuffer::AGPResident;
 				info->Volatile = false;
+				break;
+			case CVertexBuffer::UnsynchronizedWrite:
+				location = CVertexBuffer::AGPResident;
+				info->Volatile = false;
+				info->UnsynchronizedWrite = true;
 				break;
 			case CVertexBuffer::Immutable:
 				if (getStaticMemoryToVRAM())

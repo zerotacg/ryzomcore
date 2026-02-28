@@ -11,7 +11,6 @@ ADD_EXECUTABLE(ryzom_client_patcher ${SRC})
 
 TARGET_INCLUDE_DIRECTORIES(ryzom_client_patcher
         PRIVATE
-        ${CURL_INCLUDE_DIRS}
         ${CMAKE_SOURCE_DIR}/ryzom/client/src
 )
 
@@ -29,8 +28,6 @@ TARGET_LINK_LIBRARIES(ryzom_client_patcher
 IF (APPLE)
     TARGET_LINK_LIBRARIES(ryzom_client_patcher PRIVATE ${FOUNDATION_FRAMEWORK})
 ENDIF ()
-
-TARGET_COMPILE_DEFINITIONS(ryzom_client_patcher PRIVATE ${CURL_DEFINITIONS})
 
 NL_DEFAULT_PROPS(ryzom_client_patcher "Ryzom, Tools: Ryzom Client Patcher")
 NL_ADD_RUNTIME_FLAGS(ryzom_client_patcher)

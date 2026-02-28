@@ -26,6 +26,7 @@ jobs:
       build-version: ${{ steps.strings.outputs.build-version }}
       image-version: ${{ steps.strings.outputs.image-version }}
       image-group: ${{ steps.strings.outputs.image-group }}
+      week: ${{ steps.strings.outputs.week }}
     steps:
       - name: Set reusable strings
         id: strings
@@ -44,6 +45,7 @@ jobs:
           echo "build-version=${VERSION}+sha.${COMMIT_HASH:0:8}" >> "$GITHUB_OUTPUT"
           echo "image-version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "image-group=${IMAGE_GROUP}" >> "$GITHUB_OUTPUT"
+          echo "week=$(date +%YW%V)" >> "$GITHUB_OUTPUT"
 
   nel:
     name: "NeL"
@@ -59,6 +61,12 @@ jobs:
             build-type: dynamic
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-nel-${{ matrix.os }}-${{ matrix.build-type }}-${{ needs.strings.outputs.week }}-${{ github.sha }}
+          restore-keys: ccache-nel-${{ matrix.os }}-${{ matrix.build-type }}-${{ needs.strings.outputs.week }}-
 
       - id: cache
         uses: actions/cache@v4
@@ -91,6 +99,12 @@ jobs:
         os: [ ubuntu-22.04, ubuntu-24.04 ]
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-nelns-${{ matrix.os }}-${{ needs.strings.outputs.week }}-${{ github.sha }}
+          restore-keys: ccache-nelns-${{ matrix.os }}-${{ needs.strings.outputs.week }}-
 
       - uses: actions/download-artifact@v4
         with:
@@ -133,6 +147,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-ryzom-${{ matrix.os }}-${{ matrix.build-type }}-${{ needs.strings.outputs.week }}-${{ github.sha }}
+          restore-keys: ccache-ryzom-${{ matrix.os }}-${{ matrix.build-type }}-${{ needs.strings.outputs.week }}-
+
       - uses: actions/download-artifact@v4
         with:
           pattern: nel-${{ matrix.os }}-${{ matrix.build-type }}-*
@@ -173,6 +193,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-snowballs-${{ matrix.os }}-${{ needs.strings.outputs.week }}-${{ github.sha }}
+          restore-keys: ccache-snowballs-${{ matrix.os }}-${{ needs.strings.outputs.week }}-
+
       - uses: actions/download-artifact@v4
         with:
           pattern: nel-${{ matrix.os }}-static-*
@@ -210,6 +236,12 @@ jobs:
         os: [ ubuntu-22.04, ubuntu-24.04 ]
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-studio-${{ matrix.os }}-${{ needs.strings.outputs.week }}-${{ github.sha }}
+          restore-keys: ccache-studio-${{ matrix.os }}-${{ needs.strings.outputs.week }}-
 
       - uses: actions/download-artifact@v4
         with:

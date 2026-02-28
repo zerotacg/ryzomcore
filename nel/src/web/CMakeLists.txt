@@ -11,7 +11,6 @@ TARGET_INCLUDE_DIRECTORIES(nelweb PRIVATE ../../3rdparty)
 TARGET_LINK_LIBRARIES(nelweb
         PUBLIC
         NeL::misc
-        NeL::sevenzip
         PRIVATE
         CURL::libcurl
         OpenSSL::SSL

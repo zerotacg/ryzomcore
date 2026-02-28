@@ -375,6 +375,7 @@ public:
 	bool							Hardware:1;
 	bool							Volatile:1; 		// Volatile vertex buffer
 	bool							VolatileRAM:1;
+	bool							UnsynchronizedWrite:1;	// Use D3DLOCK_NOOVERWRITE
 	uint8							Stride:8;
 	uint							VolatileLockTime;	// Volatile vertex buffer
 	DWORD							Usage;
@@ -1032,6 +1033,8 @@ public:
 	// Misc
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
 	virtual uint64			getSwapBufferCounter() const { return _SwapBufferCounter; }
+	virtual bool			isTripleBufferPipelined() const { return true; }
+	virtual uint64			getSwapBufferInFlight() const { return (_SwapBufferCounter > _MaxFrameLatency) ? _SwapBufferCounter - _MaxFrameLatency : 0; }
 
 	// Inputs
 	virtual void			showCursor (bool b);
@@ -2681,6 +2684,7 @@ private:
 	static const uint32		ReleaseVersion;
 
 	uint64 _SwapBufferCounter;
+	uint64 _MaxFrameLatency;
 
 	// occlusion query
 	bool						_OcclusionQuerySupported;

@@ -660,65 +660,6 @@ MACRO(FIND_LIBRARY_HELPER NAME)
   MARK_AS_ADVANCED(${_UPNAME_FIXED}_LIBRARY_RELEASE ${_UPNAME_FIXED}_LIBRARY_DEBUG)
 ENDMACRO()
 
-MACRO(FIND_LIBCURL)
-  IF(NOT CURL_FOUND)
-    FIND_PACKAGE(CURL REQUIRED)
-
-    IF(WIN32 OR CURL_LIBRARY MATCHES "\\.a" OR WITH_STATIC_CURL)
-      SET(CURL_STATIC ON)
-    ELSE()
-      SET(CURL_STATIC OFF)
-    ENDIF()
-
-    IF(CURL_STATIC)
-      SET(CURL_DEFINITIONS -DCURL_STATICLIB)
-
-      IF(UNIX)
-        # CURL can depend on libidn
-        FIND_LIBRARY(IDN_LIBRARY idn)
-        IF(IDN_LIBRARY)
-          set_property(TARGET CURL::libcurl
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${IDN_LIBRARY}
-          )
-        ENDIF()
-
-        # CURL Macports version can depend on libidn, libintl and libiconv too
-        IF(APPLE)
-          FIND_LIBRARY(INTL_LIBRARY intl)
-          IF(INTL_LIBRARY)
-            set_property(TARGET CURL::libcurl
-                    APPEND
-                    PROPERTY INTERFACE_LINK_LIBRARIES
-                    ${INTL_LIBRARY}
-            )
-          ENDIF()
-        ELSE()
-          # Only used by libcurl under Linux
-          FIND_PACKAGE(OpenSSL REQUIRED)
-
-          #IF(WIN32)
-          #  SET(OPENSSL_LIBRARIES ${OPENSSL_LIBRARIES} Crypt32.lib)
-          #ENDIF()
-
-          # Only Linux version of libcurl depends on OpenSSL
-          set_property(TARGET CURL::libcurl
-                  APPEND
-                  PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-                  ${OPENSSL_INCLUDE_DIR}
-          )
-          set_property(TARGET CURL::libcurl
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${OPENSSL_LIBRARIES}
-          )
-        ENDIF()
-      ENDIF()
-    ENDIF()
-  ENDIF()
-ENDMACRO()
-
 MACRO(FIND_LIBXML2)
   IF(NOT LIBXML2_FOUND)
     FIND_PACKAGE(LibXml2 REQUIRED)
