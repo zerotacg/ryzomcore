@@ -25,7 +25,10 @@
     },
     "lua",
     "luabind",
-    "msquic",
+    {
+      "name": "msquic",
+      "platform": "!mingw & !(static & staticcrt)"
+    },
     "openal-soft",
     "opengl",
     "openssl",

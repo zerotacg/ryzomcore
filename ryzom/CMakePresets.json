@@ -152,6 +152,7 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x86-mingw-static",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/CMakeModules/toolchain-mingw.cmake",
+        "WITH_MSQUIC": false,
         "WITH_EXTERNAL": false,
         "WITH_STATIC_CURL": false
       }
