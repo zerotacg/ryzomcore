@@ -193,7 +193,6 @@ IF(WITH_GTK)
 ENDIF()
 
 IF(HUNTER_ENABLED)
-  HUNTER_ADD_PACKAGE(Jpeg)
   FIND_PACKAGE(JPEG CONFIG REQUIRED)
 
   # add compatibility with cmake findJPEG
@@ -201,14 +200,12 @@ IF(HUNTER_ENABLED)
       add_library(JPEG::JPEG ALIAS JPEG::jpeg)
   endif()
 
-  HUNTER_ADD_PACKAGE(giflib)
   FIND_PACKAGE(giflib CONFIG REQUIRED)
   # add compatibility with cmake findGIF
   if(GIF_FOUND AND NOT TARGET GIF::GIF)
       add_library(GIF::GIF ALIAS giflib::giflib)
   endif()
 
-  HUNTER_ADD_PACKAGE(PNG)
   FIND_PACKAGE(PNG CONFIG REQUIRED)
   # add compatibility with cmake FindPNG
   if(GIF_FOUND AND NOT TARGET PNG::PNG)

@@ -92,12 +92,10 @@ NL_TARGET_LIB(nelsound ${HEADERS} ${SRC})
 add_project_library_alias(nelsound sound)
 
 IF(HUNTER_ENABLED)
-  HUNTER_ADD_PACKAGE(libogg)
   FIND_PACKAGE(libogg CONFIG REQUIRED)
   SET(OGG_LIBRARY libogg::ogg)
   SET(OGG_LIBRARIES libogg::ogg)
 
-  HUNTER_ADD_PACKAGE(vorbis)
   FIND_PACKAGE(vorbis CONFIG REQUIRED)
   # add compatibility with vorbis cmake config
   if(NOT TARGET Vorbis::vorbis)
@@ -108,7 +106,6 @@ IF(HUNTER_ENABLED)
   endif()
 
   IF(WITH_FFMPEG)
-    HUNTER_ADD_PACKAGE(ffmpeg)
     FIND_PACKAGE(ffmpeg CONFIG REQUIRED)
     SET(FFMPEG_LIBRARIES ffmpeg::avcodec ffmpeg::avformat ffmpeg::avutil ffmpeg::swresample)
   ENDIF()

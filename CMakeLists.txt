@@ -154,7 +154,6 @@ IF(HUNTER_ENABLED)
   ## TODO: hack for freetype hunter package
   SET(ON 1)
   ##
-  HUNTER_ADD_PACKAGE(ZLIB)
 
   FIND_PACKAGE(ZLIB CONFIG REQUIRED)
   # add compatibility with cmake findZLIB module
@@ -162,17 +161,12 @@ IF(HUNTER_ENABLED)
       add_library(ZLIB::ZLIB ALIAS ZLIB::zlib)
   endif()
 
-  HUNTER_ADD_PACKAGE(libxml2)
   FIND_PACKAGE(libxml2 CONFIG REQUIRED)
   # add compatibility with cmake find module
   if(libxml2_FOUND AND NOT TARGET LibXml2::LibXml2)
       add_library(LibXml2::LibXml2 ALIAS libxml2::libxml2)
   endif()
 
-  # cross compiling doesn't quite work on the hunter openssl package therefor compile it separately and use it
-  IF(NOT CMAKE_CROSSCOMPILING)
-    HUNTER_ADD_PACKAGE(OpenSSL)
-  ENDIF()
   FIND_PACKAGE(OpenSSL REQUIRED COMPONENTS Crypto SSL)
 
   # for precompiled headers, not needed if using TARGET_PRECOMPILE_HEADERS() from cmake 3.16+
@@ -333,11 +327,9 @@ ENDIF()
 IF(WITH_NEL)
   IF(HUNTER_ENABLED)
     IF(WITH_GUI)
-      HUNTER_ADD_PACKAGE(luabind)
       FIND_PACKAGE(Luabind REQUIRED)
     ENDIF()
 
-    HUNTER_ADD_PACKAGE(CURL)
     FIND_PACKAGE(CURL CONFIG REQUIRED)
   ELSE()
     IF(WITH_GUI)

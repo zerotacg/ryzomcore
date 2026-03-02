@@ -84,7 +84,6 @@ MACRO(FIND_CORRECT_LUA_VERSION)
   ELSE()
     # TODO: find a way to detect Lua version
     IF(HUNTER_ENABLED)
-      HUNTER_ADD_PACKAGE(Lua)
       FIND_PACKAGE(Lua CONFIG REQUIRED)
       SET(LUA_LIBRARIES Lua::lua_lib)
     ELSEIF(WITH_LUA54)
