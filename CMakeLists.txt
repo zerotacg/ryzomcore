@@ -28,13 +28,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 OPTION(HUNTER_ENABLED "Enable Hunter package manager" OFF)
 IF(HUNTER_ENABLED)
 
-  INCLUDE("CMakeModules/HunterGate.cmake")
-  HunterGate(
-    URL "https://github.com/cpp-pm/hunter/archive/v0.26.1.tar.gz"
-    SHA1 "e41ac7a18c49b35ebac99ff2b5244317b2638a65"
-    FILEPATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules/HunterConfig.cmake"
-  )
-
   # default options for hunterized build
   SET(WITH_STATIC         ON CACHE BOOL "static" FORCE)
   SET(WITH_STATIC_DRIVERS ON CACHE BOOL "static drivers" FORCE)
