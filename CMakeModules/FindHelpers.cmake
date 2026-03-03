@@ -924,7 +924,7 @@ MACRO(FIND_QT5)
       FIND_PACKAGE(Freetype)
 
       IF(FREETYPE_FOUND)
-        LIST(APPEND QT_LIBRARIES ${FREETYPE_LIBRARIES})
+        LIST(APPEND QT_LIBRARIES Freetype::Freetype)
       ELSE()
         IF(UNIX)
           SET(FREETYPE_LIB "${QT_LIBRARY_DIR}/libqtfreetype.a")
