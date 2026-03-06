@@ -208,7 +208,7 @@ IF(HUNTER_ENABLED)
 
   FIND_PACKAGE(PNG CONFIG REQUIRED)
   # add compatibility with cmake FindPNG
-  if(GIF_FOUND AND NOT TARGET PNG::PNG)
+  if(PNG_FOUND AND NOT TARGET PNG::PNG)
       add_library(PNG::PNG ALIAS PNG::png)
   endif()
 ENDIF()
