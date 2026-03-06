@@ -15,9 +15,9 @@ IF(WIN32)
 ENDIF()
 
 IF(WITH_3D)
-  if(HUNTER_ENABLED)
-    # workaround for hunter package name
-    FIND_PACKAGE(freetype REQUIRED)
+  IF(HUNTER_ENABLED)
+    FIND_PACKAGE(freetype CONFIG REQUIRED)
+    SET(FREETYPE_LIBRARIES freetype::freetype)
   ELSEIF(EMSCRIPTEN)
     # Emscripten provides FreeType as a port via -sUSE_FREETYPE=1
     SET(FREETYPE_FOUND TRUE)
@@ -26,8 +26,8 @@ IF(WITH_3D)
       INTERFACE_COMPILE_OPTIONS "-sUSE_FREETYPE=1"
     )
   ELSE()
-    FIND_PACKAGE(Freetype REQUIRED)
-  ENDIF()
+    FIND_PACKAGE(Freetype)
+  ENDIF() #hunter
 
   IF(WITH_NEL_CEGUI)
     FIND_PACKAGE(CEGUI)
