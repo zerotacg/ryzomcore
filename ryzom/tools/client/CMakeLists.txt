@@ -1,4 +1,4 @@
-IF(WITH_RYZOM_CLIENT_PATCHER)
+IF(WITH_RYZOM_CLIENT)
   # Don't need ryzom_client_patcher if using Steam
   IF(NOT WITH_RYZOM_STEAM)
     ADD_SUBDIRECTORY(client_patcher)

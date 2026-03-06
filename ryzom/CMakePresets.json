@@ -108,7 +108,6 @@
       "cacheVariables": {
         "WITH_DRIVER_DIRECT3D": true,
         "WITH_DRIVER_XAUDIO2": true,
-        "WITH_RYZOM_CLIENT_PATCHER": false,
         "DXSDK_DIR": "C:/DXSDK"
       }
     },
