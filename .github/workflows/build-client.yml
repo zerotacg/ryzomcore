@@ -1,4 +1,4 @@
-name: "Ryzom Client: build on multiple platforms (hunter)"
+name: "Ryzom Client: build on multiple platforms"
 
 on:
   push:
@@ -30,10 +30,14 @@ on:
       - vcpkg.json
       - vcpkg-configuration.json
 
+  workflow_dispatch:
+
 env:
   VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg,readwrite"
   CCACHE_DIR: "${{ github.workspace }}/.ccache"
+  CHOCOLATEY_CACHE: "${{ github.workspace }}/.choco"
   HUNTER_ROOT: "${{ github.workspace }}/.hunter"
+  MACOSX_DEPLOYMENT_TARGET: 10.13
 
 jobs:
   build:
@@ -48,6 +52,9 @@ jobs:
             cmake_preset: ci-windows-ryzom-client-hunter
           - os: windows-2025
             cmake_preset: ci-windows-ryzom-client-hunter
+          - os: windows-2025
+            cmake_preset: ci-windows-ryzom-client-vcpkg
+            vcpkg: true
           - os: ubuntu-22.04
             ubuntu_version: 22.04
             cmake_preset: ci-linux-ryzom-client-hunter
@@ -61,7 +68,7 @@ jobs:
             vcpkg: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set reusable strings
       id: strings
       shell: bash
@@ -76,7 +83,7 @@ jobs:
     - uses: lukka/run-vcpkg@v11
       if: matrix.vcpkg == true
 
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache/restore@v5
       if: matrix.vcpkg == true
       with:
         path: ${{ github.workspace }}/.vcpkg
@@ -110,7 +117,7 @@ jobs:
       run: |
         brew install autoconf autoconf-archive automake libtool
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       if: matrix.ccache == true
       with:
         path: ${{ env.CCACHE_DIR }}
@@ -124,13 +131,13 @@ jobs:
         ccache --set-config=compression=true
         ccache -z
 
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache/restore@v5
       with:
         path: ${{ env.HUNTER_ROOT }}
         key: ${{ matrix.os }}-hunter-${{ steps.strings.outputs.week }}-${{ github.sha }}
         restore-keys: ${{ matrix.os }}-hunter-${{ steps.strings.outputs.week }}-
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       if: runner.os == 'Windows'
       with:
         path: C:\DXSDK
@@ -146,23 +153,28 @@ jobs:
           del DXSDK_Jun10.exe
         )
 
+    - uses: actions/cache@v5
+      if: runner.os == 'Windows'
+      with:
+        path: ${{ env.CHOCOLATEY_CACHE }}
+        key: choco
+
     - name: Dependencies Windows
       if: runner.os == 'Windows'
       run: |
-        choco install nsis
+        choco install nsis --cache-location=${{ env.CHOCOLATEY_CACHE }}
 
     - name: Configure CMake
-      env:
-        MACOSX_DEPLOYMENT_TARGET: 10.13
-      run: >
+      run: |
         cmake --preset ${{ matrix.cmake_preset }}
 
-    - uses: actions/cache/save@v4
+    - uses: actions/cache/save@v5
       with:
         path: ${{ env.HUNTER_ROOT }}
         key: ${{ matrix.os }}-hunter-${{ steps.strings.outputs.week }}-${{ github.sha }}
 
-    - uses: actions/cache/save@v4
+    - uses: actions/cache/save@v5
+      if: (matrix.vcpkg == true)
       with:
         path: ${{ github.workspace }}/.vcpkg
         key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
@@ -179,14 +191,14 @@ jobs:
     - name: Package
       run: cpack --preset ci-ryzom-client
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       if: failure()
       with:
-        name: ${{ matrix.os }}-logs
+        name: ${{ matrix.os }}-build-logs
         path: build/**/*.log
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
-        name: ${{ matrix.os }}-client-package
+        name: ${{ matrix.os }}-client-package${{ matrix.vcpkg && '-vcpkg' }}
         path: build/ryzom-client/ryzom-client-*
         if-no-files-found: error

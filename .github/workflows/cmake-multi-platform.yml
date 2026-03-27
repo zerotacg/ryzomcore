@@ -74,7 +74,7 @@ jobs:
         with:
           cmakeVersion: 3.31.11
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Dependencies
         run: |
@@ -107,7 +107,7 @@ jobs:
           sudo mv msquic.h msquic_posix.h quic_sal_stub.h /usr/include/
 
       - name: Set up ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ccache
           key: ccache-${{ matrix.os }}-${{ needs.strings.outputs.week }}-${{ github.sha }}
@@ -130,7 +130,7 @@ jobs:
           -DWITH_PCH=OFF
 
       - name: Build
-        run: cmake --build --preset ${{ matrix.build_preset }}
+        run: cmake --build --preset ${{ matrix.build_preset }} --target install
 
       - name: ccache stats
         if: always()
@@ -139,7 +139,7 @@ jobs:
       - name: Unit Tests
         run: ctest --preset default
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: (success() || failure()) && matrix.os == 'ubuntu-24.04'
         with:
           name: test-results
@@ -149,7 +149,7 @@ jobs:
       - name: Package
         run: cpack --preset default
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.os }}-package
           path: ${{ needs.strings.outputs.build-output-dir }}/ryzomcore-*
@@ -163,9 +163,9 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: ubuntu-24.04-package
           path: ${{ needs.strings.outputs.build-output-dir }}
@@ -175,7 +175,7 @@ jobs:
           docker build . --file docker/Dockerfile --tag "${{ needs.strings.outputs.docker-image-tag }}"
           docker save --output=${{ needs.strings.outputs.build-output-dir }}/docker-$IMAGE_NAME-${{ needs.strings.outputs.build-version }} "${{ needs.strings.outputs.docker-image-tag }}"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: docker
           path: ${{ needs.strings.outputs.build-output-dir }}/docker-*

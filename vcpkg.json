@@ -11,6 +11,10 @@
         "error-strings"
       ]
     },
+    {
+      "name": "directxsdk",
+      "platform": "windows"
+    },
     "giflib",
     "libogg",
     "libvorbis",
@@ -29,7 +33,8 @@
     "openal-soft",
     "opengl",
     "openssl",
-    "zlib"
+    "zlib",
+    "gtest"
   ],
   "overrides": [
     {
@@ -37,8 +42,17 @@
       "version": "1.24.3"
     }
   ],
-  "default-features": ["testing"],
+  "default-features": [
+    "pipeline-max",
+    "testing"
+  ],
   "features": {
+    "pipeline-max": {
+      "description": "Builds with tools for pipeline using max",
+      "dependencies": [
+        "boost-algorithm"
+      ]
+    },
     "qt": {
       "description": "Builds with QT",
       "dependencies": [
@@ -48,8 +62,7 @@
     "testing": {
       "description": "Builds tests",
       "dependencies": [
-        "cpptest",
-        "gtest"
+        "cpptest"
       ]
     }
   }

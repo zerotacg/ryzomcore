@@ -42,11 +42,11 @@ IF(WITH_SOUND AND NOT HUNTER_ENABLED)
   ENDIF()
 
   IF(WITH_DRIVER_OPENAL)
-    FIND_PACKAGE(OpenAL)
+    FIND_PACKAGE(OpenAL REQUIRED)
   ENDIF()
 
   IF(WITH_DRIVER_FMOD)
-    FIND_PACKAGE(FMOD)
+    FIND_PACKAGE(FMOD REQUIRED)
   ENDIF()
 ENDIF()
 
@@ -93,6 +93,7 @@ set(project_namespace "${PROJECT_NAME}")
 set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(package_components 3d georges gui ligo misc net pacs sevenzip sound snd_lowlevel) # TODO append in components to have actual list of build targets
 set(package_required_dependencies CURL Freetype)
+set(package_georges_dependencies LibXml2)
 set(package_gui_dependencies Lua Luabind)
 set(package_sound_dependencies Vorbis)
 
