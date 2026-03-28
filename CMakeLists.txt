@@ -174,6 +174,14 @@ IF(HUNTER_ENABLED)
   # add compatibility with cmake find module
   if(libxml2_FOUND AND NOT TARGET LibXml2::LibXml2)
       add_library(LibXml2::LibXml2 ALIAS libxml2::libxml2)
+      IF(WITH_STATIC AND WINSOCK2_LIB)
+        # libxml2 with LIBXML_HTTP_ENABLED has some additional dependencies that hunter does not add
+            set_property(TARGET libxml2::libxml2
+                    APPEND
+                    PROPERTY INTERFACE_LINK_LIBRARIES
+                    ${WINSOCK2_LIB}
+            )
+      ENDIF()
   endif()
 
   # cross compiling doesn't quite work on the hunter openssl package therefor compile it separately and use it
@@ -248,17 +256,6 @@ IF(Iconv_FOUND)
   endif ()
 ENDIF()
 
-IF(WITH_STATIC)
-  # libxml2 could need winsock2 library
-  IF(WINSOCK2_LIB AND TARGET LibXml2::LibXml2 AND NOT HUNTER_ENABLED)
-      set_property(TARGET LibXml2::LibXml2
-            APPEND
-            PROPERTY INTERFACE_LINK_LIBRARIES
-            ${WINSOCK2_LIB}
-      )
-  ENDIF()
-ENDIF()
-
 IF(FINAL_VERSION)
   ADD_DEFINITIONS(-DFINAL_VERSION=1)
 ENDIF()
@@ -331,6 +328,7 @@ IF(WITH_NEL_TESTS OR WITH_TESTING)
           URL https://github.com/google/googletest/archive/54915d462bb64e9b2bd1a3f0e70c00e6f5d817fb.zip
           EXCLUDE_FROM_ALL
   )
+  SET(INSTALL_GTEST OFF)
   SET(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   FetchContent_MakeAvailable(googletest)
   include(GoogleTest)
@@ -360,15 +358,6 @@ IF(WITH_NEL)
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/nel/include)
   ADD_SUBDIRECTORY(nel)
-
-  # Aliases for targets
-  SET(NELMISC_LIBRARIES NeL::misc)
-  SET(NELNET_LIBRARIES NeL::net)
-  SET(NELLIGO_LIBRARIES NeL::ligo)
-  SET(NELGEORGES_LIBRARIES NeL::georges)
-  SET(NEL3D_LIBRARIES NeL::3d)
-  SET(NELGUI_LIBRARIES NeL::gui)
-  SET(NELSOUND_LIBRARIES NeL::sound)
 
   # allow find_package to find projects from within the mono repo
   list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_BINARY_DIR}/nel/internal")

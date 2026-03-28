@@ -14,27 +14,28 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef UT_LIGO_PRIMITIVE
-#define UT_LIGO_PRIMITIVE
+#include <gtest/gtest.h>
+
+#include <string>
 
 #include <nel/ligo/ligo_config.h>
 #include <nel/ligo/primitive_utils.h>
 
-class CUTLigoPrimitive : public Test::Suite
+using std::string;
+
+class CUTLigoPrimitive : public testing::Test
 {
-public:
-	CUTLigoPrimitive()
-	{
-		TEST_ADD(CUTLigoPrimitive::testAliasGenerator)
-	}
-
-private:
-
+protected:
 	string	_RestorePath;
 	string	_WorkingPath;
-	string	_RefPrimFileName;
-	void setup()
+	string _RefPrimFileName;
+	NLLIGO::CLigoConfig _LigoConfig;
+	NLMISC::CApplicationContext context;
+
+	void SetUp() override
 	{
+		context = NLMISC::CApplicationContext();
+		NLMISC::createDebug(nullptr);
 		_RestorePath = NLMISC::CPath::getCurrentPath();
 		NLMISC::CPath::setCurrentPath(_WorkingPath.c_str());
 
@@ -101,21 +102,22 @@ private:
 		pa->addPropertyByName("class", new NLLIGO::CPropertyString("alias"));
 		pa->addPropertyByName("name", new NLLIGO::CPropertyString("alias"));
 		p->insertChild(pa);
-		
+
 		NLLIGO::CPrimitiveContext::instance().CurrentPrimitive = NULL;
 
 		// save the file
 		saveXmlPrimitiveFile(primDoc, _RefPrimFileName);
 	}
-	
-	void tear_down()
+
+	void TearDown() override
 	{
 		NLMISC::CPath::setCurrentPath(_RestorePath.c_str());
 	}
+};
 
-	void testAliasGenerator()
-	{
-		//Known bug : is we load/save a primitive and replacing a primitive node with itself (conserving the alias), the 
+TEST_F(CUTLigoPrimitive, testAliasGenerator)
+{
+		//Known bug : is we load/save a primitive and replacing a primitive node with itself (conserving the alias), the
 		// 'last generated alias' counter is incremented.
 		uint32 lastGeneratedAlias;
 
@@ -132,11 +134,11 @@ private:
 			// get a copy of the primitive
 			NLLIGO::IPrimitive *prim = NULL;
 			NLLIGO::IPrimitive *primCopy = NULL;
-			TEST_ASSERT(primDoc.RootNode->getChild(prim, 0));
+			ASSERT_TRUE(primDoc.RootNode->getChild(prim, 0));
 			if (prim)
 			{
 				primCopy = prim->copy();
-				TEST_ASSERT(primCopy != NULL);
+				ASSERT_TRUE(primCopy != NULL);
 				if (primCopy)
 				{
 					// remove the primitive
@@ -161,11 +163,6 @@ private:
 			loadXmlPrimitiveFile(primDoc, _RefPrimFileName, _LigoConfig);
 			NLLIGO::CPrimitiveContext::instance().CurrentPrimitive = NULL;
 
-			TEST_ASSERT(lastGeneratedAlias == primDoc.getLastGeneratedAlias());
+			ASSERT_EQ(lastGeneratedAlias, primDoc.getLastGeneratedAlias());
 		}
-	}
-
-	NLLIGO::CLigoConfig		_LigoConfig;
-};
-
-#endif
+}
