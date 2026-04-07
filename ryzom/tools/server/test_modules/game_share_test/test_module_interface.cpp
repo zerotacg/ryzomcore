@@ -162,7 +162,7 @@ public:
 
 NLNET_REGISTER_MODULE_FACTORY(CModuleClient, "ModuleClient");
 
-class CModuleInterfaceTS : public testing::Test
+class CModuleInterface : public testing::Test
 {
 
 protected:
@@ -177,7 +177,7 @@ protected:
 	}
 };
 
-TEST_F(CModuleInterfaceTS, testTwoWay)
+TEST_F(CModuleInterface, testTwoWay)
 {
 	// create two modules and test the two way invocation protocol
 
