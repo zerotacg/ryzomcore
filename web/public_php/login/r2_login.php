@@ -142,7 +142,7 @@
 	}
 
 	// Callback called on error
-	function err_callback($errno, $errmsg, $filename, $linenum)
+	function err_callback($errno, $errmsg, $filename, $linenum, $vars)
 	{
 		$logFile = new CWwwLog();
 		$logFile->logStr("PHP ERROR/$errno $errmsg ($filename:$linenum)");
