@@ -102,11 +102,17 @@ jobs:
   nelns:
     name: "NeL Network Services"
     needs: [ strings, nel ]
-    timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-22.04, ubuntu-24.04 ]
+        include:
+          - os: ubuntu-22.04
+            cmake-preset: ci-linux-nelns
+          - os: ubuntu-24.04
+            cmake-preset: ci-linux-nelns
+            docker: true
+          - os: ubuntu-24.04
+            cmake-preset: ci-linux-nelns-vcpkg
     steps:
       - uses: actions/checkout@v6
 
@@ -125,14 +131,16 @@ jobs:
       - id: cache
         uses: actions/cache@v5
         with:
-          key: nelns-${{ matrix.os }}-${{ hashFiles('build/nel-*.sh', 'nelns/**', '.github/nelns/**', 'cmake/**', 'CMakeModules/**', 'CMakeLists.txt', 'CMakePresets.json') }}
+          key: nelns-${{ matrix.os }}-${{ matrix.cmake-preset }}-${{ hashFiles('build/nel-*.sh', 'nelns/**', '.github/nelns/**', 'cmake/**', 'CMakeModules/**', 'CMakeLists.txt', 'CMakePresets.json') }}
           path: ${{ needs.strings.outputs.build-dir }}/nelns/nelns-*
 
       - uses: ./.github/nelns
         if: steps.cache.outputs.cache-hit != 'true'
         with:
           os: ${{ matrix.os }}
+          cmake-preset: ${{ matrix.cmake-preset }}
           install-dir: ${{ needs.strings.outputs.install-dir }}
+          docker: ${{ matrix.docker }}
           image-group: ${{ needs.strings.outputs.image-group }}
           image-version: ${{ needs.strings.outputs.image-version }}
           build-dir: ${{ needs.strings.outputs.build-dir }}
@@ -140,7 +148,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: nelns-${{ matrix.os }}-${{ needs.strings.outputs.build-version }}
+          name: nelns-${{ matrix.os }}-${{ matrix.cmake-preset }}-${{ needs.strings.outputs.build-version }}
           path: ${{ needs.strings.outputs.build-dir }}/nelns/nelns-*
           if-no-files-found: error
 
