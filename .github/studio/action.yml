@@ -61,11 +61,7 @@ runs:
     - name: Configure CMake
       if: runner.os == 'Linux'
       shell: bash
-      run: >
-        cmake --preset ci-linux-studio
-        -DCMAKE_C_COMPILER_LAUNCHER=ccache
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-        -DWITH_PCH=OFF
+      run: cmake --preset ci-linux-studio
 
     - name: Build
       shell: bash

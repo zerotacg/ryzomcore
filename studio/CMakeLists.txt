@@ -9,6 +9,9 @@ cmake_minimum_required(VERSION 3.28)
 project(Studio VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
 
 find_package(NeL ${RyzomCore_VERSION} REQUIRED COMPONENTS 3d georges gui ligo misc sound)
+if(WITH_QT5)
+  find_package(Qt5 5.15 REQUIRED COMPONENTS Core)
+ENDIF ()
 
 # This tells the application(s) where to find the installed data.
 IF(WIN32)
