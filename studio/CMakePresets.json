@@ -6,9 +6,9 @@
   ],
   "configurePresets": [
     {
+      "name": "studio",
       "binaryDir": "${sourceDir}/build/studio",
       "installDir": "${sourceDir}/build/install/studio",
-      "name": "studio",
       "cacheVariables": {
         "WITH_STUDIO": true,
         "WITH_TESTING": true,
@@ -62,6 +62,7 @@
       "inherits": [
         "vcpkg",
         "ci-studio",
+        "studio",
         "linux"
       ]
     },
