@@ -256,7 +256,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-22.04, ubuntu-24.04 ]
+        include:
+          - os: ubuntu-24.04
+            cmake-preset: ci-linux-studio
+          - os: ubuntu-24.04
+            cmake-preset: ci-linux-studio
     steps:
       - uses: actions/checkout@v6
 
@@ -281,10 +285,11 @@ jobs:
       - uses: ./.github/studio
         if: steps.cache.outputs.cache-hit != 'true'
         with:
+          os: ${{ matrix.os }}
+          cmake-preset: ${{ matrix.cmake-preset }}
           install-dir: ${{ needs.strings.outputs.install-dir }}
           build-dir: ${{ needs.strings.outputs.build-dir }}
           build-version: ${{ needs.strings.outputs.build-version }}
-          os: ${{ matrix.os }}
 
       - uses: actions/upload-artifact@v7
         with:

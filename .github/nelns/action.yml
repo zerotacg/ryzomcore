@@ -51,7 +51,7 @@ runs:
       run: |
         sudo apt update
         sudo apt install --yes \
-          build-essential bison ccache\
+          build-essential bison ccache \
           autoconf autoconf-archive automake libtool \
           libpng-dev \
           libjpeg-dev \

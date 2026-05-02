@@ -10,7 +10,7 @@ project(Studio VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
 
 find_package(NeL ${RyzomCore_VERSION} REQUIRED COMPONENTS 3d georges gui ligo misc sound)
 if(WITH_QT5)
-  find_package(Qt5 5.15 REQUIRED COMPONENTS Core)
+  find_package(Qt5 5.15 REQUIRED COMPONENTS Core LinguistTools)
 ENDIF ()
 
 # This tells the application(s) where to find the installed data.
