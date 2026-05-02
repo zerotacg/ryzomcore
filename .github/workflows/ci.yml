@@ -261,6 +261,8 @@ jobs:
             cmake-preset: ci-linux-studio
           - os: ubuntu-24.04
             cmake-preset: ci-linux-studio
+          - os: ubuntu-24.04
+            cmake-preset: ci-linux-studio-vcpkg
     steps:
       - uses: actions/checkout@v6
 

@@ -31,38 +31,46 @@
       }
     },
     {
+      "name": "linux-studio",
       "inherits": [
         "linux",
         "studio"
-      ],
-      "name": "linux-studio"
+      ]
     },
     {
+      "name": "ci-linux-studio",
       "inherits": [
         "linux",
         "ccache",
         "ci-studio",
         "studio"
-      ],
-      "name": "ci-linux-studio"
+      ]
     },
     {
+      "name": "ci-linux-studio-static",
       "inherits": [
         "linux",
         "ci-studio",
         "studio"
       ],
-      "name": "ci-linux-studio-static",
       "cacheVariables": {
         "WITH_STATIC": true
       }
     },
     {
+      "name": "ci-linux-studio-vcpkg",
+      "inherits": [
+        "vcpkg",
+        "ci-studio",
+        "linux"
+      ]
+    },
+    {
+      "name": "windows-studio",
       "inherits": [
         "windows",
         "studio"
-      ],
-      "name": "windows-studio"
+      ]
     }
   ],
   "buildPresets": [
