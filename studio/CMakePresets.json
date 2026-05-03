@@ -64,7 +64,10 @@
         "ci-studio",
         "studio",
         "linux"
-      ]
+      ],
+      "cacheVariables": {
+        "VCPKG_MANIFEST_FEATURES": "qt"
+      }
     },
     {
       "name": "windows-studio",
