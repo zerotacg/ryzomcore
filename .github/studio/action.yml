@@ -43,7 +43,7 @@ runs:
         sudo apt update
         sudo apt install --yes \
           build-essential bison ccache \
-          autoconf autoconf-archive automake libtool \
+          autoconf autoconf-archive automake libtool libltdl-dev \
           libpng-dev \
           libjpeg-dev \
           libgif-dev libfreetype-dev \
