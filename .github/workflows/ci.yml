@@ -257,7 +257,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-24.04
+          - os: ubuntu-22.04
             cmake-preset: ci-linux-studio
           - os: ubuntu-24.04
             cmake-preset: ci-linux-studio

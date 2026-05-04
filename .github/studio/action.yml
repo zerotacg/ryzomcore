@@ -34,6 +34,7 @@ runs:
       with:
         path: ${{ inputs.vcpkg-cache-dir}}
         key: vcpkg-${{ inputs.os }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+        restore-keys: vcpkg-${{ inputs.os }}-
 
     - name: Dependencies Linux
       if: runner.os == 'Linux'

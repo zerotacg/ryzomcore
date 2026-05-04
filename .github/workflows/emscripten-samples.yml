@@ -43,7 +43,7 @@ jobs:
           ccache -z
 
       - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@v16
         with:
           version: ${{ env.EM_VERSION }}
           no-cache: true
@@ -280,7 +280,7 @@ jobs:
           cp ${{ github.workspace }}/nel/samples/3d/index.html pages/index.html
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: pages
 

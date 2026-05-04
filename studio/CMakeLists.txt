@@ -10,8 +10,12 @@ project(Studio VERSION ${RyzomCore_VERSION} LANGUAGES CXX)
 
 find_package(NeL ${RyzomCore_VERSION} REQUIRED COMPONENTS 3d georges gui ligo misc sound)
 if(WITH_QT5)
-  find_package(Qt5 5.15 REQUIRED COMPONENTS Core LinguistTools)
+  find_package(Qt5 5.15 REQUIRED COMPONENTS Core Gui OpenGL Widgets LinguistTools)
 ENDIF ()
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 # This tells the application(s) where to find the installed data.
 IF(WIN32)
