@@ -10,6 +10,49 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+    volumes:
+      - ".:/home/ryzom/ryzomcore"
+
+  ubuntu20:
+    image: "ryzomcore/devcontainer-ubuntu20"
+    build:
+      context: .devcontainer
+      dockerfile: ubuntu20.Dockerfile
+    volumes_from:
+      - devcontainer
+
+  ubuntu20_client:
+    image: "ryzomcore/devcontainer-ubuntu20_client"
+    build:
+      context: .devcontainer
+      dockerfile: ubuntu20_client.Dockerfile
+    volumes_from:
+      - devcontainer
+
+  web:
+    image: bitnami/nginx:1.25
+    #    image: nginx:1.25
+    volumes:
+      - ./dev/nginx/conf.d:/opt/bitnami/nginx/conf/server_blocks
+      - ./web:/app:ro
+    ports:
+      - 8080:80
+    depends_on:
+      - php
+
+  php:
+    image: bitnami/php-fpm:8.2
+    volumes:
+      - ./web:/app
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+    ports:
+      - 3306:3306
 
   nelns:
     image: "ryzomcore/nelns"

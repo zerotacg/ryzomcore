@@ -91,6 +91,15 @@ void	CTrackSampledVector::build(const std::vector<uint16> &timeList, const std::
 }
 
 // ***************************************************************************
+void	CTrackSampledVector::fill(std::vector<CVector>  &keys)
+{
+	for(uint i=0;i<_Keys.size();i++)
+	{
+		keys.push_back(_Keys[i]);
+	}
+}
+
+// ***************************************************************************
 const IAnimatedValue	&CTrackSampledVector::eval (const TAnimationTime& date, CAnimatedValueBlock &avBlock)
 {
 	// Eval time, and get key interpolation info

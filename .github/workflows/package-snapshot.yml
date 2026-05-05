@@ -1,0 +1,115 @@
+name: Package Snapshot
+
+on:
+  push:
+    branches: [ "feature/gltf-tools" ]
+
+env:
+  c_compiler: gcc
+  cpp_compiler: g++
+  build_type: Release
+  main_branch: gltf-tools
+
+concurrency:
+  group: "package"
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          COMMIT_HASH=${{ github.sha }}
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "${{ env.main_branch }}" ] && VERSION=snapshot
+          FULL_VERSION=${VERSION}+sha.${COMMIT_HASH:0:8}
+          [ "$VERSION" == "snapshot" ] && FULL_VERSION=${VERSION}
+          echo VERSION=$VERSION FULL_VERSION=$FULL_VERSION
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "full_version=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Dependencies
+        run: >
+          sudo apt update;
+          sudo apt install --yes
+          autoconf
+          automake
+          bison
+          clang-15
+          freeglut3-dev
+          libavcodec-dev
+          libavdevice-dev
+          libavformat-dev
+          libcpptest-dev
+          libcurl4-openssl-dev
+          libfreetype6-dev
+          libgif-dev
+          libgsf-1-dev
+          libjpeg-dev
+          liblua5.2-dev
+          libluabind-dev
+          liblzma-dev
+          libmysqlclient-dev
+          libogg-dev
+          libopenal-dev
+          libpng-dev
+          libpostproc-dev
+          libsquish-dev
+          libssl-dev
+          libswscale-dev
+          libvorbis-dev
+          libxml2-dev
+          ninja-build
+          qtbase5-dev
+          qttools5-dev
+          qttools5-dev-tools
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -G "Ninja"
+          -DCMAKE_CXX_COMPILER=${{ env.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ env.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ env.build_type }}
+          -DCPACK_PACKAGE_VERSION="${{ steps.strings.outputs.full_version }}"
+          -DWITH_STATIC=ON
+          -DWITH_NEL_TESTS=ON
+          -DWITH_NEL_SAMPLES=ON
+          -DWITH_LUA51=OFF
+          -DWITH_LUA52=ON
+          -DWITH_RYZOM=ON
+          -DWITH_RYZOM_SERVER=ON
+          -DWITH_RYZOM_CLIENT=ON
+          -DWITH_RYZOM_TOOLS=ON
+          -DWITH_NEL_TOOLS=ON
+          -DWITH_NELNS=ON
+          -DWITH_NELNS_LOGIN_SYSTEM=ON
+          -DWITH_NELNS_SERVER=ON
+          -DWITH_QT5=ON
+          -DWITH_LIBGSF=ON
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ env.build_type }}
+
+      - name: Unit Tests
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: ctest --build-config ${{ env.build_type }}
+
+      - name: Package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{env.build_type}} --target package
+          gh release delete --cleanup-tag --yes "${{ steps.strings.outputs.version }}" || true
+          gh release create --prerelease "${{ steps.strings.outputs.version }}" ${{ steps.strings.outputs.build-output-dir }}/*.sh

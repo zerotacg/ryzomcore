@@ -1,0 +1,12 @@
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+ADD_SUBDIRECTORY(libgltf)
+ADD_SUBDIRECTORY(anim_to_gltf)
+ADD_SUBDIRECTORY(skel_to_gltf)
+ADD_SUBDIRECTORY(shape_to_gltf)
+ADD_SUBDIRECTORY(tile_bank_to_gltf)
+if(WITH_QT6)
+ADD_SUBDIRECTORY(zone_info)
+ENDIF ()
+ADD_SUBDIRECTORY(gltf-convert-zone)

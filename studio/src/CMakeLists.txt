@@ -65,6 +65,14 @@ NL_ADD_RUNTIME_FLAGS(studio)
 
 ADD_SUBDIRECTORY(libqtpropertybrowser-text)
 ADD_SUBDIRECTORY(plugins)
+add_dependencies(studio
+		studio_plugin_bnp_manager
+		studio_plugin_core
+		studio_plugin_disp_sheet_id
+		studio_plugin_example
+		studio_plugin_georges_editor
+		studio_plugin_landscape_editor
+)
 
 add_dependencies(studio
 		studio_plugin_bnp_manager

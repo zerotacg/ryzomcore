@@ -1,0 +1,46 @@
+#include <mapper/TrackMapper.h>
+
+#include <nel/3d/track.h>
+#include <nel/3d/track_sampled_vector.h>
+#include <nel/3d/track_sampled_quat.h>
+
+#include <mapper/TrackDefaultVectorMapper.h>
+#include <mapper/TrackDefaultQuatMapper.h>
+#include <mapper/TrackSampledVectorMapper.h>
+#include <mapper/TrackSampledQuatMapper.h>
+
+using namespace NL3D;
+using namespace std;
+
+unique_ptr<TrackMapper> TrackMapper::from(ITrack *track)
+{
+	nlinfo("Track is a '%s'", track->getClassName().c_str());
+
+	if (dynamic_cast<CTrackDefaultQuat *>(track))
+	{
+		return std::make_unique<TrackDefaultQuatMapper>(dynamic_cast<CTrackDefaultQuat *>(track));
+	}
+	else if (dynamic_cast<CTrackDefaultVector *>(track))
+	{
+		return std::make_unique<TrackDefaultVectorMapper>(dynamic_cast<CTrackDefaultVector *>(track));
+	}
+	else if (dynamic_cast<CTrackSampledQuat *>(track))
+	{
+		return std::make_unique<TrackSampledQuatMapper>(dynamic_cast<CTrackSampledQuat *>(track));
+	}
+	else if (dynamic_cast<CTrackSampledVector *>(track))
+	{
+		return std::make_unique<TrackSampledVectorMapper>(dynamic_cast<CTrackSampledVector *>(track));
+	}
+
+	return std::unique_ptr<TrackMapper> {};
+}
+
+void TrackMapper::map(ITrack *source, ChannelData &target)
+{
+	auto mapper = from(source);
+	if (mapper)
+	{
+		mapper->map(target);
+	}
+}
