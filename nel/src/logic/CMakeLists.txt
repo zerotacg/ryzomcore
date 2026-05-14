@@ -22,5 +22,18 @@ IF(WITH_PCH)
 ENDIF()
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC)
-  INSTALL(TARGETS nellogic EXPORT "${project_export_name}" LIBRARY DESTINATION ${NL_LIB_PREFIX} ARCHIVE DESTINATION ${NL_LIB_PREFIX} COMPONENT libraries)
+  INSTALL(TARGETS nellogic
+          EXPORT "${PROJECT_NAME}-logic-targets"
+          COMPONENT libraries
+          LIBRARY DESTINATION ${NL_LIB_PREFIX}
+          ARCHIVE DESTINATION ${NL_LIB_PREFIX}
+  )
+ENDIF()
+
+IF(WITH_INSTALL_LIBRARIES)
+  install(EXPORT "${PROJECT_NAME}-logic-targets"
+          COMPONENT libraries
+          NAMESPACE "${PROJECT_NAME}::"
+          DESTINATION "${config_install_dir}"
+  )
 ENDIF()

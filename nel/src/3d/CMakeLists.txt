@@ -760,7 +760,20 @@ ENDIF()
 NL_GEN_PC(nel-3d.pc)
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC)
-  INSTALL(TARGETS nel3d EXPORT "${project_export_name}" LIBRARY DESTINATION ${NL_LIB_PREFIX} ARCHIVE DESTINATION ${NL_LIB_PREFIX} COMPONENT libraries)
+  INSTALL(TARGETS nel3d
+          EXPORT "${PROJECT_NAME}-3d-targets"
+          COMPONENT libraries
+          LIBRARY DESTINATION ${NL_LIB_PREFIX}
+          ARCHIVE DESTINATION ${NL_LIB_PREFIX}
+  )
+ENDIF()
+
+IF(WITH_INSTALL_LIBRARIES)
+    install(EXPORT "${PROJECT_NAME}-3d-targets"
+            COMPONENT libraries
+            NAMESPACE "${PROJECT_NAME}::"
+            DESTINATION "${config_install_dir}"
+    )
 ENDIF()
 
 ADD_SUBDIRECTORY(driver)

@@ -281,10 +281,18 @@ NL_GEN_PC(nel-misc.pc)
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC)
   INSTALL(TARGETS nelmisc
-		  EXPORT "${project_export_name}"
+		  EXPORT "${PROJECT_NAME}-misc-targets"
 		  COMPONENT libraries
 		  LIBRARY DESTINATION ${NL_LIB_PREFIX}
 		  ARCHIVE DESTINATION ${NL_LIB_PREFIX}
 		  FILE_SET HEADERS
   )
+ENDIF()
+
+IF(WITH_INSTALL_LIBRARIES)
+	install(EXPORT "${PROJECT_NAME}-misc-targets"
+			COMPONENT libraries
+			NAMESPACE "${PROJECT_NAME}::"
+			DESTINATION "${config_install_dir}"
+	)
 ENDIF()

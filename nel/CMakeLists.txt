@@ -1,7 +1,5 @@
 project(NeL VERSION ${RyzomCore_VERSION} LANGUAGES CXX C)
 
-set(project_export_name "${PROJECT_NAME}-targets")
-
 IF(WITH_STATIC_DRIVERS)
   ADD_DEFINITIONS(-DNL_STATIC)
 ENDIF()
@@ -54,6 +52,18 @@ IF(WITH_GTK)
   FIND_PACKAGE(GTK2)
 ENDIF()
 
+# packaging
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+set(package_components 3d georges gui ligo misc net pacs sevenzip sound snd_lowlevel) # TODO append in components to have actual list of build targets
+set(package_required_dependencies CURL Freetype)
+set(package_georges_dependencies LibXml2)
+set(package_gui_dependencies Lua Luabind)
+set(package_sound_dependencies Vorbis)
+
+
 IF(WITH_INSTALL_LIBRARIES)
   IF(UNIX)
     SET(prefix ${CMAKE_INSTALL_PREFIX})
@@ -85,19 +95,6 @@ ENDIF()
 ADD_SUBDIRECTORY(tools)
 
 
-# packaging
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
-
-set(project_namespace "${PROJECT_NAME}")
-set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
-set(package_components 3d georges gui ligo misc net pacs sevenzip sound snd_lowlevel) # TODO append in components to have actual list of build targets
-set(package_required_dependencies CURL Freetype)
-set(package_georges_dependencies LibXml2)
-set(package_gui_dependencies Lua Luabind)
-set(package_sound_dependencies Vorbis)
-
-
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
@@ -122,12 +119,6 @@ configure_package_config_file("../cmake/config-internal.cmake.in"
 )
 
 IF(WITH_INSTALL_LIBRARIES)
-  install(EXPORT "${project_export_name}"
-          COMPONENT libraries
-          NAMESPACE "${project_namespace}::"
-          DESTINATION "${config_install_dir}"
-  )
-
   install(FILES "${project_config}" "${version_config}"
           COMPONENT libraries
           DESTINATION "${config_install_dir}"

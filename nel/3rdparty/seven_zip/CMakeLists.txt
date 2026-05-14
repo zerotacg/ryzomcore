@@ -26,7 +26,7 @@ TARGET_COMPILE_DEFINITIONS(nel_sevenzip PRIVATE _7ZIP_ST)
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC)
   INSTALL(TARGETS nel_sevenzip
-          EXPORT "${project_export_name}"
+          EXPORT "${PROJECT_NAME}-misc-targets"
           LIBRARY DESTINATION ${NL_LIB_PREFIX}
           ARCHIVE DESTINATION ${NL_LIB_PREFIX}
           COMPONENT libraries

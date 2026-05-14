@@ -14,5 +14,18 @@ NL_ADD_RUNTIME_FLAGS(nelpipeline)
 NL_ADD_LIB_SUFFIX(nelpipeline)
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC)
-  INSTALL(TARGETS nelpipeline EXPORT "${project_export_name}" LIBRARY DESTINATION ${NL_LIB_PREFIX} ARCHIVE DESTINATION ${NL_LIB_PREFIX} COMPONENT libraries)
+  INSTALL(TARGETS nelpipeline
+          EXPORT "${PROJECT_NAME}-pipeline-targets"
+          COMPONENT libraries
+          LIBRARY DESTINATION ${NL_LIB_PREFIX}
+          ARCHIVE DESTINATION ${NL_LIB_PREFIX}
+  )
+ENDIF()
+
+IF(WITH_INSTALL_LIBRARIES)
+  install(EXPORT "${PROJECT_NAME}-pipeline-targets"
+          COMPONENT libraries
+          NAMESPACE "${PROJECT_NAME}::"
+          DESTINATION "${config_install_dir}"
+  )
 ENDIF()

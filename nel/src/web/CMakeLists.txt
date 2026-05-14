@@ -29,5 +29,18 @@ ENDIF()
 NL_GEN_PC(nel-web.pc)
 
 IF(WITH_INSTALL_LIBRARIES OR NOT WITH_STATIC)
-  INSTALL(TARGETS nelweb EXPORT "${project_export_name}" LIBRARY DESTINATION ${NL_LIB_PREFIX} ARCHIVE DESTINATION ${NL_LIB_PREFIX} COMPONENT libraries)
+  INSTALL(TARGETS nelweb
+          EXPORT "${PROJECT_NAME}-web-targets"
+          COMPONENT libraries
+          LIBRARY DESTINATION ${NL_LIB_PREFIX}
+          ARCHIVE DESTINATION ${NL_LIB_PREFIX}
+  )
+ENDIF()
+
+IF(WITH_INSTALL_LIBRARIES)
+  install(EXPORT "${PROJECT_NAME}-web-targets"
+          COMPONENT libraries
+          NAMESPACE "${PROJECT_NAME}::"
+          DESTINATION "${config_install_dir}"
+  )
 ENDIF()
