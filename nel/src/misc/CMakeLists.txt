@@ -266,6 +266,8 @@ ELSE()
   TARGET_COMPILE_DEFINITIONS(nelmisc PUBLIC NL_NO_LIBXML2)
 ENDIF()
 
+target_compile_definitions(nelmisc PUBLIC $<$<CONFIG:Debug>:NL_DEBUG> $<$<CONFIG:Release>:NL_RELEASE>)
+
 NL_DEFAULT_PROPS(nelmisc "NeL, Library: NeL Misc")
 NL_ADD_RUNTIME_FLAGS(nelmisc)
 

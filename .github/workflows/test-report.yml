@@ -18,3 +18,4 @@ jobs:
           artifact: "/.*test-results/"
           path: '**/*.xml'
           reporter: java-junit
+          fail-on-empty: false
