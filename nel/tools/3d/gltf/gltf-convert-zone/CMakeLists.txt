@@ -39,7 +39,7 @@ INSTALL(TARGETS gltf-convert-zone RUNTIME DESTINATION ${NL_BIN_PREFIX} COMPONENT
 add_test_executable(gltf-convert-zone-utils_test
         tests/utils.test.cpp
 )
-target_link_libraries(gltf-convert-zone-utils_test
+target_link_libraries(gltf-convert-zone-utils_test PRIVATE
         libgltf-convert::zone
 )
 
