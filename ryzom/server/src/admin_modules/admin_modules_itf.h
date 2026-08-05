@@ -1902,7 +1902,7 @@ namespace ADMIN
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CAdminServiceSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -2058,7 +2058,7 @@ namespace ADMIN
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CAdminExecutorServiceSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -2267,7 +2267,7 @@ namespace ADMIN
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CAdminExecutorServiceClientSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();

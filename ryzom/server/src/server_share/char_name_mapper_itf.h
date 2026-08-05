@@ -273,7 +273,7 @@ namespace CNM
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CCharNameMapperSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -386,7 +386,7 @@ namespace CNM
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CCharNameMapperClientSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();

@@ -165,7 +165,7 @@ namespace PATCHMAN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CRepositoryEmitterSkel* > (_LocalModule.getPtr());
+				_LocalModuleSkel = dynamic_cast < CRepositoryEmitterSkel* > (_LocalModule.get());
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else

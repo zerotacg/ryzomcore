@@ -141,7 +141,7 @@ namespace PATCHMAN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CServerPatchManagerSkel* > (_LocalModule.getPtr());
+				_LocalModuleSkel = dynamic_cast < CServerPatchManagerSkel* > (_LocalModule.get());
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else
@@ -282,7 +282,7 @@ namespace PATCHMAN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CDeploymentConfigurationSynchroniserSkel* > (_LocalModule.getPtr());
+				_LocalModuleSkel = dynamic_cast < CDeploymentConfigurationSynchroniserSkel* > (_LocalModule.get());
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else

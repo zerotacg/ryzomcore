@@ -111,7 +111,7 @@ namespace PATCHMAN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CServerPatchApplierSkel* > (_LocalModule.getPtr());
+				_LocalModuleSkel = dynamic_cast < CServerPatchApplierSkel* > (_LocalModule.get());
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else

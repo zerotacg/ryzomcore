@@ -129,7 +129,7 @@ namespace MFS
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CMailForumNotifierSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();

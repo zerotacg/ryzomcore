@@ -272,7 +272,7 @@ namespace CHATUNI
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CChatUnifierSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -415,7 +415,7 @@ namespace CHATUNI
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CChatUnifierClientSkel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
