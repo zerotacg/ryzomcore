@@ -6,6 +6,10 @@ LIST(REMOVE_ITEM SRC ${NET_MANAGER})
 NL_TARGET_LIB(nelnet ${HEADERS} ${SRC})
 add_library(NeL::net ALIAS nelnet)
 set_target_properties(nelnet PROPERTIES EXPORT_NAME net)
+target_compile_features(nelnet
+        PUBLIC
+        cxx_return_type_deduction
+)
 
 IF(WITH_GTK)
   IF(GTK2_FOUND)
