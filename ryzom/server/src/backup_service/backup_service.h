@@ -77,7 +77,7 @@ public :
 	 */
 	void setStall( bool stall ) { _SaveStall = stall; }
 
-	NLNET::IModule		*getBackupModule()	{ return _BackupModule; };
+	NLNET::TModulePtr	getBackupModule()	{ return _BackupModule; };
 
 	void				setBackupModule(NLNET::IModule *module)	{ _BackupModule = module; }
 
