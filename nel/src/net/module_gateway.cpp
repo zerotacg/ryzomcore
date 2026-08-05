@@ -1170,10 +1170,10 @@ namespace NLNET
 
 			// warn local module about new security data
 			{
-				TPluggedModules::TAToBMap::const_iterator first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
+				auto first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					IModule *module = first->second;
+					IModule *module = first->second.get();
 
 					module->onModuleSecurityChange(modProx);
 				}
@@ -1235,12 +1235,12 @@ namespace NLNET
 
 			// warn any locally plugged module
 			{
-				TPluggedModules::TAToBMap::const_iterator first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
+				auto first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					IModule *module = first->second;
+					IModule *module = first->second.get();
 					if (removedModule->getGatewayRoute() != nullptr
-				        || module->getModuleId() != removedModule->getForeignModuleId())
+						|| module->getModuleId() != removedModule->getForeignModuleId())
 					{
 						module->_onModuleDown(removedModule);
 					}
@@ -1253,10 +1253,10 @@ namespace NLNET
 			nlassert(moduleProxy->getModuleGateway() == this);
 
 			// warn any plugged module
-			TPluggedModules::TAToBMap::const_iterator first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
+			auto first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
 			for (; first != last; ++first)
 			{
-				IModule *module = first->second;
+				IModule *module = first->second.get();
 				if (moduleProxy->getGatewayRoute() != nullptr
 			        || module->getModuleId() != moduleProxy->getForeignModuleId())
 				{
@@ -1343,7 +1343,7 @@ namespace NLNET
 					return;
 				}
 
-				IModule *addreseeMod = *adrcp;
+				IModule *addreseeMod = adrcp->get();
 				if (!addreseeMod->isImmediateDispatchingSupported())
 				{
 					// dispatch the message at next gateway update
@@ -1411,7 +1411,7 @@ namespace NLNET
 				return;
 			}
 
-			IModule *addreseeMod = *adrcp;
+			IModule *addreseeMod = adrcp->get();
 
 			// finally, transmit the message to the module
 //			addreseeMod->onProcessModuleMessage(senderProxy, message);
@@ -1601,7 +1601,7 @@ namespace NLNET
 			}
 		}
 
-		void onModulePlugged(IModule *pluggedModule) NL_OVERRIDE
+		void onModulePlugged(TModulePtr pluggedModule) NL_OVERRIDE
 		{
 			nldebug("NETL6: Gateway %s : plugging module '%s' id=%u",
 				getModuleName().c_str(),
@@ -1638,7 +1638,7 @@ namespace NLNET
 //
 			// second, disclose already known proxies in the gateway to the plugged module
 			{
-				TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+				auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 				for (; first != last; ++first)
 				{
 					IModuleProxy *modProx = first->second;

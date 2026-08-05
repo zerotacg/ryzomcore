@@ -166,7 +166,7 @@ namespace NLNET
 		virtual IModuleProxy *createModuleProxy(	IModuleGateway *gateway,
 													CGatewayRoute *route,
 													uint32 distance,
-													IModule *localModule,
+													TModulePtr localModule,
 													const std::string &moduleClassName,
 													const std::string &moduleFullyQualifiedName,
 													const std::string &moduleManifest,

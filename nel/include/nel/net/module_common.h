@@ -26,13 +26,14 @@ namespace NLNET
 	/// General type definition
 	/// Module identifier
 	typedef uint32	TModuleId;
+	typedef std::string	TModuleName;
 
 	/// A module ID of 0 mean 'not valid module ID'
 	const TModuleId	INVALID_MODULE_ID = 0;
 
 	/// Forward smart ptr definition
 	class IModule;
-	typedef NLMISC::CSmartPtr<IModule>			TModulePtr;
+	typedef std::shared_ptr<IModule>			TModulePtr;
 
 	class IModuleProxy;
 	typedef NLMISC::CSmartPtr<IModuleProxy>		TModuleProxyPtr;

@@ -88,9 +88,10 @@ namespace NLNET
 		// Delete any module that still exist
 		while (!_ModuleInstances.empty())
 		{
-			CRefPtr<IModule> sanityCheck(*(_ModuleInstances.begin()));
+			std::weak_ptr sanityCheck(*(_ModuleInstances.begin()));
+		    auto * module = sanityCheck.lock().get();
 
-			IModuleManager::getInstance().deleteModule(sanityCheck);
+			IModuleManager::getInstance().deleteModule(module);
 
 			// container is cleared by deleteModule (see below)
 			// make sure the module is effectively destroyed
@@ -98,7 +99,7 @@ namespace NLNET
 			// (or eventualy NeL code) have kept a smart pointer on the module
 			// and this is bad. All smart pointer MUST be released when the
 			// factory is about to be removed.
-			nlassertex(sanityCheck == NULL, ("Some code have kept pointer on module '%s'", sanityCheck->getModuleName().c_str()));
+			nlassertex(sanityCheck.expired(), ("Some code have kept pointer on module '%s'", sanityCheck.lock()->getModuleName().c_str()));
 		}
 
 		// if the context is still active
@@ -115,20 +116,20 @@ namespace NLNET
 
 	void IModuleFactory::deleteModule(IModule *module)
 	{
-		set<TModulePtr>::iterator it(_ModuleInstances.find(module));
+		auto it( std::find_if(_ModuleInstances.begin(), _ModuleInstances.end(), [module](const auto & shared) { return shared.get() == module; }));
 		nlassert(it != _ModuleInstances.end());
 
-		CRefPtr<IModule> sanityCheck(module);
+		std::weak_ptr sanityCheck(*it);
 
 		// removing this smart ptr must release the module
 		_ModuleInstances.erase(it);
 
-		nlassert(sanityCheck == NULL);
+		nlassert(sanityCheck.expired());
 	}
 
 	void IModuleFactory::registerModuleInFactory(TModulePtr module)
 	{
-		nlassert(module != NULL);
+		nlassert(module != nullptr);
 
 		nlassert(_ModuleInstances.find(module) == _ModuleInstances.end());
 
@@ -247,7 +248,7 @@ namespace NLNET
 		return _ModuleId;
 	}
 
-	const std::string	&CModuleBase::getModuleName() const
+	const TModuleName	&CModuleBase::getModuleName() const
 	{
 		return _ModuleName;
 	}
@@ -416,7 +417,7 @@ namespace NLNET
 
 		// ok, we can plug the module
 
-		sock->_onModulePlugged(this);
+		sock->_onModulePlugged(shared_from_this());
 
 		// all fine, store the socket pointer.
 		_ModuleSockets.insert(moduleSocket);
@@ -424,21 +425,21 @@ namespace NLNET
 
 	void CModuleBase::unplugModule(IModuleSocket *moduleSocket)
 	{
-		CModuleSocket *sock = dynamic_cast<CModuleSocket*>(moduleSocket);
+		auto *sock = dynamic_cast<CModuleSocket*>(moduleSocket);
 		nlassert(sock != NULL);
 
-		TModuleSockets::iterator it(_ModuleSockets.find(moduleSocket));
+		auto it(_ModuleSockets.find(moduleSocket));
 		if (it == _ModuleSockets.end())
 			throw EModuleNotPluggedHere();
 
-		sock->_onModuleUnplugged(TModulePtr(this));
+		sock->_onModuleUnplugged(shared_from_this());
 
 		_ModuleSockets.erase(it);
 	}
 
 	void CModuleBase::getPluggedSocketList(std::vector<IModuleSocket*> &resultList)
 	{
-		TModuleSockets::iterator first(_ModuleSockets.begin()), last(_ModuleSockets.end());
+		auto first(_ModuleSockets.begin()), last(_ModuleSockets.end());
 		for (; first != last; ++first)
 		{
 			resultList.push_back(*first);
@@ -845,7 +846,7 @@ namespace NLNET
 
 	IModule				*CModuleProxy::getLocalModule() const
 	{
-		return _LocalModule;
+		return _LocalModule.get();
 	}
 
 	CGatewayRoute		*CModuleProxy::getGatewayRoute() const

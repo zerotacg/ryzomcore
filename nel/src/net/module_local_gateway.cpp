@@ -239,10 +239,10 @@ namespace NLNET
 			nlassert(moduleProxy->getModuleGateway() == this);
 
 			// warn any plugged module
-			TPluggedModules::TAToBMap::const_iterator first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
+			auto first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
 			for (; first != last; ++first)
 			{
-				IModule *module = first->second;
+				IModule *module = first->second.get();
 				if (module->getModuleId() != moduleProxy->getForeignModuleId())
 				{
 					module->_onModuleUp(moduleProxy);
@@ -372,7 +372,7 @@ namespace NLNET
 			nlstop;
 		}
 
-		void onModulePlugged(IModule *pluggedModule) NL_OVERRIDE
+		void onModulePlugged(TModulePtr pluggedModule) NL_OVERRIDE
 		{
 			// A module has just been plugged here, we need to disclose it to the
 			// other module, and disclose other module to it.
@@ -397,7 +397,7 @@ namespace NLNET
 
 			// second, disclose already plugged proxy to the new one
 			{
-				TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
+				auto first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != pluggedModule->getModuleFullyQualifiedName())
@@ -411,16 +411,16 @@ namespace NLNET
 		void				onModuleUnplugged(IModule *unpluggedModule) NL_OVERRIDE
 		{
 			// remove the proxy info
-			TModuleProxies::TBToAMap::const_iterator it(_ModuleProxies.getBToAMap().find(CStringMapper::map(getGatewayName()+"/"+unpluggedModule->getModuleFullyQualifiedName())));
+			auto it(_ModuleProxies.getBToAMap().find(CStringMapper::map(getGatewayName()+"/"+unpluggedModule->getModuleFullyQualifiedName())));
 			nlassert(it != _ModuleProxies.getBToAMap().end());
 
 			IModuleProxy *modProx = it->second;
 			// warn all connected module that a module become unavailable
 			{
-				TPluggedModules::TAToBMap::const_iterator first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
+				auto first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					IModule *module = first->second;
+					IModule *module = first->second.get();
 					if (module->getModuleFullyQualifiedName() != modProx->getModuleName())
 						module->_onModuleDown(it->second);
 				}
@@ -428,7 +428,7 @@ namespace NLNET
 
 			// warn the unplugged module that all plugged modules are become unavailable
 			{
-				TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
+				auto first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != unpluggedModule->getModuleFullyQualifiedName())

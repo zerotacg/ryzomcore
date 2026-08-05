@@ -143,7 +143,7 @@ namespace NLNET
 		 *	If no mane is given during module creation, the module manager
 		 *	build a unique name from the module class and a number.
 		 */
-		virtual const std::string	&getModuleName() const =0;
+		virtual const TModuleName	&getModuleName() const =0;
 		/// Return the module class.
 		virtual const std::string	&getModuleClassName() const =0;
 		/** Return the module fully qualified name.
@@ -572,14 +572,14 @@ namespace NLNET
 		 *	is done after construction, so there are
 		 *	no parameter at construction.
 		 */
-		virtual IModule *createModule() =0;
+		virtual TModulePtr createModule() =0;
 
 		/** The module manager call this to delete a module instance.*/
 		virtual void	deleteModule(IModule *module);
 
 		/** Virtual destructor.
-		 *	The destructor while unregister the module factory from the
-		 *	factory registry and ALL module factored
+		 *	The destructor will unregister the module factory from the
+		 *	factory registry and ALL modules created by this factory
 		 *	will also be deleted.
 		 */
 		virtual ~IModuleFactory();
@@ -598,9 +598,9 @@ namespace NLNET
 			: IModuleFactory(moduleClassName)
 		{}
 
-		virtual IModule *createModule() NL_OVERRIDE
+		virtual TModulePtr createModule() NL_OVERRIDE
 		{
-			IModule *module = new moduleClass;
+			auto module = std::make_shared<moduleClass>();
 			registerModuleInFactory(module);
 			return module;
 		}
@@ -643,7 +643,7 @@ namespace NLNET
 	 *	message dispatching to message handler,
 	 *	module socket interaction.
 	 */
-	class CModuleBase : public IModule, public NLMISC::ICommandsHandler
+	class CModuleBase : public IModule, public NLMISC::ICommandsHandler, public std::enable_shared_from_this<CModuleBase>
 	{
 		// Module manager is our friend coz it need to feed some field here
 		friend class CModuleManager;
@@ -689,7 +689,7 @@ namespace NLNET
 		/// This is the local unique ID assigned to this module.
 		TModuleId			_ModuleId;
 		/// This is the module name.
-		std::string			_ModuleName;
+		TModuleName			_ModuleName;
 		/// This is the fully qualified module name
 		mutable std::string	_FullyQualifedModuleName;
 

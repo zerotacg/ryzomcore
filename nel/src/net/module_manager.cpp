@@ -102,7 +102,7 @@ namespace NLNET
 		/// Module factory registry
 		TModuleFactoryRegistry	_ModuleFactoryRegistry;
 
-		typedef NLMISC::CTwinMap<std::string, TModulePtr>	TModuleInstances;
+		typedef NLMISC::CTwinMap<TModuleName, TModulePtr>	TModuleInstances;
 		/// Modules instances tracker
 		TModuleInstances		_ModuleInstances;
 
@@ -165,7 +165,7 @@ namespace NLNET
 			// delete any lasting modules
 			while (!_ModuleInstances.getAToBMap().empty())
 			{
-				deleteModule(_ModuleInstances.getAToBMap().begin()->second);
+				deleteModule(_ModuleInstances.getAToBMap().begin()->second.get());
 			}
 
 			// there should not be proxies or gateway lasting
@@ -176,10 +176,10 @@ namespace NLNET
 
 		virtual void applicationExit() NL_OVERRIDE
 		{
-			TModuleInstances::TAToBMap::const_iterator first(_ModuleInstances.getAToBMap().begin()), last(_ModuleInstances.getAToBMap().end());
+			auto first(_ModuleInstances.getAToBMap().begin()), last(_ModuleInstances.getAToBMap().end());
 			for (; first != last; ++first)
 			{
-				IModule *module = first->second;
+				IModule *module = first->second.get();
 
 				module->onApplicationExit();
 			}
@@ -370,16 +370,16 @@ namespace NLNET
 		 *	If the name is empty, the method generate a name using
 		 *	the module class and a number.
 		 */
-		virtual IModule *createModule(const std::string &className, const std::string &localName, const std::string &paramString) NL_OVERRIDE
+		virtual IModule *createModule(const std::string &className, const TModuleName &localName, const std::string &paramString) NL_OVERRIDE
 		{
-			TModuleFactoryRegistry::iterator it(_ModuleFactoryRegistry.find(className));
+			auto it(_ModuleFactoryRegistry.find(className));
 			if (it == _ModuleFactoryRegistry.end())
 			{
 				nlwarning("createModule : unknown module class '%s'", className.c_str());
 				return nullptr;
 			}
 
-			string moduleName = localName;
+			TModuleName moduleName = localName;
 			if (moduleName.empty())
 			{
 				// we need to generate a name
@@ -389,28 +389,24 @@ namespace NLNET
 					moduleName = className+toString(i++);
 				} while (_ModuleInstances.getB(moduleName) != nullptr);
 			}
-			else
+			else if (_ModuleInstances.getB(moduleName) != nullptr) 	// check that the module name is unique
 			{
-				// check that the module name is unique
-				if (_ModuleInstances.getB(moduleName) != nullptr)
-				{
-					nlwarning("createModule : the name '%s' is already used by another module, can't instantiate the module", moduleName.c_str());
-					return nullptr;
-				}
+				nlwarning("createModule : the name '%s' is already used by another module, can't instantiate the module", moduleName.c_str());
+				return nullptr;
 			}
 
 			IModuleFactory *mf = it->second;
 			// sanity check
 			nlassert(mf->getModuleClassName() == className);
-			CUniquePtr<IModule> module(mf->createModule());
-			if (module.get() == nullptr)
+			auto module(mf->createModule());
+			if (module == nullptr)
 			{
 				nlwarning("createModule : factory failed to create a module instance for class '%s'", className.c_str());
 
 				return nullptr;
 			}
 
-			CModuleBase *modBase = dynamic_cast<CModuleBase*>(module.get());
+			auto *modBase = dynamic_cast<CModuleBase*>(module.get());
 			if (modBase == nullptr)
 			{
 				nlwarning("Invalid module returned by factory for class '%s'", className.c_str());
@@ -427,13 +423,13 @@ namespace NLNET
 			bool initResult = module->initModule(mii);
 
 			// store the module in the manager
-			_ModuleInstances.add(moduleName, module.get());
-			_ModuleIds.add(modBase->_ModuleId, module.get());
+			_ModuleInstances.add(moduleName, module);
+			_ModuleIds.add(modBase->_ModuleId, module);
 
 			if (initResult)
 			{
 				// ok, all is fine, return the module
-				return module.release();
+				return module.get();
 			}
 			else
 			{
@@ -442,33 +438,37 @@ namespace NLNET
 					moduleName.c_str(),
 					className.c_str());
 
-				deleteModule(module.release());
+				auto * modulePtr(module.get());
+				module.reset();
+				deleteModule(modulePtr);
 				return nullptr;
 			}
 		}
 
 		void deleteModule(IModule *module) NL_OVERRIDE
 		{
-			nlassert(module != NULL);
+			nlassert(module != nullptr);
 
 			// remove module from trackers
-			nlassert(_ModuleInstances.getA(module) != NULL);
-			nlassert(_ModuleIds.getA(module) != NULL);
+			auto moduleInstance = std::find_if(_ModuleInstances.getBToAMap().begin(), _ModuleInstances.getBToAMap().end(), [&](const auto& entry) { return entry.first.get() == module; });
+			auto moduleId = std::find_if(_ModuleIds.getBToAMap().begin(), _ModuleIds.getBToAMap().end(), [&](const auto& entry) { return entry.first.get() == module; });
+			nlassert(moduleInstance != _ModuleInstances.getBToAMap().end());
+			nlassert(moduleId != _ModuleIds.getBToAMap().end());
 
-			_ModuleInstances.removeWithB(module);
-			_ModuleIds.removeWithB(module);
+			_ModuleInstances.removeWithB(moduleInstance->first);
+			_ModuleIds.removeWithB(moduleId->first);
 
 			// unplug the module if needed
 			vector<IModuleSocket *> sockets;
 			module->getPluggedSocketList(sockets);
-			for (uint i=0; i<sockets.size(); ++i)
+			for (auto & socket : sockets)
 			{
-				module->unplugModule(sockets[i]);
+				module->unplugModule(socket);
 			}
 
 			// ask the factory to delete the module
-			CModuleBase *modBase = dynamic_cast<CModuleBase *>(module);
-			nlassert(modBase != NULL);
+			auto *modBase = dynamic_cast<CModuleBase *>(module);
+			nlassert(modBase != nullptr);
 			modBase->getFactory()->deleteModule(module);
 		}
 
@@ -477,24 +477,24 @@ namespace NLNET
 		 */
 		virtual IModule *getLocalModule(const std::string &moduleName) NL_OVERRIDE
 		{
-			TModuleInstances::TAToBMap::const_iterator it(_ModuleInstances.getAToBMap().find(moduleName));
+			auto it(_ModuleInstances.getAToBMap().find(moduleName));
 
 			if (it == _ModuleInstances.getAToBMap().end())
 				return nullptr;
 			else
-				return it->second;
+				return it->second.get();
 		}
 
 		virtual void updateModules() NL_OVERRIDE
 		{
 			H_AUTO(CModuleManager_updateModules);
 			// module are updated in creation order (i.e in module ID order)
-			TModuleIds::TAToBMap::const_iterator first(_ModuleIds.getAToBMap().begin()), last(_ModuleIds.getAToBMap().end());
+			auto first(_ModuleIds.getAToBMap().begin()), last(_ModuleIds.getAToBMap().end());
 			for (; first != last; ++first)
 			{
 				TModulePtr module = first->second;
 
-				CModuleBase *modBase = dynamic_cast<CModuleBase *>(module.getPtr());
+				auto *modBase = dynamic_cast<CModuleBase *>(module.get());
 				if (modBase != nullptr)
 				{
 					// look for module task to run
@@ -620,7 +620,7 @@ namespace NLNET
 			IModuleGateway *gateway,
 			CGatewayRoute *route,
 			uint32 distance,
-			IModule *localModule,
+			TModulePtr localModule,
 			const std::string &moduleClassName,
 			const std::string &moduleFullyQualifiedName,
 			const std::string &moduleManifest,
@@ -700,9 +700,9 @@ namespace NLNET
 
 			nlinfo("Deleting module '%s'", args[0].c_str());
 
-			CRefPtr<IModule>	sanityCheck(*module);
-			deleteModule(*module);
-			if (sanityCheck != nullptr)
+			std::weak_ptr	sanityCheck(*module);
+			deleteModule(module->get());
+			if (!sanityCheck.expired())
 			{
 				log.displayNL("Failed to delete the module instance !");
 				return false;
@@ -822,10 +822,10 @@ namespace NLNET
 			}
 			{
 				log.displayNL(" List of %u module instances :", _ModuleInstances.getAToBMap().size());
-				TModuleInstances::TAToBMap::const_iterator first(_ModuleInstances.getAToBMap().begin()), last(_ModuleInstances.getAToBMap().end());
+				auto first(_ModuleInstances.getAToBMap().begin()), last(_ModuleInstances.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					IModule *module = first->second;
+					IModule *module = first->second.get();
 					log.displayNL("    ID:%5u : \tname = '%s' \tclass = '%s'",
 						module->getModuleId(),
 						module->getModuleName().c_str(),
@@ -834,7 +834,7 @@ namespace NLNET
 			}
 			{
 				log.displayNL(" List of %u module proxies :", _ModuleProxyIds.getAToBMap().size());
-				TModuleProxyIds::TAToBMap::const_iterator first(_ModuleProxyIds.getAToBMap().begin()), last(_ModuleProxyIds.getAToBMap().end());
+				auto first(_ModuleProxyIds.getAToBMap().begin()), last(_ModuleProxyIds.getAToBMap().end());
 				for (; first != last; ++first)
 				{
 					IModuleProxy *modProx = first->second;
