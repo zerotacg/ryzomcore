@@ -2146,7 +2146,7 @@ namespace RSMGR
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CRingSessionManagerSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -2323,7 +2323,7 @@ namespace RSMGR
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CRingSessionManagerClientSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();

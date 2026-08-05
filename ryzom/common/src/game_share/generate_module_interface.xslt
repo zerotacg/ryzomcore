@@ -262,7 +262,7 @@ namespace <xsl:value-of select="@name"/>
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				<xsl:value-of select="@name"/>Skel::TInterceptor *interceptor = NULL;
-				interceptor = static_cast &lt; NLNET::CModuleBase* &gt;(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast &lt; NLNET::CModuleBase* &gt;(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();

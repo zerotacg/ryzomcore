@@ -672,7 +672,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CShareServerAnimationItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -909,7 +909,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CShareServerEditionItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -1278,7 +1278,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CShareClientEditionItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -1864,7 +1864,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CIOSRingItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();

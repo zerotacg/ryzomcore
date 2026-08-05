@@ -404,7 +404,7 @@ namespace NLNET
 		 *	You should never access this methods if getModuleDistance()
 		 *	returned more than 0 (witch mean that the module is local).
 		 */
-		virtual IModule				*getLocalModule() const =0;
+		virtual TModulePtr			getLocalModule() const =0;
 
 		/** Return a pointer to the route used to communicate
 		 *	with the module.
@@ -848,7 +848,7 @@ namespace NLNET
 
 		uint32				getModuleDistance() const NL_OVERRIDE;
 
-		IModule				*getLocalModule() const NL_OVERRIDE;
+		TModulePtr			getLocalModule() const NL_OVERRIDE;
 
 		CGatewayRoute		*getGatewayRoute() const NL_OVERRIDE;
 

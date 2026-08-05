@@ -844,9 +844,9 @@ namespace NLNET
 		return _Distance;
 	}
 
-	IModule				*CModuleProxy::getLocalModule() const
+	TModulePtr	CModuleProxy::getLocalModule() const
 	{
-		return _LocalModule.get();
+		return _LocalModule;
 	}
 
 	CGatewayRoute		*CModuleProxy::getGatewayRoute() const

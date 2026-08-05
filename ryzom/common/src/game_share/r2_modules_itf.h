@@ -125,7 +125,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CServerEditionItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -280,7 +280,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CServerAnimationItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -555,7 +555,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CCharacterControlItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -793,7 +793,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CAisControlItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
@@ -977,7 +977,7 @@ namespace R2
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
 				CR2SessionBackupModuleItfSkel::TInterceptor *interceptor = nullptr;
-				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
 				_LocalModuleSkel = interceptor->getParent();
