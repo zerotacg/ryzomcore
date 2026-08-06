@@ -85,16 +85,17 @@ namespace NLNET
 		_PluggedModules.removeWithB(pluggedModule);
 	}
 
-    auto CModuleSocket::findModule(const IModule *module) const
+    bool CModuleSocket::isPlugged(const IModule *module) const
     {
 	    const auto &map = _PluggedModules.getBToAMap();
-	    return std::find_if(map.begin(), map.end(), [module](const auto &entry) { return entry.first.get() == module; });
+	    const auto & it( std::find_if(map.begin(), map.end(), [module](const auto &entry) { return entry.first.get() == module; }));
+
+		return it != map.end();
     }
 
 	void CModuleSocket::sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message)
 	{
-		const auto & it = findModule(senderModule);
-		if (it == _PluggedModules.getBToAMap().end())
+		if (!isPlugged(senderModule))
 		{
 			throw EModuleNotPluggedHere();
 		}
@@ -106,8 +107,7 @@ namespace NLNET
 
 	void CModuleSocket::broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 	{
-		const auto & it = findModule(senderModule);
-		if (it == _PluggedModules.getBToAMap().end())
+		if (!isPlugged(senderModule))
 		{
 			throw EModuleNotPluggedHere();
 		}
