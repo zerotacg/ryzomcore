@@ -253,7 +253,7 @@ IFileAccess::TReturnCode	CLoadFile::execute(CFileAccessManager& manager)
 		{
 			BS::CBackupServiceClientProxy bsc(Requester.ModuleProxy);
 
-			bsc.loadFileResult(CBackupService::getInstance()->getBackupModule(), 
+			bsc.loadFileResult(CBackupService::getInstance()->getBackupModule().get(),
 				RequestId, 
 				outMsg.FileDescription.FileName, 
 				outMsg.FileDescription.FileTimeStamp, 
