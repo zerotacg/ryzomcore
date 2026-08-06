@@ -79,7 +79,7 @@ public :
 
 	NLNET::TModulePtr	getBackupModule()	{ return _BackupModule; };
 
-	void				setBackupModule(NLNET::IModule *module)	{ _BackupModule = module; }
+	void				setBackupModule(NLNET::TModulePtr module)	{ _BackupModule = module; }
 
 	void		onModuleDown(NLNET::IModuleProxy *proxy);
 
