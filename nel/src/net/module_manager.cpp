@@ -94,7 +94,7 @@ namespace NLNET
 		 */
 		string _UniqueNameRoot;
 
-		typedef	map<std::string, CSmartPtr<TModuleLibraryInfo> >	TModuleLibraryInfos;
+		typedef	map<std::string, std::shared_ptr<TModuleLibraryInfo> >	TModuleLibraryInfos;
 		/// Module library registry
 		TModuleLibraryInfos		_ModuleLibraryRegistry;
 
@@ -158,7 +158,7 @@ namespace NLNET
 			// unload any loaded module library
 			while (!_ModuleLibraryRegistry.empty())
 			{
-				TModuleLibraryInfo *mli = _ModuleLibraryRegistry.begin()->second;
+				TModuleLibraryInfo *mli = _ModuleLibraryRegistry.begin()->second.get();
 				unloadModuleLibrary(mli->ShortLibraryName);
 			}
 
@@ -285,7 +285,7 @@ namespace NLNET
 			mli->ModuleLibrary = modLib;
 			mli->ShortLibraryName = shortName;
 
-			pair<TModuleLibraryInfos::iterator, bool> ret = _ModuleLibraryRegistry.insert(make_pair(shortName, mli.release()));
+			pair<TModuleLibraryInfos::iterator, bool> ret = _ModuleLibraryRegistry.insert(make_pair(shortName, std::move(mli)));
 			if (!ret.second)
 			{
 				nlwarning("CModuleManager : failed to store module library information !");
