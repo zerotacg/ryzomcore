@@ -616,7 +616,7 @@ namespace NLNET
 //			// not needed ? to remove
 //		}
 
-		virtual IModuleProxy *createModuleProxy(
+		virtual TModuleProxyPtr createModuleProxy(
 			IModuleGateway *gateway,
 			CGatewayRoute *route,
 			uint32 distance,
@@ -626,7 +626,7 @@ namespace NLNET
 			const std::string &moduleManifest,
 			TModuleId foreignModuleId) NL_OVERRIDE
 		{
-			CUniquePtr<CModuleProxy> modProx(new CModuleProxy(localModule, ++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
+			std::shared_ptr<CModuleProxy> modProx(new CModuleProxy(localModule, ++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
 			modProx->_Gateway = gateway;
 			modProx->_Route = route;
 			modProx->_Distance = distance;
@@ -640,16 +640,16 @@ namespace NLNET
 				modProx->_Distance);
 
 //			_ModuleProxyInstances.add(moduleFullyQualifiedName, TModuleProxyPtr(modProx.get()));
-			_ModuleProxyIds.add(modProx->getModuleProxyId(), TModuleProxyPtr(modProx.get()));
+			_ModuleProxyIds.add(modProx->getModuleProxyId(), TModuleProxyPtr(modProx));
 
-			return modProx.release();
+			return modProx;
 		}
 
 		virtual void releaseModuleProxy(TModuleId moduleProxyId) NL_OVERRIDE
 		{
-			TModuleProxyIds::TAToBMap::const_iterator it(_ModuleProxyIds.getAToBMap().find(moduleProxyId));
+			auto it(_ModuleProxyIds.getAToBMap().find(moduleProxyId));
 			nlassert(it != _ModuleProxyIds.getAToBMap().end());
-			CRefPtr<IModuleProxy> sanityCheck(it->second.getPtr());
+			std::weak_ptr sanityCheck(it->second);
 
 			nldebug("Releasing module proxy ('%s', ID : %u)",
 				it->second->getModuleName().c_str(),
@@ -659,7 +659,7 @@ namespace NLNET
 //			_ModuleProxyInstances.removeWithB(it->second);
 			_ModuleProxyIds.removeWithB(it->second);
 
-			nlassertex(sanityCheck == NULL, ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck->getModuleName().c_str(), sanityCheck->getModuleClassName().c_str()));
+			nlassertex(sanityCheck.expired(), ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck.lock()->getModuleName().c_str(), sanityCheck.lock()->getModuleClassName().c_str()));
 		}
 
 		virtual uint32 getNbModule() NL_OVERRIDE
@@ -837,7 +837,7 @@ namespace NLNET
 				auto first(_ModuleProxyIds.getAToBMap().begin()), last(_ModuleProxyIds.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					IModuleProxy *modProx = first->second;
+					auto modProx = first->second;
 					if (modProx->getGatewayRoute() != nullptr)
 					{
 						log.displayNL("    ID:%5u (Foreign ID : %u) : \tname = '%s' \tclass = '%s'",

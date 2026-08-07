@@ -50,7 +50,7 @@ public:
 	uint PingCount;
 	uint ResponseReceived;
 
-	set<NLNET::TModuleProxyPtr> ModuleType0;
+	set<NLNET::IModuleProxy*> ModuleType0;
 
 	uint32 ModuleUpCalled;
 	uint32 ModuleDownCalled;
@@ -174,7 +174,7 @@ public:
 		// use the first like me in the list
 		nlassert(!ModuleType0.empty());
 
-		NLNET::TModuleProxyPtr proxy = *ModuleType0.begin();
+		auto proxy = *ModuleType0.begin();
 
 		NLNET::CMessage msg;
 		msg.setType("HELLO", NLNET::CMessage::Request);
@@ -198,7 +198,7 @@ public:
 		// use the first like me in the list
 		nlassert(!ModuleType0.empty());
 
-		NLNET::TModuleProxyPtr proxy = *ModuleType0.begin();
+		auto proxy = *ModuleType0.begin();
 
 		NLNET::CMessage msg;
 		msg.setType("HELLO2", NLNET::CMessage::Request);

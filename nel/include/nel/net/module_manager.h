@@ -163,7 +163,7 @@ namespace NLNET
 		 *	the gateway automaticly create a proxy
 		 *	for each local module and each foreing module.
 		 */
-		virtual IModuleProxy *createModuleProxy(	IModuleGateway *gateway,
+		virtual TModuleProxyPtr createModuleProxy(	IModuleGateway *gateway,
 													CGatewayRoute *route,
 													uint32 distance,
 													TModulePtr localModule,

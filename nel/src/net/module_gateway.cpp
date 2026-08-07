@@ -330,10 +330,10 @@ namespace NLNET
 
 		CModuleProxy *getModuleProxy(TModuleId proxyId)
 		{
-			TModuleProxies::iterator it(_ModuleProxies.find(proxyId));
+			auto it(_ModuleProxies.find(proxyId));
 			if (it == _ModuleProxies.end())
 				return nullptr;
-			return static_cast<CModuleProxy*>(it->second.getPtr());
+			return static_cast<CModuleProxy*>(it->second.get());
 		}
 
 		/***********************************************************
@@ -418,7 +418,7 @@ namespace NLNET
 
 
 			// For each route of this transport, we need to disclose/undisclose peer modules
-			TRouteList::iterator first(_Routes.begin()), last(_Routes.end());
+			auto first(_Routes.begin()), last(_Routes.end());
 			for (; first != last; ++first)
 			{
 				CGatewayRoute *route = *first;
@@ -426,10 +426,10 @@ namespace NLNET
 				if (route->getTransport() == transport)
 				{
 					// this route need to be filtered
-					TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+					auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 					for (; first != last; ++first)
 					{
-						IModuleProxy *proxy = first->second;
+						auto proxy = first->second;
 						if (proxy->getGatewayRoute() != nullptr
 					        && proxy->getGatewayRoute() != route
 							&& proxy->getGatewayRoute()->getTransport() == transport)
@@ -437,12 +437,12 @@ namespace NLNET
 							// this module is on the same transport, but another route, remove/add it from the
 							// route
 							if (peerInvisible)
-								undiscloseModuleToRoute(route, proxy);
+								undiscloseModuleToRoute(route, proxy.get());
 							else
 							{
 								// check firewall rules
 								if (!route->getTransport()->Firewalled)
-									discloseModuleToRoute(route, proxy);
+									discloseModuleToRoute(route, proxy.get());
 							}
 						}
 					}
@@ -488,12 +488,12 @@ namespace NLNET
 						TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 						for (; first != last; ++first)
 						{
-							IModuleProxy *proxy = first->second;
+							auto proxy = first->second;
 							if (proxy->getGatewayRoute() == nullptr || (proxy->getGatewayRoute() != route ))
 							{
 								// this module is on another route, disclose it if needed
 								if (route->FirewallDisclosed.find(proxy->getModuleProxyId()) == route->FirewallDisclosed.end())
-									discloseModuleToRoute(route, proxy);
+									discloseModuleToRoute(route, proxy.get());
 							}
 						}
 					}
@@ -565,16 +565,16 @@ namespace NLNET
 
 			// a new route is available, disclose known modules
 			{
-				TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+				auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 				for (; first != last; ++first)
 				{
-					IModuleProxy *modProx = first->second;
+					auto modProx = first->second;
 
 					// only transmit module desc coming from other routes
 					// and other transport if peer invisible
-					if (isModuleProxyVisible(modProx, route))
+					if (isModuleProxyVisible(modProx.get(), route))
 					{
-						discloseModuleToRoute(route, modProx);
+						discloseModuleToRoute(route, modProx.get());
 					}
 				}
 			}
@@ -683,13 +683,12 @@ namespace NLNET
 			_SecurityPlugin = gs;
 
 			// update security for all existing proxies
-			TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+			auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 			for (; first != last; ++first)
-			{
-				IModuleProxy *proxy = first->second;
-				_SecurityPlugin->onNewProxy(proxy);
-			}
-		}
+		    {
+			    _SecurityPlugin->onNewProxy(first->second.get());
+		    }
+	    }
 		/** Send a command to the security plug-in */
 		virtual void sendSecurityCommand(const TParsedCommandLine &command) NL_OVERRIDE
 		{
@@ -835,7 +834,7 @@ namespace NLNET
 				nlwarning("Can't dispatch the module message, sender proxy %u is not in this gateway", from->NextSenderProxyId);
 				return;
 			}
-			senderProxy = it->second;
+			senderProxy = it->second.get();
 			// addressee proxy
 			it = _ModuleProxies.find(from->NextAddresseeProxyId);
 			if (it == _ModuleProxies.end())
@@ -843,7 +842,7 @@ namespace NLNET
 				nlwarning("Can't dispatch the module message '%s', sender proxy %u is not in this gateway", msgin.getName().c_str(), from->NextAddresseeProxyId);
 				return;
 			}
-			addresseeProxy = it->second;
+			addresseeProxy = it->second.get();
 
 			// give the message to the gateway (either for local dispatch or for forwarding)
 			sendModuleProxyMessage(senderProxy, addresseeProxy, msgin);
@@ -945,7 +944,7 @@ namespace NLNET
 			if (_NameToProxyIdx.getB(modNameId) != nullptr)
 			{
 				// a proxy for this module already exist,
-				IModuleProxy *modProx = *(_NameToProxyIdx.getB(modNameId));
+				auto modProx = *(_NameToProxyIdx.getB(modNameId));
 
 				// fill the id translation table
 //					from->ForeignToLocalIdx.insert(make_pair(modDesc.ModuleProxyId, modProx->getModuleProxyId()));
@@ -955,7 +954,7 @@ namespace NLNET
 				if (modProx->getModuleDistance() > modInfo.ModuleDistance)
 				{
 					// update module distance and swap route
-					CModuleProxy *proxy = static_cast<CModuleProxy*>(modProx);
+					auto *proxy = static_cast<CModuleProxy*>(modProx.get());
 
 					nldebug("Gateway '%s' : Use a shorter path for '%s' from %u to %u hops",
 						getGatewayName().c_str(),
@@ -972,15 +971,14 @@ namespace NLNET
 				// update the security if needed
 				if (modDesc.SecDesc.SecurityData != nullptr)
 				{
-					CModuleProxy *proxy = static_cast<CModuleProxy *>(modProx);
+					auto *proxy = static_cast<CModuleProxy *>(modProx.get());
 					if (_SecurityPlugin != nullptr)
 					{
 						_SecurityPlugin->onNewSecurityData(from, proxy, modDesc.SecDesc.SecurityData);
 					}
 					else
 					{
-						if (proxy->_SecurityData != nullptr)
-							delete proxy->_SecurityData;
+						delete proxy->_SecurityData;
 						proxy->_SecurityData = modDesc.SecDesc.SecurityData;
 					}
 				}
@@ -989,7 +987,7 @@ namespace NLNET
 			{
 				// we need to create a new proxy
 				// create a module proxy
-				IModuleProxy *modProx = IModuleManager::getInstance().createModuleProxy(
+				auto modProx = IModuleManager::getInstance().createModuleProxy(
 					this,
 					from,
 					modDesc.ModuleDistance,
@@ -1000,7 +998,7 @@ namespace NLNET
 					modDesc.ModuleProxyId);
 
 				// set the module security
-				CModuleProxy *proxy = static_cast<CModuleProxy *>(modProx);
+				CModuleProxy *proxy = static_cast<CModuleProxy *>(modProx.get());
 				proxy->_SecurityData = modDesc.SecDesc.SecurityData;
 				// let the security plug-in add/remove security data
 				if (_SecurityPlugin != nullptr)
@@ -1015,7 +1013,7 @@ namespace NLNET
 				from->ForeignToLocalIdx.add(modDesc.ModuleProxyId, modProx->getModuleProxyId());
 
 				// trigger an event in the gateway
-				onAddModuleProxy(modProx);
+				onAddModuleProxy(modProx.get());
 			}
 		}
 
@@ -1050,7 +1048,7 @@ namespace NLNET
 			// now, retrieve the module info and update
 			TModuleProxies::iterator it2(_ModuleProxies.find(localId));
 			nlassert(it2 != _ModuleProxies.end());
-			CModuleProxy *proxy = static_cast<CModuleProxy*>(it2->second.getPtr());
+			CModuleProxy *proxy = static_cast<CModuleProxy*>(it2->second.get());
 
 			pair<TKnownModuleInfos::iterator, TKnownModuleInfos::iterator> range;
 			range = _KnownModules.equal_range(proxy->_FullyQualifiedModuleName);
@@ -1267,17 +1265,17 @@ namespace NLNET
 
 		virtual IModuleProxy *getPluggedModuleProxy(IModule *pluggedModule) NL_OVERRIDE
 		{
-			TLocalModuleIndex::iterator it(_LocalModuleIndex.find(pluggedModule->getModuleId()));
+			auto it(_LocalModuleIndex.find(pluggedModule->getModuleId()));
 
 			if (it == _LocalModuleIndex.end())
-				return nullptr;
-			else
 			{
-				TModuleProxies::iterator it2(_ModuleProxies.find(it->second));
-				nlassert(it2 != _ModuleProxies.end());
-				return it2->second;
+				return nullptr;
 			}
-		}
+
+			auto it2(_ModuleProxies.find(it->second));
+		    nlassert(it2 != _ModuleProxies.end());
+		    return it2->second.get();
+	    }
 
 		virtual uint32	getProxyCount() const NL_OVERRIDE
 		{
@@ -1287,10 +1285,10 @@ namespace NLNET
 		/// Fill a vector with the list of proxies managed here. The module are filled in ascending proxy id order.
 		virtual void	getModuleProxyList(std::vector<IModuleProxy*> &resultList) const NL_OVERRIDE
 		{
-			TModuleProxies::const_iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+			auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 			for (; first != last; ++first)
 			{
-				resultList.push_back(first->second);
+				resultList.push_back(first->second.get());
 			}
 		}
 
@@ -1573,13 +1571,13 @@ namespace NLNET
 			TModuleProxies::iterator it2(_ModuleProxies.find(it->second));
 			nlassert(it2 != _ModuleProxies.end());
 
-			IModuleProxy *senderProx = it2->second;
+			IModuleProxy *senderProx = it2->second.get();
 
 			// get the addressee proxy
 			it2 = _ModuleProxies.find(destModuleProxyId);
 			nlassert(it2 != _ModuleProxies.end());
 
-			IModuleProxy *destProx = it2->second;
+			IModuleProxy *destProx = it2->second.get();
 
 
 			sendModuleProxyMessage(senderProx, destProx, message);
@@ -1589,13 +1587,13 @@ namespace NLNET
 		{
 			H_AUTO(CModuleGetaway__broadcastModuleMessage);
 			// send the message to all proxies (except the sender module)
-			TLocalModuleIndex::iterator it(_LocalModuleIndex.find(senderModule->getModuleId()));
+			auto it(_LocalModuleIndex.find(senderModule->getModuleId()));
 			nlassert(it != _LocalModuleIndex.end());
 
-			TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+			auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 			for (; first != last; ++first)
 			{
-				IModuleProxy *proxy = first->second;
+				IModuleProxy *proxy = first->second.get();
 
 				proxy->sendModuleMessage(senderModule, message);
 			}
@@ -1612,7 +1610,7 @@ namespace NLNET
 			// other module, and disclose other module to it.
 
 			// create a proxy for this module
-			IModuleProxy *modProx = IModuleManager::getInstance().createModuleProxy(
+			auto modProx = IModuleManager::getInstance().createModuleProxy(
 					this,
 		        nullptr,	// the module is local, so there is no route
 					0,		// the module is local, distance is 0
@@ -1632,7 +1630,7 @@ namespace NLNET
 
 
 			// trigger the new module proxy event
-			onAddModuleProxy(modProx);
+			onAddModuleProxy(modProx.get());
 //			// disclose the new module to other modules
 //			discloseModule(modProx);
 //
@@ -1641,7 +1639,7 @@ namespace NLNET
 				auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 				for (; first != last; ++first)
 				{
-					IModuleProxy *modProx = first->second;
+					auto modProx = first->second;
 
 					// do not send a moduleUp on the module himself !
 					// either the gateway is non null (distant module), or the
@@ -1649,7 +1647,7 @@ namespace NLNET
 					// the foreign module id store the local module id).
 					if (modProx->getGatewayRoute() != nullptr || modProx->getForeignModuleId() != pluggedModule->getModuleId())
 					{
-						pluggedModule->_onModuleUp(modProx);
+						pluggedModule->_onModuleUp(modProx.get());
 					}
 				}
 			}
@@ -1665,19 +1663,19 @@ namespace NLNET
 				unpluggedModule->getModuleId());
 
 			// remove the proxy info
-			TLocalModuleIndex::iterator it(_LocalModuleIndex.find(unpluggedModule->getModuleId()));
+			auto it(_LocalModuleIndex.find(unpluggedModule->getModuleId()));
 			nlassert(it != _LocalModuleIndex.end());
-			TModuleProxies::iterator it2(_ModuleProxies.find(it->second));
+		    auto it2(_ModuleProxies.find(it->second));
 			nlassert(it2 != _ModuleProxies.end());
 
-			IModuleProxy *modProx = it2->second;
+			auto modProx = it2->second;
 
 			// warn the unplugged module that all proxies in this gateway become unavailable
 			{
-				TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+				auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 				for (; first != last; ++first)
 				{
-					IModuleProxy *modProx = first->second;
+					IModuleProxy *modProx = first->second.get();
 
 					if (modProx->getGatewayRoute() != nullptr
 				        || modProx->getForeignModuleId() != unpluggedModule->getModuleId())
@@ -1688,7 +1686,7 @@ namespace NLNET
 			}
 
 			/// the gateway do the rest of the job
-			onRemoveModuleProxy(modProx);
+			onRemoveModuleProxy(modProx.get());
 
 			TModuleId localProxyId = modProx->getModuleProxyId();
 			// remove reference to the proxy
@@ -1698,7 +1696,7 @@ namespace NLNET
 
 			// check in the local message queue if some message are to/from
 			// this module
-			TLocalMessageList::iterator first(_LocalMessages.begin()), last(_LocalMessages.end());
+			auto first(_LocalMessages.begin()), last(_LocalMessages.end());
 			for (; first != last; ++first)
 			{
 				TLocalMessage &lm = *first;
@@ -1711,7 +1709,7 @@ namespace NLNET
 						lm.Message.getName().c_str(),
 						lm.SenderProxyId,
 						lm.AddresseProxyId);
-					TLocalMessageList::iterator next = first;
+					auto next = first;
 					++next;
 					if (next == last)
 					{
@@ -1750,7 +1748,7 @@ namespace NLNET
 			TModuleId proxyId = *pModuleId;
 
 			// retrieve the module proxy
-			TModuleProxies::iterator it2(_ModuleProxies.find(proxyId));
+			auto it2(_ModuleProxies.find(proxyId));
 			if (it2 == _ModuleProxies.end())
 			{
 				// oups !
@@ -1763,7 +1761,8 @@ namespace NLNET
 				route->ForeignToLocalIdx.removeWithA(foreignModuleId);
 				return;
 			}
-			CModuleProxy *modProx = static_cast<CModuleProxy *>(it2->second.getPtr());
+			auto proxy = it2->second;
+		    auto * modProx = static_cast<CModuleProxy *>(proxy.get());
 
 			// remove module information
 			pair<TKnownModuleInfos::iterator, TKnownModuleInfos::iterator> range;
@@ -1841,7 +1840,7 @@ namespace NLNET
 					onRemoveModuleProxy(modProx);
 
 					// remove from the proxy list
-					_NameToProxyIdx.removeWithB(modProx);
+					_NameToProxyIdx.removeWithB(proxy);
 					_ModuleProxies.erase(it2);
 					// release the proxy
 					IModuleManager::getInstance().releaseModuleProxy(proxyId);
@@ -2092,10 +2091,10 @@ namespace NLNET
 
 		void getModuleList(std::vector<IModuleProxy*> &resultList) NL_OVERRIDE
 		{
-			TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+		    auto first(_ModuleProxies.begin()), last(_ModuleProxies.end());
 			for (; first != last; ++first)
 			{
-				resultList.push_back(first->second);
+				resultList.push_back(first->second.get());
 			}
 		}
 

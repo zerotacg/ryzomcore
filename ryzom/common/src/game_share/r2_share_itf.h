@@ -898,7 +898,7 @@ namespace R2
 
 
 	public:
-		CShareServerEditionItfProxy(NLNET::IModuleProxy *proxy)
+		CShareServerEditionItfProxy(NLNET::TModuleProxyPtr proxy)
 		{
 			nlassert(proxy->getModuleClassName() == "ServerEditionModule");
 			_ModuleProxy = proxy;

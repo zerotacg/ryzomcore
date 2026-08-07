@@ -192,7 +192,7 @@ namespace NLNET
 			{
 				log.displayNL("  The transport is open and support %u routes :",
 					_Routes.size());
-				TRouteMap::const_iterator first(_Routes.begin()), last(_Routes.end());
+				auto first(_Routes.begin()), last(_Routes.end());
 				for (; first != last; ++first)
 				{
 					TServiceId	sid = first->first;
@@ -203,10 +203,10 @@ namespace NLNET
 						route->ForeignToLocalIdx.getAToBMap().size());
 
 					{
-						CGatewayRoute::TForeignToLocalIdx::TAToBMap::const_iterator first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());
+						auto first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());
 						for (; first != last; ++first)
 						{
-							IModuleProxy *modProx = mm.getModuleProxy(first->second);
+							auto modProx = mm.getModuleProxy(first->second);
 
 							log.displayNL("      - Proxy '%s' : local proxy id %u => foreign module id %u",
 								modProx != nullptr ? modProx->getModuleName().c_str() : "ERROR, invalid module",

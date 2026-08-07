@@ -45,6 +45,13 @@ namespace NLNET
 		// The modules proxies
 		TModuleProxies		_ModuleProxies;
 
+		bool isPlugged(IModuleProxy *proxy) const
+		{
+			const auto &map = _ModuleProxies.getAToBMap();
+			const auto & it( std::find_if(map.begin(), map.end(), [proxy](const auto &entry) { return entry.first.get() == proxy; }));
+
+			return it != map.end();
+		}
 
 	public:
 
@@ -232,7 +239,7 @@ namespace NLNET
 		virtual void discloseModule(IModuleProxy *moduleProxy) NL_OVERRIDE
 		{
 			// check that the module is plugged here
-			nlassert(_ModuleProxies.getB(moduleProxy) != NULL);
+			nlassert(isPlugged(moduleProxy));
 
 //			CModuleProxy *modProx = dynamic_cast<CModuleProxy *>(moduleProxy);
 //			nlassert(modProx != NULL);
@@ -264,15 +271,15 @@ namespace NLNET
 		{
 			map<TModuleId, IModuleProxy*> index;
 			{
-				TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
+				auto first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					index.insert(make_pair(first->first->getModuleProxyId(), first->first));
+					index.insert(make_pair(first->first->getModuleProxyId(), first->first.get()));
 				}
 			}
 
 			// now build the vector
-			map<TModuleId, IModuleProxy*>::iterator first(index.begin()), last(index.end());
+			auto first(index.begin()), last(index.end());
 			for( ; first != last; ++first)
 			{
 				resultList.push_back(first->second);
@@ -378,7 +385,7 @@ namespace NLNET
 			// other module, and disclose other module to it.
 
 			// create a proxy for this module
-			IModuleProxy *modProx = IModuleManager::getInstance().createModuleProxy(
+			auto modProx = IModuleManager::getInstance().createModuleProxy(
 					this,
 		        nullptr,	// the module is local, so there is no route
 					0,		// the module is local, distance is 0
@@ -393,7 +400,7 @@ namespace NLNET
 			_ModuleProxies.add(modProx, CStringMapper::map(modProx->getModuleName()));
 
 			// disclose the new module to other modules
-			discloseModule(modProx);
+			discloseModule(modProx.get());
 
 			// second, disclose already plugged proxy to the new one
 			{
@@ -401,7 +408,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != pluggedModule->getModuleFullyQualifiedName())
-						pluggedModule->_onModuleUp(first->first);
+						pluggedModule->_onModuleUp(first->first.get());
 				}
 			}
 
@@ -414,7 +421,7 @@ namespace NLNET
 			auto it(_ModuleProxies.getBToAMap().find(CStringMapper::map(getGatewayName()+"/"+unpluggedModule->getModuleFullyQualifiedName())));
 			nlassert(it != _ModuleProxies.getBToAMap().end());
 
-			IModuleProxy *modProx = it->second;
+			auto modProx = it->second;
 			// warn all connected module that a module become unavailable
 			{
 				auto first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
@@ -422,7 +429,7 @@ namespace NLNET
 				{
 					IModule *module = first->second.get();
 					if (module->getModuleFullyQualifiedName() != modProx->getModuleName())
-						module->_onModuleDown(it->second);
+						module->_onModuleDown(it->second.get());
 				}
 			}
 
@@ -432,7 +439,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != unpluggedModule->getModuleFullyQualifiedName())
-						unpluggedModule->_onModuleDown(first->first);
+						unpluggedModule->_onModuleDown(first->first.get());
 				}
 			}
 
@@ -447,10 +454,10 @@ namespace NLNET
 
 		void getModuleList(std::vector<IModuleProxy*> &resultList) NL_OVERRIDE
 		{
-			TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
-			for (; first != last; ++first)
+			auto it(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
+			for (; it != last; ++it)
 			{
-				resultList.push_back(first->first);
+				resultList.push_back(it->first.get());
 			}
 		}
 

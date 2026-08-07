@@ -251,7 +251,7 @@ namespace <xsl:value-of select="@name"/>
 
 
 	public:
-		<xsl:value-of select="@name"/>Proxy(NLNET::IModuleProxy *proxy)
+		<xsl:value-of select="@name"/>Proxy(NLNET::TModuleProxyPtr proxy)
 		{
 <xsl:if test="@module_class">			nlassert(proxy->getModuleClassName() == <xsl:value-of select="@module_class"/>);</xsl:if>
 			_ModuleProxy = proxy;

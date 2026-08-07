@@ -36,7 +36,7 @@ namespace NLNET
 	typedef std::shared_ptr<IModule>			TModulePtr;
 
 	class IModuleProxy;
-	typedef NLMISC::CSmartPtr<IModuleProxy>		TModuleProxyPtr;
+	typedef std::shared_ptr<IModuleProxy>		TModuleProxyPtr;
 
 	class IModuleSocket;
 	class IModuleFactory;
