@@ -567,8 +567,8 @@ protected:
 		ASSERT_TRUE(mod0 != nullptr);
 
 		// create the interceptors and attach it to the mod0
-		CInterceptor *inter0 = new CInterceptor(mod, "Inter0");
-		CInterceptor *inter1 = new CInterceptor(mod, "Inter1");
+		auto inter0 = std::make_unique<CInterceptor>(mod, "Inter0");
+		auto inter1 = std::make_unique<CInterceptor>(mod, "Inter1");
 
 		// plug the modules
 		cr.execute("gw.plug gw", NLMISC::InfoLog());
@@ -630,10 +630,6 @@ protected:
 		// delete the modules
 		mm.deleteModule(gw);
 		mm.deleteModule(mod);
-
-		// delete the interceptors
-		delete inter0;
-		delete inter1;
 	}
 
 	TEST_F(CUTNetModule,  layer3Autoconnect)

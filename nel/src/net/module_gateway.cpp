@@ -1726,6 +1726,7 @@ namespace NLNET
 
 
 			// release the module proxy
+			modProx.reset();
 			IModuleManager::getInstance().releaseModuleProxy(localProxyId);
 
 		}
@@ -1843,6 +1844,7 @@ namespace NLNET
 					_NameToProxyIdx.removeWithB(proxy);
 					_ModuleProxies.erase(it2);
 					// release the proxy
+					proxy.reset();
 					IModuleManager::getInstance().releaseModuleProxy(proxyId);
 				}
 				// clean the translation table

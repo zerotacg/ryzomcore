@@ -448,6 +448,7 @@ namespace NLNET
 			_ModuleProxies.removeWithA(modProx);
 
 			// release the module proxy
+			modProx.reset();
 			IModuleManager::getInstance().releaseModuleProxy(localProxyId);
 
 		}

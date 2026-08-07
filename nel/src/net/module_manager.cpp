@@ -659,7 +659,7 @@ namespace NLNET
 //			_ModuleProxyInstances.removeWithB(it->second);
 			_ModuleProxyIds.removeWithB(it->second);
 
-			nlassertex(sanityCheck.expired(), ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck.lock()->getModuleName().c_str(), sanityCheck.lock()->getModuleClassName().c_str()));
+			nlassertex(sanityCheck.expired(), ("Someone has kept %d smart pointer on the proxy '%s' of class '%s'", sanityCheck.use_count(), sanityCheck.lock()->getModuleName().c_str(), sanityCheck.lock()->getModuleClassName().c_str()));
 		}
 
 		virtual uint32 getNbModule() NL_OVERRIDE
