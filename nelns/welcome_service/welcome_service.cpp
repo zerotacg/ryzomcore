@@ -1426,7 +1426,7 @@ NLNET_SERVICE_MAIN( CWelcomeService, getShortServiceName(scn), getCompleteServic
 namespace WS
 {
 
-	void CWelcomeServiceMod::onModuleUp(IModuleProxy *proxy)
+	void CWelcomeServiceMod::onModuleUp(TModuleProxyPtr proxy)
 	{
 		if (proxy->getModuleClassName() == "RingSessionManager")
 		{
@@ -1463,7 +1463,7 @@ namespace WS
 		}
 	}
 
-	void CWelcomeServiceMod::onModuleDown(IModuleProxy *proxy)
+	void CWelcomeServiceMod::onModuleDown(TModuleProxyPtr proxy)
 	{
 		if (_RingSessionManager == proxy)
 		{
@@ -1475,7 +1475,7 @@ namespace WS
 	}
 
 
-	void CWelcomeServiceMod::welcomeUser(NLNET::IModuleProxy *sender, uint32 charId, const std::string &userName, const CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+	void CWelcomeServiceMod::welcomeUser(TModuleProxyPtr sender, uint32 charId, const std::string &userName, const CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 	{
 		nldebug( "ERLOG: welcomeUser(%u,%s,%s,%s,%s,%u,%u)", charId, userName.c_str(), cookie.toString().c_str(), priviledge.c_str(), exPriviledge.c_str(), (uint)mode.getValue(), instanceId );
 		string ret = lsChooseShard(userName,

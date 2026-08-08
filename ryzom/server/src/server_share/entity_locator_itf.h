@@ -137,29 +137,29 @@ namespace ENTITYLOC
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CEntityLocatorSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CEntityLocatorSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void initState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void initState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void playerConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void playerConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void playerDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void playerDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void charConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void charDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -200,7 +200,7 @@ namespace ENTITYLOC
 
 
 	public:
-		CEntityLocatorProxy(NLNET::IModuleProxy *proxy)
+		CEntityLocatorProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -225,7 +225,7 @@ namespace ENTITYLOC
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -382,21 +382,21 @@ namespace ENTITYLOC
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CEntityLocatorClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CEntityLocatorClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void connectionEvents_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void connectionEvents_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -429,7 +429,7 @@ namespace ENTITYLOC
 
 
 	public:
-		CEntityLocatorClientProxy(NLNET::IModuleProxy *proxy)
+		CEntityLocatorClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -454,7 +454,7 @@ namespace ENTITYLOC
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

@@ -190,7 +190,7 @@ public:
 
 	}
 
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module->getModuleClassName() == "CharacterSynchronisation")
 		{
@@ -254,7 +254,7 @@ public:
 		}
 	}
 
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module == _CharacterSynch)
 		{

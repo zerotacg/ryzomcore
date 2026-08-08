@@ -1832,27 +1832,27 @@ namespace ADMIN
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CAdminServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CAdminServiceSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void upServiceUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void upServiceUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1891,7 +1891,7 @@ namespace ADMIN
 
 
 	public:
-		CAdminServiceProxy(NLNET::IModuleProxy *proxy)
+		CAdminServiceProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -1916,7 +1916,7 @@ namespace ADMIN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -1972,35 +1972,35 @@ namespace ADMIN
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CAdminExecutorServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CAdminExecutorServiceSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void setShardOrders_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setShardOrders_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void shutdownShard_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void shutdownShard_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void controlCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void controlCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void serviceStatusUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceStatusUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2017,9 +2017,9 @@ namespace ADMIN
 		// AS send a command to shutdown a shard with a delay
 		virtual void shutdownShard(NLNET::IModuleProxy *sender, const std::string &shardName, uint32 delay) =0;
 		// AS send a control command to this AES
-		virtual void controlCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
+		virtual void controlCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
 		// Send a command to a service.
-		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
+		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
 		// AES client send back the result of execution of a command
 		virtual void commandResult(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) =0;
 		// A service send graph data update
@@ -2047,7 +2047,7 @@ namespace ADMIN
 
 
 	public:
-		CAdminExecutorServiceProxy(NLNET::IModuleProxy *proxy)
+		CAdminExecutorServiceProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -2072,7 +2072,7 @@ namespace ADMIN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -2106,7 +2106,7 @@ namespace ADMIN
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -2125,7 +2125,7 @@ namespace ADMIN
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -2205,23 +2205,23 @@ namespace ADMIN
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CAdminExecutorServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CAdminExecutorServiceClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void serviceCmdNoReturn_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceCmdNoReturn_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2234,9 +2234,9 @@ namespace ADMIN
 		/////////////////////////////////////////////////////////////////
 
 		// execute a command and return the result.
-		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &command) =0;
+		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &command) =0;
 		// Send a command to a service without waiting for the return value.
-		virtual void serviceCmdNoReturn(NLNET::IModuleProxy *sender, const std::string &command) =0;
+		virtual void serviceCmdNoReturn(NLNET::TModuleProxyPtr sender, const std::string &command) =0;
 
 
 	};
@@ -2256,7 +2256,7 @@ namespace ADMIN
 
 
 	public:
-		CAdminExecutorServiceClientProxy(NLNET::IModuleProxy *proxy)
+		CAdminExecutorServiceClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -2281,7 +2281,7 @@ namespace ADMIN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

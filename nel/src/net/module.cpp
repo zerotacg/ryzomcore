@@ -158,7 +158,7 @@ namespace NLNET
 		// process any queued message
 		while (!module->_SyncMessages.empty())
 		{
-			IModuleProxy *proxy = module->_SyncMessages.front().first;
+			auto proxy = module->_SyncMessages.front().first;
 			CMessage &msg = module->_SyncMessages.front().second;
 
 			module->_onProcessModuleMessage(proxy, msg);
@@ -296,14 +296,14 @@ namespace NLNET
 		return manifest;
 	}
 
-	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+	void	CModuleBase::onReceiveModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message)
 	{
 		H_AUTO(CModuleBase_onReceiveModuleMessage);
 
 		if (!_ModuleTasks.empty())
 		{
 			// there is a task running, queue in the message
-			_SyncMessages.push_back(make_pair(senderModuleProxy, message));
+			_SyncMessages.emplace_back(senderModuleProxy, message);
 		}
 		else
 		{
@@ -337,7 +337,7 @@ namespace NLNET
 			try
 			{
 				// take a copy of the message to dispatch
-				IModuleProxy *currentSender = _CurrentSender;
+				auto currentSender = _CurrentSender;
 				CMessage currentMessage = *_CurrentMessage;
 				_onProcessModuleMessage(currentSender, currentMessage);
 				_CurrentMessageFailed = false;
@@ -484,12 +484,12 @@ namespace NLNET
 
 			while (!_SyncMessages.empty())
 			{
-				IModuleProxy *proxy = _SyncMessages.front().first;
+				auto proxy = _SyncMessages.front().first;
 				CMessage &msg = _SyncMessages.front().second;
 				if (msg.getType() == CMessage::Response)
 				{
 					// we have the response message
-					nlassert(proxy == destModule);
+					nlassert(proxy.get() == destModule);
 					resultMsg = msg;
 					// remove this message form the queue
 					_SyncMessages.pop_front();
@@ -539,12 +539,12 @@ namespace NLNET
 		}
 	}
 
-	void CModuleBase::_onModuleUp(IModuleProxy *removedProxy)
+	void CModuleBase::_onModuleUp(TModuleProxyPtr removedProxy)
 	{
 		H_AUTO(CModuleBase__onModuleUp);
 
 		// call the normal callback in the interceptor list
-		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
+		auto first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
 		for (;first != last; ++first)
 		{
 			IModuleInterceptable *interceptor = *first;
@@ -552,13 +552,13 @@ namespace NLNET
 		}
 	}
 
-	void CModuleBase::_onModuleDown(IModuleProxy *removedProxy)
+	void CModuleBase::_onModuleDown(TModuleProxyPtr removedProxy)
 	{
 		H_AUTO(CModuleBase__onModuleDown);
 
 		// remove any message from the message queue that come from this proxy
 		{
-			TMessageList::iterator first(_SyncMessages.begin()), last(_SyncMessages.end());
+			auto first(_SyncMessages.begin()), last(_SyncMessages.end());
 			for (; first != last; ++first)
 			{
 				if (first->first == removedProxy)
@@ -570,13 +570,13 @@ namespace NLNET
 		}
 		// check the invocation stack also
 		{
-			TInvokeStack::iterator first(_InvokeStack.begin()), last(_InvokeStack.end());
+			auto first(_InvokeStack.begin()), last(_InvokeStack.end());
 			for (; first != last; ++first)
 			{
-				if (*first == removedProxy)
+				if (*first == removedProxy.get())
 				{
 					// at least, we need either a running task or the default dispatch task activated
-					nlassert(!_ModuleTasks.empty() || _MessageDispatchTask != NULL);
+					nlassert(!_ModuleTasks.empty() || _MessageDispatchTask != nullptr);
 
 					// gasp, we lost one of the module needed to managed the invocation stack!
 					// make each call generate an exception
@@ -595,14 +595,14 @@ namespace NLNET
 		}
 
 		// call the normal callback in the interceptor list
-		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
+		auto first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
 		for (;first != last; ++first)
 		{
 			(*first)->onModuleDown(removedProxy);
 		}
 	}
 
-	bool CModuleBase::_onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+	bool CModuleBase::_onProcessModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message)
 	{
 		H_AUTO(CModuleBase__OnProcessModuleMessage);
 
@@ -884,7 +884,7 @@ namespace NLNET
 		}
 
 		// We need to find the proxy for the sender using the addressee gateway
-		IModuleProxy *senderProx = _Gateway->getPluggedModuleProxy(senderModule);
+		auto senderProx = _Gateway->getPluggedModuleProxy(senderModule);
 		if (senderProx == nullptr)
 		{
 			throw EModuleNotReachable();

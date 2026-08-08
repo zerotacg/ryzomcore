@@ -442,10 +442,10 @@ public:
 		return true;
 	}
 	
-	void onModuleDown(IModuleProxy *moduleProxy) NL_OVERRIDE
+	void onModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 	{
 		// check if this is one of our client
-		TLogClients::iterator it(_Clients.find(moduleProxy));
+		auto it(_Clients.find(moduleProxy));
 
 		if (it != _Clients.end())
 		{
@@ -689,7 +689,7 @@ public:
 	{
 		CAutoMutex<CMutex> lock(_LogMutex);
 		// 1st check that the client is allowed
-		TLogClients::iterator it = _Clients.find(sender);
+		auto it(std::find_if(_Clients.begin(), _Clients.end(), [sender](const auto &pair) { return pair.first.get() == sender; }));
 		if (it == _Clients.end())
 		{
 			// ignoring log of unidentified or rejected client
@@ -1545,10 +1545,10 @@ endQuery:
 
 
 		log.displayNL("There is %u connected and accepted clients :", _Clients.size());
-		TLogClients::iterator first(_Clients.begin()), last(_Clients.end());
+		auto first(_Clients.begin()), last(_Clients.end());
 		for (; first != last; ++first)
 		{
-			IModuleProxy *proxy = first->first;
+			auto proxy = first->first;
 			TShardId shardId = first->second;
 			log.displayNL("  Client : '%s' for shard %u", 
 				proxy? proxy->getModuleName().c_str() : "NULL", 

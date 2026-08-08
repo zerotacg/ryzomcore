@@ -184,15 +184,15 @@ namespace <xsl:value-of select="@name"/>
 </xsl:if>
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;message);
 	private:
 
-		typedef void (<xsl:value-of select="@name"/>Skel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;message);
+		typedef void (<xsl:value-of select="@name"/>Skel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;message);
 		typedef std::map&lt;std::string, TMessageHandler&gt;	TMessageHandlerMap;
 
 		const TMessageHandlerMap &amp;getMessageHandlers() const;
@@ -203,7 +203,7 @@ namespace <xsl:value-of select="@name"/>
 		void <xsl:value-of select="@name"/>_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;__message);
 </xsl:when>
 <xsl:when test="return">
-		void <xsl:value-of select="@name"/>_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;__message);
+		void <xsl:value-of select="@name"/>_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;__message);
 </xsl:when>
 </xsl:choose>
 		</xsl:for-each>
@@ -276,7 +276,7 @@ namespace <xsl:value-of select="@name"/>
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -307,7 +307,7 @@ namespace <xsl:value-of select="@name"/>
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -358,7 +358,7 @@ namespace <xsl:value-of select="@name"/>
 
 		return handlers;
 	}
-	bool <xsl:value-of select="@name"/>Skel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;message)
+	bool <xsl:value-of select="@name"/>Skel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;message)
 	{
 		const TMessageHandlerMap &amp;mh = getMessageHandlers();
 
@@ -427,7 +427,7 @@ namespace <xsl:value-of select="@name"/>
 		if (_LocalModuleSkel &amp;&amp; _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel-><xsl:value-of select="@name"/>(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender)<xsl:for-each select="param">, <xsl:value-of select="@name"/></xsl:for-each>);
+			_LocalModuleSkel-><xsl:value-of select="@name"/>(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get()<xsl:for-each select="param">, <xsl:value-of select="@name"/></xsl:for-each>);
 		}
 		else
 		{

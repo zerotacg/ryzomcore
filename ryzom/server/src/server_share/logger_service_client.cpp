@@ -108,7 +108,7 @@ namespace LGS
 			}
 		}
 
-		void registerWithLogger(IModuleProxy *loggerService)
+		void registerWithLogger(TModuleProxyPtr loggerService)
 		{
 			// build a simple vector of log definitions
 			vector<TLogDefinition> logDefs;
@@ -138,7 +138,7 @@ namespace LGS
 		///////////////////////////////////////////////////////////////////////
 		// Implementation of IModuleTrackerCB
 		///////////////////////////////////////////////////////////////////////
-		void onTrackedModuleUp(IModuleProxy *moduleProxy) NL_OVERRIDE
+		void onTrackedModuleUp(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			// if comm started, send our log definition
 			if (getGlobal_CommStarted())
@@ -146,7 +146,7 @@ namespace LGS
 				registerWithLogger(moduleProxy);
 			}
 		}
-		void onTrackedModuleDown(IModuleProxy *moduleProxy) NL_OVERRIDE
+		void onTrackedModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			// nothing
 		}

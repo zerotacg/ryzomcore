@@ -53,7 +53,7 @@ namespace PATCHMAN
 
 
 	private:
-		typedef void (CServerPatchApplierSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CServerPatchApplierSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -122,7 +122,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

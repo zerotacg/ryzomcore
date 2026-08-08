@@ -44,7 +44,7 @@ namespace R2
 
 		return handlers;
 	}
-	bool CServerEditionItfSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CServerEditionItfSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -129,7 +129,7 @@ namespace R2
 
 		return handlers;
 	}
-	bool CServerAnimationItfSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CServerAnimationItfSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -147,25 +147,25 @@ namespace R2
 	}
 
 
-	void CServerAnimationItfSkel::getStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::getStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_getStartParams_GSP);
 		uint32	charId;
 			nlRead(__message, serial, charId);
 		TSessionId	lastStoredSessionId;
 			nlRead(__message, serial, lastStoredSessionId);
-		getStartParams(sender, charId, lastStoredSessionId);
+		getStartParams(sender.get(), charId, lastStoredSessionId);
 	}
 
-	void CServerAnimationItfSkel::askSetUserCharActPosition_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::askSetUserCharActPosition_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_askSetUserCharActPosition_ASUCAP);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		askSetUserCharActPosition(sender, charId);
+		askSetUserCharActPosition(sender.get(), charId);
 	}
 
-	void CServerAnimationItfSkel::activateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::activateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_activateEasterEgg_SAEE);
 		uint32	easterEggId;
@@ -190,10 +190,10 @@ namespace R2
 			nlRead(__message, serial, name);
 		std::string	look;
 			nlRead(__message, serial, look);
-		activateEasterEgg(sender, easterEggId, scenarioId, actId, items, x, y, z, heading, grpCtrl, name, look);
+		activateEasterEgg(sender.get(), easterEggId, scenarioId, actId, items, x, y, z, heading, grpCtrl, name, look);
 	}
 
-	void CServerAnimationItfSkel::dssMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::dssMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_dssMessage_SDSSM);
 		TSessionId	sessionId;
@@ -204,36 +204,36 @@ namespace R2
 			nlRead(__message, serial, who);
 		std::string	msg;
 			nlRead(__message, serial, msg);
-		dssMessage(sender, sessionId, mode, who, msg);
+		dssMessage(sender.get(), sessionId, mode, who, msg);
 	}
 
-	void CServerAnimationItfSkel::setScenarioPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::setScenarioPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_setScenarioPoints_SSSP);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		float	scenarioPoints;
 			nlRead(__message, serial, scenarioPoints);
-		setScenarioPoints(sender, sessionId, scenarioPoints);
+		setScenarioPoints(sender.get(), sessionId, scenarioPoints);
 	}
 
-	void CServerAnimationItfSkel::startScenarioTiming_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::startScenarioTiming_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_startScenarioTiming_SST);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		startScenarioTiming(sender, sessionId);
+		startScenarioTiming(sender.get(), sessionId);
 	}
 
-	void CServerAnimationItfSkel::endScenarioTiming_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::endScenarioTiming_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_endScenarioTiming_EST);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		endScenarioTiming(sender, sessionId);
+		endScenarioTiming(sender.get(), sessionId);
 	}
 
-	void CServerAnimationItfSkel::deactivateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::deactivateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_deactivateEasterEgg_SDEE);
 		uint32	easterEggId;
@@ -242,20 +242,20 @@ namespace R2
 			nlRead(__message, serial, scenarioId);
 		uint32	actId;
 			nlRead(__message, serial, actId);
-		deactivateEasterEgg(sender, easterEggId, scenarioId, actId);
+		deactivateEasterEgg(sender.get(), easterEggId, scenarioId, actId);
 	}
 
-	void CServerAnimationItfSkel::onEasterEggLooted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::onEasterEggLooted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_onEasterEggLooted_SOEEL);
 		uint32	eggId;
 			nlRead(__message, serial, eggId);
 		TSessionId	scenarioId;
 			nlRead(__message, serial, scenarioId);
-		onEasterEggLooted(sender, eggId, scenarioId);
+		onEasterEggLooted(sender.get(), eggId, scenarioId);
 	}
 
-	void CServerAnimationItfSkel::onCharTargetReceived_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::onCharTargetReceived_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_onCharTargetReceived_SCTR);
 		NLMISC::CEntityId	eid;
@@ -274,10 +274,10 @@ namespace R2
 			nlRead(__message, serialCont, params);
 		bool	alived;
 			nlRead(__message, serial, alived);
-		onCharTargetReceived(sender, eid, creatureId, creatureAlias, creatureRowId, name, nameId, params, alived);
+		onCharTargetReceived(sender.get(), eid, creatureId, creatureAlias, creatureRowId, name, nameId, params, alived);
 	}
 
-	void CServerAnimationItfSkel::teleportCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::teleportCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_teleportCharacter_STOCTO);
 		NLMISC::CEntityId	player;
@@ -288,15 +288,15 @@ namespace R2
 			nlRead(__message, serial, y);
 		float	z;
 			nlRead(__message, serial, z);
-		teleportCharacter(sender, player, x, y, z);
+		teleportCharacter(sender.get(), player, x, y, z);
 	}
 
-	void CServerAnimationItfSkel::characterReady_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerAnimationItfSkel::characterReady_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerAnimationItfSkel_characterReady_CRDY);
 		NLMISC::CEntityId	charEid;
 			nlRead(__message, serial, charEid);
-		characterReady(sender, charEid);
+		characterReady(sender.get(), charEid);
 	}
 		// Ask for the position, season and adventure mode of a connecting character
 		// The reply will either give a new position or tell to load the last stored one
@@ -306,7 +306,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->getStartParams(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, lastStoredSessionId);
+			_LocalModuleSkel->getStartParams(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, lastStoredSessionId);
 		}
 		else
 		{
@@ -325,7 +325,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->askSetUserCharActPosition(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->askSetUserCharActPosition(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -343,7 +343,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->activateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), easterEggId, scenarioId, actId, items, x, y, z, heading, grpCtrl, name, look);
+			_LocalModuleSkel->activateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), easterEggId, scenarioId, actId, items, x, y, z, heading, grpCtrl, name, look);
 		}
 		else
 		{
@@ -361,7 +361,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->dssMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, mode, who, msg);
+			_LocalModuleSkel->dssMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, mode, who, msg);
 		}
 		else
 		{
@@ -379,7 +379,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setScenarioPoints(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, scenarioPoints);
+			_LocalModuleSkel->setScenarioPoints(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, scenarioPoints);
 		}
 		else
 		{
@@ -397,7 +397,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->startScenarioTiming(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId);
+			_LocalModuleSkel->startScenarioTiming(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId);
 		}
 		else
 		{
@@ -415,7 +415,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->endScenarioTiming(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId);
+			_LocalModuleSkel->endScenarioTiming(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId);
 		}
 		else
 		{
@@ -433,7 +433,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->deactivateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), easterEggId, scenarioId, actId);
+			_LocalModuleSkel->deactivateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), easterEggId, scenarioId, actId);
 		}
 		else
 		{
@@ -451,7 +451,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->onEasterEggLooted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), eggId, scenarioId);
+			_LocalModuleSkel->onEasterEggLooted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), eggId, scenarioId);
 		}
 		else
 		{
@@ -469,7 +469,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->onCharTargetReceived(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), eid, creatureId, creatureAlias, creatureRowId, name, nameId, params, alived);
+			_LocalModuleSkel->onCharTargetReceived(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), eid, creatureId, creatureAlias, creatureRowId, name, nameId, params, alived);
 		}
 		else
 		{
@@ -487,7 +487,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->teleportCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), player, x, y, z);
+			_LocalModuleSkel->teleportCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), player, x, y, z);
 		}
 		else
 		{
@@ -505,7 +505,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->characterReady(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEid);
+			_LocalModuleSkel->characterReady(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEid);
 		}
 		else
 		{
@@ -789,7 +789,7 @@ namespace R2
 
 		return handlers;
 	}
-	bool CCharacterControlItfSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CCharacterControlItfSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -807,7 +807,7 @@ namespace R2
 	}
 
 
-	void CCharacterControlItfSkel::setUserCharStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::setUserCharStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_setUserCharStartParams_RSP);
 		uint32	charId;
@@ -820,30 +820,30 @@ namespace R2
 			nlRead(__message, serial, scenarioSeason);
 		R2::TUserRole	role;
 			nlRead(__message, serial, role);
-		setUserCharStartParams(sender, charId, farPos, reloadPos, scenarioSeason, role);
+		setUserCharStartParams(sender.get(), charId, farPos, reloadPos, scenarioSeason, role);
 	}
 
-	void CCharacterControlItfSkel::charJoinAnimSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::charJoinAnimSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_charJoinAnimSession_CJAS);
 		uint32	charId;
 			nlRead(__message, serial, charId);
 		uint32	sessionId;
 			nlRead(__message, serial, sessionId);
-		charJoinAnimSession(sender, charId, sessionId);
+		charJoinAnimSession(sender.get(), charId, sessionId);
 	}
 
-	void CCharacterControlItfSkel::charLeaveAnimSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::charLeaveAnimSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_charLeaveAnimSession_CLAS);
 		uint32	charId;
 			nlRead(__message, serial, charId);
 		uint32	sessionId;
 			nlRead(__message, serial, sessionId);
-		charLeaveAnimSession(sender, charId, sessionId);
+		charLeaveAnimSession(sender.get(), charId, sessionId);
 	}
 
-	void CCharacterControlItfSkel::setUserCharActPosition_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::setUserCharActPosition_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_setUserCharActPosition_RSPP);
 		uint32	charId;
@@ -852,20 +852,20 @@ namespace R2
 			nlRead(__message, serial, farPos);
 		uint8	season;
 			nlRead(__message, serial, season);
-		setUserCharActPosition(sender, charId, farPos, season);
+		setUserCharActPosition(sender.get(), charId, farPos, season);
 	}
 
-	void CCharacterControlItfSkel::animSessionStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::animSessionStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_animSessionStarted_AST);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		TRunningScenarioInfo	scenarioInfo;
 			nlRead(__message, serial, scenarioInfo);
-		animSessionStarted(sender, sessionId, scenarioInfo);
+		animSessionStarted(sender.get(), sessionId, scenarioInfo);
 	}
 
-	void CCharacterControlItfSkel::animSessionEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::animSessionEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_animSessionEnded_ASE);
 		TSessionId	sessionId;
@@ -874,28 +874,28 @@ namespace R2
 			nlRead(__message, serial, scenarioScore);
 		NLMISC::TTime	timeTaken;
 			nlRead(__message, serial, timeTaken);
-		animSessionEnded(sender, sessionId, scenarioScore, timeTaken);
+		animSessionEnded(sender.get(), sessionId, scenarioScore, timeTaken);
 	}
 
-	void CCharacterControlItfSkel::scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_scenarioEnded_SSE);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		scenarioEnded(sender, sessionId);
+		scenarioEnded(sender.get(), sessionId);
 	}
 
-	void CCharacterControlItfSkel::sendItemDescription_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::sendItemDescription_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_sendItemDescription_SSIT);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		std::vector<R2::TMissionItem>	missionItem;
 			nlRead(__message, serialCont, missionItem);
-		sendItemDescription(sender, sessionId, missionItem);
+		sendItemDescription(sender.get(), sessionId, missionItem);
 	}
 
-	void CCharacterControlItfSkel::activateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::activateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_activateEasterEgg_AEE);
 		uint32	easterEggId;
@@ -912,40 +912,40 @@ namespace R2
 			nlRead(__message, serial, name);
 		std::string	look;
 			nlRead(__message, serial, look);
-		activateEasterEgg(sender, easterEggId, scenarioId, aiInstanceId, items, pos, name, look);
+		activateEasterEgg(sender.get(), easterEggId, scenarioId, aiInstanceId, items, pos, name, look);
 	}
 
-	void CCharacterControlItfSkel::deactivateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::deactivateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_deactivateEasterEgg_DEE1);
 		uint32	easterEggId;
 			nlRead(__message, serial, easterEggId);
 		TSessionId	scenarioId;
 			nlRead(__message, serial, scenarioId);
-		deactivateEasterEgg(sender, easterEggId, scenarioId);
+		deactivateEasterEgg(sender.get(), easterEggId, scenarioId);
 	}
 
-	void CCharacterControlItfSkel::deactivateEasterEggs_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::deactivateEasterEggs_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_deactivateEasterEggs_DEE2);
 		std::set<uint32>	items;
 			nlRead(__message, serialCont, items);
 		TSessionId	scenarioId;
 			nlRead(__message, serial, scenarioId);
-		deactivateEasterEggs(sender, items, scenarioId);
+		deactivateEasterEggs(sender.get(), items, scenarioId);
 	}
 
-	void CCharacterControlItfSkel::sendCharTargetToDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::sendCharTargetToDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_sendCharTargetToDss_SCT);
 		NLMISC::CEntityId	eid;
 			nlRead(__message, serial, eid);
 		std::vector<std::string>	params;
 			nlRead(__message, serialCont, params);
-		sendCharTargetToDss(sender, eid, params);
+		sendCharTargetToDss(sender.get(), eid, params);
 	}
 
-	void CCharacterControlItfSkel::onTpPositionAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::onTpPositionAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_onTpPositionAsked_STPA);
 		NLMISC::CEntityId	eid;
@@ -960,36 +960,36 @@ namespace R2
 			nlRead(__message, serial, season);
 		R2::TR2TpInfos	teleportInfos;
 			nlRead(__message, serial, teleportInfos);
-		onTpPositionAsked(sender, eid, x, y, z, season, teleportInfos);
+		onTpPositionAsked(sender.get(), eid, x, y, z, season, teleportInfos);
 	}
 
-	void CCharacterControlItfSkel::disconnectChar_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::disconnectChar_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_disconnectChar_SDC);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		disconnectChar(sender, charId);
+		disconnectChar(sender.get(), charId);
 	}
 
-	void CCharacterControlItfSkel::returnToPreviousSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::returnToPreviousSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_returnToPreviousSession_SRPS);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		returnToPreviousSession(sender, charId);
+		returnToPreviousSession(sender.get(), charId);
 	}
 
-	void CCharacterControlItfSkel::setPioneerRight_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::setPioneerRight_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_setPioneerRight_SSPR);
 		uint32	charId;
 			nlRead(__message, serial, charId);
 		bool	isDM;
 			nlRead(__message, serial, isDM);
-		setPioneerRight(sender, charId, isDM);
+		setPioneerRight(sender.get(), charId, isDM);
 	}
 
-	void CCharacterControlItfSkel::teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_teleportOneCharacterToAnother_STOCTA);
 		uint32	sourceId;
@@ -998,10 +998,10 @@ namespace R2
 			nlRead(__message, serial, destId);
 		uint8	season;
 			nlRead(__message, serial, season);
-		teleportOneCharacterToAnother(sender, sourceId, destId, season);
+		teleportOneCharacterToAnother(sender.get(), sourceId, destId, season);
 	}
 
-	void CCharacterControlItfSkel::teleportCharacterToNpc_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::teleportCharacterToNpc_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_teleportCharacterToNpc_STCTN);
 		uint32	sourceId;
@@ -1010,10 +1010,10 @@ namespace R2
 			nlRead(__message, serial, destEid);
 		uint8	season;
 			nlRead(__message, serial, season);
-		teleportCharacterToNpc(sender, sourceId, destEid, season);
+		teleportCharacterToNpc(sender.get(), sourceId, destEid, season);
 	}
 
-	void CCharacterControlItfSkel::setUserCharCurrentSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::setUserCharCurrentSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_setUserCharCurrentSession_SUCCS);
 		uint32	charId;
@@ -1024,30 +1024,30 @@ namespace R2
 			nlRead(__message, serial, respawnPoint);
 		R2::TUserRole	role;
 			nlRead(__message, serial, role);
-		setUserCharCurrentSession(sender, charId, oldSessionId, respawnPoint, role);
+		setUserCharCurrentSession(sender.get(), charId, oldSessionId, respawnPoint, role);
 	}
 
-	void CCharacterControlItfSkel::reportLinkedSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::reportLinkedSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_reportLinkedSession_SRLS);
 		TSessionId	editionSession;
 			nlRead(__message, serial, editionSession);
 		TSessionId	animationSession;
 			nlRead(__message, serial, animationSession);
-		reportLinkedSession(sender, editionSession, animationSession);
+		reportLinkedSession(sender.get(), editionSession, animationSession);
 	}
 
-	void CCharacterControlItfSkel::reportUnlinkedSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::reportUnlinkedSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_reportUnlinkedSession_SRUS);
 		TSessionId	editionSession;
 			nlRead(__message, serial, editionSession);
 		TSessionId	animationSession;
 			nlRead(__message, serial, animationSession);
-		reportUnlinkedSession(sender, editionSession, animationSession);
+		reportUnlinkedSession(sender.get(), editionSession, animationSession);
 	}
 
-	void CCharacterControlItfSkel::giveRewardMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::giveRewardMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_giveRewardMessage_SGRM);
 		TDataSetRow	characterRowId;
@@ -1062,43 +1062,43 @@ namespace R2
 			nlRead(__message, serial, inventoryFullText);
 		std::string	notEnoughPointsText;
 			nlRead(__message, serial, notEnoughPointsText);
-		giveRewardMessage(sender, characterRowId, creatureRowId, rewardText, rareRewardText, inventoryFullText, notEnoughPointsText);
+		giveRewardMessage(sender.get(), characterRowId, creatureRowId, rewardText, rareRewardText, inventoryFullText, notEnoughPointsText);
 	}
 
-	void CCharacterControlItfSkel::reportNpcControl_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::reportNpcControl_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_reportNpcControl_SRNC);
 		NLMISC::CEntityId	playerEid;
 			nlRead(__message, serial, playerEid);
 		NLMISC::CEntityId	botEid;
 			nlRead(__message, serial, botEid);
-		reportNpcControl(sender, playerEid, botEid);
+		reportNpcControl(sender.get(), playerEid, botEid);
 	}
 
-	void CCharacterControlItfSkel::reportStopNpcControl_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::reportStopNpcControl_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_reportStopNpcControl_SRSNC);
 		NLMISC::CEntityId	playerEid;
 			nlRead(__message, serial, playerEid);
 		NLMISC::CEntityId	botEid;
 			nlRead(__message, serial, botEid);
-		reportStopNpcControl(sender, playerEid, botEid);
+		reportStopNpcControl(sender.get(), playerEid, botEid);
 	}
 
-	void CCharacterControlItfSkel::subscribeCharacterInRingUniverse_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::subscribeCharacterInRingUniverse_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_subscribeCharacterInRingUniverse_SCIRU);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		subscribeCharacterInRingUniverse(sender, charId);
+		subscribeCharacterInRingUniverse(sender.get(), charId);
 	}
 
-	void CCharacterControlItfSkel::unsubscribeCharacterInRingUniverse_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterControlItfSkel::unsubscribeCharacterInRingUniverse_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterControlItfSkel_unsubscribeCharacterInRingUniverse_UCIRU);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		unsubscribeCharacterInRingUniverse(sender, charId);
+		unsubscribeCharacterInRingUniverse(sender.get(), charId);
 	}
 		// The reply of CServerAnimationItf::getStartParams. If reloadPos is true,
 		// the character will start from his current saved pos, otherwise the character
@@ -1108,7 +1108,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setUserCharStartParams(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, farPos, reloadPos, scenarioSeason, role);
+			_LocalModuleSkel->setUserCharStartParams(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, farPos, reloadPos, scenarioSeason, role);
 		}
 		else
 		{
@@ -1126,7 +1126,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charJoinAnimSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, sessionId);
+			_LocalModuleSkel->charJoinAnimSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, sessionId);
 		}
 		else
 		{
@@ -1144,7 +1144,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charLeaveAnimSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, sessionId);
+			_LocalModuleSkel->charLeaveAnimSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, sessionId);
 		}
 		else
 		{
@@ -1162,7 +1162,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setUserCharActPosition(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, farPos, season);
+			_LocalModuleSkel->setUserCharActPosition(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, farPos, season);
 		}
 		else
 		{
@@ -1180,7 +1180,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->animSessionStarted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, scenarioInfo);
+			_LocalModuleSkel->animSessionStarted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, scenarioInfo);
 		}
 		else
 		{
@@ -1198,7 +1198,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->animSessionEnded(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, scenarioScore, timeTaken);
+			_LocalModuleSkel->animSessionEnded(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, scenarioScore, timeTaken);
 		}
 		else
 		{
@@ -1216,7 +1216,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->scenarioEnded(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId);
+			_LocalModuleSkel->scenarioEnded(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId);
 		}
 		else
 		{
@@ -1234,7 +1234,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sendItemDescription(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, missionItem);
+			_LocalModuleSkel->sendItemDescription(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, missionItem);
 		}
 		else
 		{
@@ -1252,7 +1252,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->activateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), easterEggId, scenarioId, aiInstanceId, items, pos, name, look);
+			_LocalModuleSkel->activateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), easterEggId, scenarioId, aiInstanceId, items, pos, name, look);
 		}
 		else
 		{
@@ -1270,7 +1270,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->deactivateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), easterEggId, scenarioId);
+			_LocalModuleSkel->deactivateEasterEgg(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), easterEggId, scenarioId);
 		}
 		else
 		{
@@ -1288,7 +1288,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->deactivateEasterEggs(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), items, scenarioId);
+			_LocalModuleSkel->deactivateEasterEggs(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), items, scenarioId);
 		}
 		else
 		{
@@ -1306,7 +1306,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sendCharTargetToDss(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), eid, params);
+			_LocalModuleSkel->sendCharTargetToDss(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), eid, params);
 		}
 		else
 		{
@@ -1324,7 +1324,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->onTpPositionAsked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), eid, x, y, z, season, teleportInfos);
+			_LocalModuleSkel->onTpPositionAsked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), eid, x, y, z, season, teleportInfos);
 		}
 		else
 		{
@@ -1342,7 +1342,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->disconnectChar(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->disconnectChar(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -1360,7 +1360,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->returnToPreviousSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->returnToPreviousSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -1378,7 +1378,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setPioneerRight(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, isDM);
+			_LocalModuleSkel->setPioneerRight(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, isDM);
 		}
 		else
 		{
@@ -1396,7 +1396,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->teleportOneCharacterToAnother(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sourceId, destId, season);
+			_LocalModuleSkel->teleportOneCharacterToAnother(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sourceId, destId, season);
 		}
 		else
 		{
@@ -1414,7 +1414,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->teleportCharacterToNpc(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sourceId, destEid, season);
+			_LocalModuleSkel->teleportCharacterToNpc(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sourceId, destEid, season);
 		}
 		else
 		{
@@ -1432,7 +1432,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setUserCharCurrentSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, oldSessionId, respawnPoint, role);
+			_LocalModuleSkel->setUserCharCurrentSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, oldSessionId, respawnPoint, role);
 		}
 		else
 		{
@@ -1450,7 +1450,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportLinkedSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), editionSession, animationSession);
+			_LocalModuleSkel->reportLinkedSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), editionSession, animationSession);
 		}
 		else
 		{
@@ -1468,7 +1468,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportUnlinkedSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), editionSession, animationSession);
+			_LocalModuleSkel->reportUnlinkedSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), editionSession, animationSession);
 		}
 		else
 		{
@@ -1486,7 +1486,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->giveRewardMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), characterRowId, creatureRowId, rewardText, rareRewardText, inventoryFullText, notEnoughPointsText);
+			_LocalModuleSkel->giveRewardMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), characterRowId, creatureRowId, rewardText, rareRewardText, inventoryFullText, notEnoughPointsText);
 		}
 		else
 		{
@@ -1504,7 +1504,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportNpcControl(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), playerEid, botEid);
+			_LocalModuleSkel->reportNpcControl(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), playerEid, botEid);
 		}
 		else
 		{
@@ -1522,7 +1522,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportStopNpcControl(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), playerEid, botEid);
+			_LocalModuleSkel->reportStopNpcControl(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), playerEid, botEid);
 		}
 		else
 		{
@@ -1541,7 +1541,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->subscribeCharacterInRingUniverse(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->subscribeCharacterInRingUniverse(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -1560,7 +1560,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->unsubscribeCharacterInRingUniverse(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->unsubscribeCharacterInRingUniverse(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -1895,7 +1895,7 @@ namespace R2
 
 		return handlers;
 	}
-	bool CAisControlItfSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CAisControlItfSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -1948,7 +1948,7 @@ namespace R2
 
 		return handlers;
 	}
-	bool CR2SessionBackupModuleItfSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CR2SessionBackupModuleItfSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -1966,36 +1966,36 @@ namespace R2
 	}
 
 
-	void CR2SessionBackupModuleItfSkel::reportDeletedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CR2SessionBackupModuleItfSkel::reportDeletedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CR2SessionBackupModuleItfSkel_reportDeletedSessions_SRDS);
 		std::vector<TSessionId>	sessionIds;
 			nlRead(__message, serialCont, sessionIds);
-		reportDeletedSessions(sender, sessionIds);
+		reportDeletedSessions(sender.get(), sessionIds);
 	}
 
-	void CR2SessionBackupModuleItfSkel::reportHibernatedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CR2SessionBackupModuleItfSkel::reportHibernatedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CR2SessionBackupModuleItfSkel_reportHibernatedSessions_SRHS);
 		std::vector<TSessionId>	sessionIds;
 			nlRead(__message, serialCont, sessionIds);
-		reportHibernatedSessions(sender, sessionIds);
+		reportHibernatedSessions(sender.get(), sessionIds);
 	}
 
-	void CR2SessionBackupModuleItfSkel::reportSavedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CR2SessionBackupModuleItfSkel::reportSavedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CR2SessionBackupModuleItfSkel_reportSavedSessions_SRSS);
 		std::vector< TR2SbmSessionInfo >	sessionInfos;
 			nlRead(__message, serialCont, sessionInfos);
-		reportSavedSessions(sender, sessionInfos);
+		reportSavedSessions(sender.get(), sessionInfos);
 	}
 
-	void CR2SessionBackupModuleItfSkel::registerDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CR2SessionBackupModuleItfSkel::registerDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CR2SessionBackupModuleItfSkel_registerDss_SRDSS);
 		TShardId	shardId;
 			nlRead(__message, serial, shardId);
-		registerDss(sender, shardId);
+		registerDss(sender.get(), shardId);
 	}
 		// DSS message to report session backup that have been deleteed
 	void CR2SessionBackupModuleItfProxy::reportDeletedSessions(NLNET::IModule *sender, const std::vector<TSessionId> &sessionIds)
@@ -2003,7 +2003,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportDeletedSessions(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionIds);
+			_LocalModuleSkel->reportDeletedSessions(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionIds);
 		}
 		else
 		{
@@ -2021,7 +2021,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportHibernatedSessions(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionIds);
+			_LocalModuleSkel->reportHibernatedSessions(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionIds);
 		}
 		else
 		{
@@ -2039,7 +2039,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportSavedSessions(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionInfos);
+			_LocalModuleSkel->reportSavedSessions(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionInfos);
 		}
 		else
 		{
@@ -2057,7 +2057,7 @@ namespace R2
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerDss(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId);
+			_LocalModuleSkel->registerDss(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId);
 		}
 		else
 		{

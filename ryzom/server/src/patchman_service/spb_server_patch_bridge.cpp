@@ -64,7 +64,7 @@ public:
 
 protected:
 	// specialisations of CFileRepositorySkel methods (overloading default CFileRepository behaviour)
-	void requestFileData(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) NL_OVERRIDE;
+	void requestFileData(TModuleProxyPtr sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) NL_OVERRIDE;
 
 	// specialisations of overloadable callback methods
 	void cbFileDownloadSuccess(const NLMISC::CSString& fileName,const NLMISC::CMemStream& data) NL_OVERRIDE;
@@ -334,7 +334,7 @@ void CServerPatchBridge::getFileInfo(const NLMISC::CSString& fileSpec,TFileInfoV
 	}
 }
 
-void CServerPatchBridge::requestFileData(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes)
+void CServerPatchBridge::requestFileData(TModuleProxyPtr sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes)
 {
 	// if this file is already being uploaded to satisfy another request then just queue us up
 	if (_DelayedFileRequests.find(fileName)!=_DelayedFileRequests.end())
@@ -406,7 +406,7 @@ void CServerPatchBridge::requestFileData(NLNET::IModuleProxy *sender, const NLMI
 	if (upToDate)
 	{
 		registerProgress("Dispatching local copy of file: "+fileName+" to "+sender->getModuleName());
-		CFileRepository::requestFileData(sender,fileName,startOffset,numBytes);
+		CFileRepository::requestFileData(sender, fileName, startOffset, numBytes);
 		return;
 	}
 
@@ -461,7 +461,7 @@ void CServerPatchBridge::cbFileDownloadSuccess(const NLMISC::CSString& fileName,
 		// treat each request in the vector
 		for (TDelayedFileRequestVector::iterator it= vect.begin(); it!= vect.end(); ++it)
 		{
-			CFileRepository::requestFileData(it->Requestor,it->FileName,it->StartOffset,it->NumBytes);
+			CFileRepository::requestFileData(it->Requestor, it->FileName, it->StartOffset, it->NumBytes);
 		}
 
 		// we've finished treating the requests so ditch them

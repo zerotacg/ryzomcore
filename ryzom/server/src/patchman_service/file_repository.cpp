@@ -79,7 +79,7 @@ namespace PATCHMAN
 		_AdministeredModuleWrapper.init(dynamic_cast<CAdministeredModuleBase*>(parent));
 	}
 
-	void CFileRepository::onModuleUp(IModuleProxy *module)
+	void CFileRepository::onModuleUp(TModuleProxyPtr module)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -265,7 +265,7 @@ namespace PATCHMAN
 			for (TFileInfoVector::const_iterator cit=fileInfoChanges.begin(); cit!=fileInfoChanges.end();++cit)
 			{
 				// if this change is for a file that matches the subscriber's filespec then addit to our result vector
-				if (fileSpec.matches(cit->FileName) && cbValidateFileInfoRequest(sit->second,cit->FileName))
+				if (fileSpec.matches(cit->FileName) && cbValidateFileInfoRequest(sit->second.get(),cit->FileName))
 				{
 					infoVector.push_back(*cit);
 				}
@@ -280,14 +280,14 @@ namespace PATCHMAN
 		}
 	}
 
-	void CFileRepository::requestFileInfo(NLNET::IModuleProxy *sender,const NLMISC::CSString& fileSpec)
+	void CFileRepository::requestFileInfo(TModuleProxyPtr sender, const NLMISC::CSString &fileSpec)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
 
 		// setup an object to receive the file info and fill it in
 		TFileInfoVector result;
-		getFileInfo(fileSpec,result,sender);
+		getFileInfo(fileSpec,result, sender.get());
 
 		// get hold of a proxy for the module who sent the request and return the file info to them
 		CFileReceiverProxy fr(sender);
@@ -312,7 +312,7 @@ namespace PATCHMAN
 		_AdministeredModuleWrapper.setStateVariable("InfoReq",NLMISC::toString(_FileInfoCount));
 	}
 
-	void CFileRepository::requestFileData(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes)
+	void CFileRepository::requestFileData(TModuleProxyPtr sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -322,7 +322,7 @@ namespace PATCHMAN
 		bool ok;
 
 		// allow the overloadable validation callback a chance to prohibit read
-		ok= cbValidateDownloadRequest(sender,fileName);
+		ok= cbValidateDownloadRequest(sender.get(),fileName);
 
 		// load the file (if validation was favorable)
 		CSString fullFileName= _Directory->getRootDirectory()+fileName;
@@ -370,7 +370,7 @@ namespace PATCHMAN
 		}
 	}
 
-	void CFileRepository::subscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec)
+	void CFileRepository::subscribe(TModuleProxyPtr sender, const NLMISC::CSString &fileSpec)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -386,7 +386,7 @@ namespace PATCHMAN
 
 		// get hold of the info on the requested files as it stands right now
 		TFileInfoVector fileInfoVector;
-		getFileInfo(fileSpec,fileInfoVector,sender);
+		getFileInfo(fileSpec,fileInfoVector, sender.get());
 
 		// dispatch the info to the sender
 		CFileReceiverProxy client(sender);
@@ -432,7 +432,7 @@ namespace PATCHMAN
 			++it;
 
 			// see if the last element needs to be erased
-			if (last->second==sender)
+			if (last->second.get()==sender)
 			{
 				// delegate to standard 'unsubscribe' to do the work
 				unsubscribe(sender,last->first.splitFrom('@').strip());
@@ -440,14 +440,14 @@ namespace PATCHMAN
 		}
 	}
 
-	void CFileRepository::getInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec)
+	void CFileRepository::getInfo(TModuleProxyPtr sender, const NLMISC::CSString &fileSpec)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
 
 		_AdministeredModuleWrapper.registerProgress("getInfo "+sender->getModuleName()+" "+fileSpec);
-		subscribe(sender,fileSpec);
-		unsubscribe(sender,fileSpec);
+		subscribe(sender, fileSpec);
+		unsubscribe(sender.get(),fileSpec);
 	}
 
 	void CFileRepository::cbFileInfoUpdate(const SFileInfo& fileInfo)

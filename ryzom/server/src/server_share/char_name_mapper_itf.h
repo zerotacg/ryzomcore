@@ -215,21 +215,21 @@ namespace CNM
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CCharNameMapperSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CCharNameMapperSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void mapCharNames_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void mapCharNames_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -242,7 +242,7 @@ namespace CNM
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void mapCharNames(NLNET::IModuleProxy *sender, const std::vector < TCharNameInfo > &charNameInfos) =0;
+		virtual void mapCharNames(NLNET::TModuleProxyPtr sender, const std::vector<TCharNameInfo> &charNameInfos) =0;
 
 
 	};
@@ -262,7 +262,7 @@ namespace CNM
 
 
 	public:
-		CCharNameMapperProxy(NLNET::IModuleProxy *proxy)
+		CCharNameMapperProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -287,7 +287,7 @@ namespace CNM
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -328,21 +328,21 @@ namespace CNM
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CCharNameMapperClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CCharNameMapperClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void charNamesMapped_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charNamesMapped_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -375,7 +375,7 @@ namespace CNM
 
 
 	public:
-		CCharNameMapperClientProxy(NLNET::IModuleProxy *proxy)
+		CCharNameMapperClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -400,7 +400,7 @@ namespace CNM
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

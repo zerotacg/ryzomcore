@@ -2064,31 +2064,31 @@ namespace RSMGR
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CRingSessionManagerSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CRingSessionManagerSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void registerDSS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerDSS_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void sessionCreated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sessionCreated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportSessionEvent_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportSessionEvent_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void scenarioStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void scenarioStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportCharacterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportCharacterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2135,7 +2135,7 @@ namespace RSMGR
 
 
 	public:
-		CRingSessionManagerProxy(NLNET::IModuleProxy *proxy)
+		CRingSessionManagerProxy(NLNET::TModuleProxyPtr proxy)
 		{
 			nlassert(proxy->getModuleClassName() == "RingSessionManager");
 			_ModuleProxy = proxy;
@@ -2144,13 +2144,13 @@ namespace RSMGR
 			if (proxy->getModuleDistance() == 0)
 			{
 				_LocalModule = proxy->getLocalModule();
-				nlassert(_LocalModule != NULL);
+				nlassert(_LocalModule != nullptr);
 				CRingSessionManagerSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
-				nlassert(interceptor != NULL);
+				nlassert(interceptor != nullptr);
 
 				_LocalModuleSkel = interceptor->getParent();
-				nlassert(_LocalModuleSkel != NULL);
+				nlassert(_LocalModuleSkel != nullptr);
 			}
 			else
 				_LocalModuleSkel = nullptr;
@@ -2160,7 +2160,7 @@ namespace RSMGR
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -2230,37 +2230,37 @@ namespace RSMGR
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CRingSessionManagerClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CRingSessionManagerClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void createSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void createSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void addCharacterInSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void addCharacterInSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void closeSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void closeSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void stopHibernation_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void stopHibernation_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void characterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void characterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void characterUnkicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void characterUnkicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void hibernateSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void hibernateSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setSessionStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setSessionStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2312,16 +2312,15 @@ namespace RSMGR
 
 
 	public:
-		CRingSessionManagerClientProxy(NLNET::IModuleProxy *proxy)
+		CRingSessionManagerClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
-
 			_ModuleProxy = proxy;
 
 			// initialize collocated servant interface
 			if (proxy->getModuleDistance() == 0)
 			{
 				_LocalModule = proxy->getLocalModule();
-				nlassert(_LocalModule != NULL);
+				nlassert(_LocalModule != nullptr);
 				CRingSessionManagerClientSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
@@ -2337,7 +2336,7 @@ namespace RSMGR
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

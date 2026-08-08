@@ -91,9 +91,9 @@ namespace R2
 		virtual void onServiceUp(const std::string &serviceName, NLNET::TServiceId serviceId) NL_OVERRIDE;
 		virtual void onServiceDown(const std::string &serviceName, NLNET::TServiceId serviceId) NL_OVERRIDE;
 		virtual void onModuleUpdate() NL_OVERRIDE;
-		virtual void onModuleUp(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
-		virtual void onModuleDown(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
-		virtual bool onProcessModuleMessage(NLNET::IModuleProxy *senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
+		virtual void onModuleUp(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
+		virtual void onModuleDown(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
+		virtual bool onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
 		virtual bool isImmediateDispatchingSupported() const NL_OVERRIDE { return false; }
 
 
@@ -104,7 +104,7 @@ namespace R2
 		/// schedule the start of an act (the act will begin 30 seconds after)
 		void scheduleStartAct(TSessionId sessionId, uint32 actId);
 		/// Called by the client when he connect to play mode in an animation session
-		virtual void connectAnimationModePlay(NLNET::IModuleProxy*) NL_OVERRIDE;
+		virtual void connectAnimationModePlay(NLNET::TModuleProxyPtr) NL_OVERRIDE;
 		// Called by EGS to set the start position of a player
 		virtual void getStartParams(NLNET::IModuleProxy *sender, uint32 charId, TSessionId lastStoredSessionId) NL_OVERRIDE;
 		/// launch the start of a new Act (is launch by AIS or by DM bia dmc)
@@ -130,15 +130,15 @@ namespace R2
 		// Called by EditionModule to add a character
 		virtual void addPioneer( TSessionId sessionId, TCharId charId) NL_OVERRIDE ;
 		// from client (the module will upload mission item description to dm that will store it to its db)
-		virtual void askMissionItemsDescription(NLNET::IModuleProxy *client) NL_OVERRIDE;
+		virtual void askMissionItemsDescription(NLNET::TModuleProxyPtr client) NL_OVERRIDE;
 		// from client (the module will upload Acts Position Description to client)
-		virtual void askActPositionDescriptions(NLNET::IModuleProxy *client) NL_OVERRIDE;
+		virtual void askActPositionDescriptions(NLNET::TModuleProxyPtr client) NL_OVERRIDE;
 		// from client (the module will upload Acts Position Description to client)
-		virtual void askUserTriggerDescriptions(NLNET::IModuleProxy *client) NL_OVERRIDE;
+		virtual void askUserTriggerDescriptions(NLNET::TModuleProxyPtr client) NL_OVERRIDE;
 		// from client (the module will upload Acts Position Description to client)
-		virtual void askIncarnatingListUpdate(NLNET::IModuleProxy *client);
-		virtual void askTalkingAsListUpdate(NLNET::IModuleProxy *client);
-		virtual void askUpdateScenarioHeader(NLNET::IModuleProxy *clientProxyPtr);
+		virtual void askIncarnatingListUpdate(NLNET::TModuleProxyPtr client);
+		virtual void askTalkingAsListUpdate(NLNET::TModuleProxyPtr client);
+		virtual void askUpdateScenarioHeader(NLNET::TModuleProxyPtr clientProxyPtr);
 		virtual bool getHeaderInfo(TSessionId sessionId, TScenarioHeaderSerializer::TValueType& values) const NL_OVERRIDE;
 
 

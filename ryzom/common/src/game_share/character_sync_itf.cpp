@@ -80,11 +80,11 @@ namespace CHARSYNC
 
 		return handlers;
 	}
-	bool CCharacterSyncSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CCharacterSyncSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
+		auto it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -92,13 +92,13 @@ namespace CHARSYNC
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender, message);
+		(this->*cmd)(sender.get(), message);
 
 		return true;
 	}
 
 
-	void CCharacterSyncSkel::addCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::addCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_addCharacter_CS_ACH);
 		TCharInfo	charInfo;
@@ -106,7 +106,7 @@ namespace CHARSYNC
 		addCharacter(sender, charInfo);
 	}
 
-	void CCharacterSyncSkel::deleteCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::deleteCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_deleteCharacter_CS_DCH);
 		uint32	charId;
@@ -114,7 +114,7 @@ namespace CHARSYNC
 		deleteCharacter(sender, charId);
 	}
 
-	void CCharacterSyncSkel::updateCharGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharGuild_CS_UPDCG);
 		NLMISC::CEntityId	charEId;
@@ -124,7 +124,7 @@ namespace CHARSYNC
 		updateCharGuild(sender, charEId, guildId);
 	}
 
-	void CCharacterSyncSkel::updateCharRespawnPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharRespawnPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharRespawnPoints_CS_UPDCR);
 		NLMISC::CEntityId	charEId;
@@ -134,7 +134,7 @@ namespace CHARSYNC
 		updateCharRespawnPoints(sender, charEId, respawnPoints);
 	}
 
-	void CCharacterSyncSkel::updateCharsBestLevel_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharsBestLevel_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharsBestLevel_CS_UPDCL);
 		std::vector < TCharBestLevelInfo >	charLevelInfos;
@@ -142,7 +142,7 @@ namespace CHARSYNC
 		updateCharsBestLevel(sender, charLevelInfos);
 	}
 
-	void CCharacterSyncSkel::updateCharNewbieFlag_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharNewbieFlag_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharNewbieFlag_CS_UPCNF);
 		NLMISC::CEntityId	charEId;
@@ -152,7 +152,7 @@ namespace CHARSYNC
 		updateCharNewbieFlag(sender, charEId, newbie);
 	}
 
-	void CCharacterSyncSkel::updateCharAllegiance_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharAllegiance_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharAllegiance_CS_UPDCA);
 		NLMISC::CEntityId	charEId;
@@ -164,7 +164,7 @@ namespace CHARSYNC
 		updateCharAllegiance(sender, charEId, civilisation, cult);
 	}
 
-	void CCharacterSyncSkel::updateCharHomeMainlandSessionId_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharHomeMainlandSessionId_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharHomeMainlandSessionId_CS_UPDCHMSI);
 		NLMISC::CEntityId	charEId;
@@ -174,7 +174,7 @@ namespace CHARSYNC
 		updateCharHomeMainlandSessionId(sender, charEId, homeMainlandSessionId);
 	}
 
-	void CCharacterSyncSkel::syncUserChars_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::syncUserChars_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_syncUserChars_CS_UPDCS);
 		uint32	userId;
@@ -189,7 +189,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->addCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charInfo);
+			_LocalModuleSkel->addCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charInfo);
 		}
 		else
 		{
@@ -207,7 +207,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->deleteCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->deleteCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -225,7 +225,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateCharGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, guildId);
+			_LocalModuleSkel->updateCharGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, guildId);
 		}
 		else
 		{
@@ -243,7 +243,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateCharRespawnPoints(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, respawnPoints);
+			_LocalModuleSkel->updateCharRespawnPoints(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, respawnPoints);
 		}
 		else
 		{
@@ -261,7 +261,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateCharsBestLevel(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charLevelInfos);
+			_LocalModuleSkel->updateCharsBestLevel(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charLevelInfos);
 		}
 		else
 		{
@@ -279,7 +279,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateCharNewbieFlag(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, newbie);
+			_LocalModuleSkel->updateCharNewbieFlag(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, newbie);
 		}
 		else
 		{
@@ -297,7 +297,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateCharAllegiance(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, civilisation, cult);
+			_LocalModuleSkel->updateCharAllegiance(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, civilisation, cult);
 		}
 		else
 		{
@@ -315,7 +315,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateCharHomeMainlandSessionId(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, homeMainlandSessionId);
+			_LocalModuleSkel->updateCharHomeMainlandSessionId(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, homeMainlandSessionId);
 		}
 		else
 		{
@@ -337,7 +337,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->syncUserChars(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId, charInfos);
+			_LocalModuleSkel->syncUserChars(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId, charInfos);
 		}
 		else
 		{
@@ -498,7 +498,7 @@ namespace CHARSYNC
 
 		return handlers;
 	}
-	bool CNameUnifierSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CNameUnifierSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -510,7 +510,7 @@ namespace CHARSYNC
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender, message);
+		(this->*cmd)(sender.get(), message);
 
 		return true;
 	}
@@ -604,7 +604,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerNameUnifierClient(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender));
+			_LocalModuleSkel->registerNameUnifierClient(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get());
 		}
 		else
 		{
@@ -625,7 +625,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->validateCharacterName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId, charIndex, name, homeMainlandSessionId);
+			_LocalModuleSkel->validateCharacterName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId, charIndex, name, homeMainlandSessionId);
 		}
 		else
 		{
@@ -644,7 +644,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->assignNameToCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, name, homeSessionId);
+			_LocalModuleSkel->assignNameToCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, name, homeSessionId);
 		}
 		else
 		{
@@ -663,7 +663,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->renameCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->renameCharacter(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -685,7 +685,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerLoadedGuildNames(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), chardId, guildInfos);
+			_LocalModuleSkel->registerLoadedGuildNames(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), chardId, guildInfos);
 		}
 		else
 		{
@@ -703,7 +703,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->validateGuildName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId, guildName);
+			_LocalModuleSkel->validateGuildName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId, guildName);
 		}
 		else
 		{
@@ -721,7 +721,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->addGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, guildId, guildName);
+			_LocalModuleSkel->addGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId, guildId, guildName);
 		}
 		else
 		{
@@ -739,7 +739,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->removeGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, guildId);
+			_LocalModuleSkel->removeGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId, guildId);
 		}
 		else
 		{
@@ -900,7 +900,7 @@ namespace CHARSYNC
 
 		return handlers;
 	}
-	bool CNameUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CNameUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -1025,7 +1025,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->initEIdTranslator(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), firstPacket, lastPacket, nameEntries);
+			_LocalModuleSkel->initEIdTranslator(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), firstPacket, lastPacket, nameEntries);
 		}
 		else
 		{
@@ -1045,7 +1045,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateEIdTranslator(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), releasedNames, changedNames);
+			_LocalModuleSkel->updateEIdTranslator(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), releasedNames, changedNames);
 		}
 		else
 		{
@@ -1064,7 +1064,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->validateCharacterNameResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), nameResult);
+			_LocalModuleSkel->validateCharacterNameResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), nameResult);
 		}
 		else
 		{
@@ -1083,7 +1083,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->assignCharacterNameResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), nameResult);
+			_LocalModuleSkel->assignCharacterNameResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), nameResult);
 		}
 		else
 		{
@@ -1102,7 +1102,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->characterRenamed(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, newName, sendSummary);
+			_LocalModuleSkel->characterRenamed(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, newName, sendSummary);
 		}
 		else
 		{
@@ -1125,7 +1125,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->userCharUpdatedAndValidated(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId, charInfos);
+			_LocalModuleSkel->userCharUpdatedAndValidated(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId, charInfos);
 		}
 		else
 		{
@@ -1146,7 +1146,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->userCharSyncFailed(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			_LocalModuleSkel->userCharSyncFailed(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId);
 		}
 		else
 		{
@@ -1164,7 +1164,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->guildRenamed(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId, newName);
+			_LocalModuleSkel->guildRenamed(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId, newName);
 		}
 		else
 		{
@@ -1182,7 +1182,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->validateGuildNameResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId, guildName, result);
+			_LocalModuleSkel->validateGuildNameResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId, guildName, result);
 		}
 		else
 		{
@@ -1201,7 +1201,7 @@ namespace CHARSYNC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->removeCharFromGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, guildId);
+			_LocalModuleSkel->removeCharFromGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, guildId);
 		}
 		else
 		{

@@ -111,15 +111,15 @@ public:
 
 	virtual void onServiceUp(const std::string &serviceName, uint16 serviceId);
 	
-	virtual void onModuleUp(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
+	virtual void onModuleUp(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
 	
-	virtual void onModuleDown(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
+	virtual void onModuleDown(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
 
 	virtual void onModuleUpdate() NL_OVERRIDE;
 	
 	virtual void registerDss(NLNET::IModuleProxy *moduleProxy, TShardId shardId) NL_OVERRIDE;
 
-	virtual bool onProcessModuleMessage(NLNET::IModuleProxy *senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
+	virtual bool onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
 
 	//virtual void onModuleSecurityChange(NLNET::IModuleProxy *moduleProxy);
 
@@ -492,13 +492,13 @@ CR2SessionBackupModule::CR2SessionBackupModule()
 }
 
 
-void CR2SessionBackupModule::onModuleUp(NLNET::IModuleProxy *moduleProxy)
+void CR2SessionBackupModule::onModuleUp(TModuleProxyPtr moduleProxy)
 {
 
 }
 
 	
-void CR2SessionBackupModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
+void CR2SessionBackupModule::onModuleDown(TModuleProxyPtr moduleProxy)
 {
 	const std::string &moduleName = moduleProxy->getModuleClassName();
 	if (moduleName == "ServerEditionModule")
@@ -519,7 +519,7 @@ void CR2SessionBackupModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
 
 	
 
-bool CR2SessionBackupModule::onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &msgin)
+bool CR2SessionBackupModule::onProcessModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &msgin)
 {
 	std::string operationName = msgin.getName();
 	
@@ -715,7 +715,7 @@ void CR2SessionBackupModule::reportDeletedSessions(NLNET::IModuleProxy *modulePr
 		return;
 	}
 
-	TShardIds::const_iterator foundShard(_ShardIds.find(moduleProxy));
+	auto foundShard(std::find_if(_ShardIds.begin(), _ShardIds.end(), [moduleProxy](const auto& pair) { return pair.first.get() == moduleProxy; }));
 	if ( foundShard == _ShardIds.end())
 	{
 		nlwarning("R2SBM: Message from an unregistered proxy '%s', moduleProxy->getModuleName().c_str()");
@@ -754,7 +754,7 @@ void CR2SessionBackupModule::reportHibernatedSessions(NLNET::IModuleProxy *modul
 		return;
 	}
 
-	TShardIds::const_iterator foundShard(_ShardIds.find(moduleProxy));
+	auto foundShard(std::find_if(_ShardIds.begin(), _ShardIds.end(), [moduleProxy](const auto& pair) { return pair.first.get() == moduleProxy; }));
 	if ( foundShard == _ShardIds.end())
 	{
 		nlwarning("R2SBM: Message from an unregistered proxy '%s', moduleProxy->getModuleName().c_str()");
@@ -790,7 +790,7 @@ void CR2SessionBackupModule::reportSavedSessions(NLNET::IModuleProxy *moduleProx
 		return;
 	}
 	
-	TShardIds::const_iterator foundShard(_ShardIds.find(moduleProxy));
+	auto foundShard(std::find_if(_ShardIds.begin(), _ShardIds.end(), [moduleProxy](const auto& pair) { return pair.first.get() == moduleProxy; }));
 	if ( foundShard == _ShardIds.end())
 	{
 		nlwarning("R2SBM: Message from an unregistered proxy '%s', moduleProxy->getModuleName().c_str()");

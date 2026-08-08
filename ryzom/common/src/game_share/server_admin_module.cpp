@@ -130,7 +130,7 @@ bool CServerAdminModule::getPosition(TSessionId sessionId, double&x, double&y, d
 
 
 
-void CServerAdminModule::onModuleUp(NLNET::IModuleProxy *moduleProxy)
+void CServerAdminModule::onModuleUp(NLNET::TModuleProxyPtr moduleProxy)
 {
 	if (moduleProxy->getModuleClassName() == "ServerAnimationModule")
 	{
@@ -143,7 +143,7 @@ void CServerAdminModule::onModuleUp(NLNET::IModuleProxy *moduleProxy)
 }
 
 
-void CServerAdminModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
+void CServerAdminModule::onModuleDown(NLNET::TModuleProxyPtr moduleProxy)
 {
 	if (moduleProxy->getModuleClassName() == "ServerAnimationModule")
 	{
@@ -163,7 +163,7 @@ void CServerAdminModule::init(NLNET::IModuleSocket* gateway, CDynamicMapService*
 }
 
 
-bool CServerAdminModule::onProcessModuleMessage(IModuleProxy * /* senderModuleProxy */, const CMessage &msgin)
+bool CServerAdminModule::onProcessModuleMessage(TModuleProxyPtr /* senderModuleProxy */, const CMessage &msgin)
 {
 	std::string operationName = msgin.getName();
 
@@ -205,7 +205,7 @@ NLMISC_CLASS_COMMAND_IMPL(CServerAdminModule, displayIslands)
 
 
 
-	CScenarioEntryPoints::TCompleteIslands::const_iterator first(islands.begin()), last(islands.end());
+	auto first(islands.begin()), last(islands.end());
 
 
 	uint32 id = 0;
@@ -214,7 +214,7 @@ NLMISC_CLASS_COMMAND_IMPL(CServerAdminModule, displayIslands)
 		++id;
 		log.displayNL("%u: '%s' '%s' %s'",  id, first->Package.c_str(), first->Island.c_str(), first->Continent.c_str());
 
-		CScenarioEntryPoints::TShortEntryPoints::const_iterator firstPoint(first->EntryPoints.begin()), lastPoint(first->EntryPoints.end());
+		auto firstPoint(first->EntryPoints.begin()), lastPoint(first->EntryPoints.end());
 
 		for (; firstPoint != lastPoint; ++firstPoint)
 		{

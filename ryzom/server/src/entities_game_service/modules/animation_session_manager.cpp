@@ -67,11 +67,11 @@ public:
 	///////////////////////////////////////////////////////////////////////////
 	// implementation if IModuleTrackerCb
 	///////////////////////////////////////////////////////////////////////////
-	virtual void onTrackedModuleUp(IModuleProxy *moduleProxy) NL_OVERRIDE
+	virtual void onTrackedModuleUp(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 	{
 		// nothing
 	}
-	virtual void onTrackedModuleDown(IModuleProxy *moduleProxy) NL_OVERRIDE
+	virtual void onTrackedModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 	{
 		// as we attached only to the server animation module tracker callbacks,
 		// we can remove all session data we stored here

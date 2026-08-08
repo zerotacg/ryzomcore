@@ -54,11 +54,11 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CWelcomeServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CWelcomeServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
+		auto it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -72,7 +72,7 @@ namespace WS
 	}
 
 	
-	void CWelcomeServiceSkel::welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceSkel::welcomeUser_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CWelcomeServiceSkel_welcomeUser_WU);
 		uint32	charId;
@@ -92,12 +92,12 @@ namespace WS
 		welcomeUser(sender, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 	}
 
-	void CWelcomeServiceSkel::disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceSkel::disconnectUser_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CWelcomeServiceSkel_disconnectUser_DU);
 		uint32	userId;
 			nlRead(__message, serial, userId);
-		disconnectUser(sender, userId);
+		disconnectUser(sender.get(), userId);
 	}
 		// ask the welcome service to welcome a character
 	void CWelcomeServiceProxy::welcomeUser(NLNET::IModule *sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
@@ -123,7 +123,7 @@ namespace WS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->disconnectUser(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			_LocalModuleSkel->disconnectUser(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId);
 		}
 		else
 		{
@@ -185,11 +185,11 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CLoginServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CLoginServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
+		auto it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -197,7 +197,7 @@ namespace WS
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender, message);
+		(this->*cmd)(sender.get(), message);
 
 		return true;
 	}
@@ -216,7 +216,7 @@ namespace WS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), cookie);
+			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), cookie);
 		}
 		else
 		{
@@ -274,7 +274,7 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CWelcomeServiceClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CWelcomeServiceClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -286,7 +286,7 @@ namespace WS
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender, message);
+		(this->*cmd)(sender.get(), message);
 
 		return true;
 	}
@@ -342,7 +342,7 @@ namespace WS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, fixedSessionId, isOnline);
+			_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId, fixedSessionId, isOnline);
 		}
 		else
 		{
@@ -360,7 +360,7 @@ namespace WS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportWSOpenState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), isOnline);
+			_LocalModuleSkel->reportWSOpenState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), isOnline);
 		}
 		else
 		{
@@ -378,7 +378,7 @@ namespace WS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->welcomeUserResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId, ok, shardAddr, errorMsg);
+			_LocalModuleSkel->welcomeUserResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId, ok, shardAddr, errorMsg);
 		}
 		else
 		{
@@ -396,7 +396,7 @@ namespace WS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateConnectedPlayerCount(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), nbOnlinePlayers, nbPendingPlayers);
+			_LocalModuleSkel->updateConnectedPlayerCount(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), nbOnlinePlayers, nbPendingPlayers);
 		}
 		else
 		{

@@ -70,17 +70,17 @@ namespace NLNET
 		 *	module has been created OR has been made accessible (due to
 		 *	a gateway connection).
 		 */
-		virtual void				onModuleUp(IModuleProxy *moduleProxy) = 0;
+		virtual void				onModuleUp(TModuleProxyPtr moduleProxy) = 0;
 		/** Called by a socket to inform this module that another
 		 *	module has been deleted OR has been no more accessible (due to
 		 *	some gateway disconnection).
 		 */
-		virtual void				onModuleDown(IModuleProxy *moduleProxy) =0;
+		virtual void				onModuleDown(TModuleProxyPtr moduleProxy) =0;
 		/** Called internally by basic module imp to process the message by
 		 *	application code.
 		 *	The system will call each interceptor until one return true.
 		 */
-		virtual bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
+		virtual bool				onProcessModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message) =0;
 		/** Called by a socket to inform this module that the security
 		 *	data attached to a proxy have changed.
 		 */
@@ -246,7 +246,7 @@ namespace NLNET
 		 *	or queue the message in the coroutine message queue (when a synchronous
 		 *	messaging coroutine is started) for later dispatching.
 		 */
-		virtual void				onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
+		virtual void				onReceiveModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message) =0;
 		/** Called internally by basic module imp to process the message by
 		 *	application code.
 		 */
@@ -279,8 +279,8 @@ namespace NLNET
 
 		//@{
 		//@name internal method, should not be used by client code
-		virtual void _onModuleUp(IModuleProxy *removedProxy) =0;
-		virtual void _onModuleDown(IModuleProxy *removedProxy) =0;
+		virtual void _onModuleUp(TModuleProxyPtr removedProxy) =0;
+		virtual void _onModuleDown(TModuleProxyPtr removedProxy) =0;
 
 		//@}
 
@@ -659,7 +659,7 @@ namespace NLNET
 
 		//@{
 		//@name Synchronous messaging
-		typedef std::list<std::pair<IModuleProxy *, CMessage> >	TMessageList;
+		typedef std::list<std::pair<TModuleProxyPtr, CMessage> >	TMessageList;
 		/// dynamically allocated list of synchronous message to process
 		TMessageList			_SyncMessages;
 		typedef std::list<CModuleTask*> TModuleTasks;
@@ -671,7 +671,7 @@ namespace NLNET
 		TInvokeStack			_InvokeStack;
 
 		/// The current message to process sender
-		IModuleProxy			*_CurrentSender;
+		TModuleProxyPtr			_CurrentSender;
 		/// The current message to process
 		const NLNET::CMessage	*_CurrentMessage;
 		/// True if the current message processing have generated an exception
@@ -715,7 +715,7 @@ namespace NLNET
 		 *	or queue the message in the coroutine message queue (when a synchronous
 		 *	messaging coroutine is started) for later dispatching.
 		 */
-		virtual void		onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) NL_OVERRIDE;
+		virtual void		onReceiveModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message) NL_OVERRIDE;
 
 		/// The message dispatching task
 		void _receiveModuleMessageTask();
@@ -775,10 +775,10 @@ namespace NLNET
 		void				unplugModule(IModuleSocket *moduleSocket) NL_OVERRIDE;
 		void				getPluggedSocketList(std::vector<IModuleSocket*> &resultList) NL_OVERRIDE;
 		void				invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) NL_OVERRIDE;
-		void				_onModuleUp(IModuleProxy *removedProxy) NL_OVERRIDE;
-		void				_onModuleDown(IModuleProxy *removedProxy) NL_OVERRIDE;
+		void				_onModuleUp(TModuleProxyPtr removedProxy) NL_OVERRIDE;
+		void				_onModuleDown(TModuleProxyPtr removedProxy) NL_OVERRIDE;
 
-		bool				_onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message);
+		bool				_onProcessModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message);
 
 
 

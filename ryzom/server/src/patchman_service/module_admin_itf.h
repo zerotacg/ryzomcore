@@ -71,27 +71,27 @@ namespace PATCHMAN
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CFileReceiverSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CFileReceiverSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void setupSubscriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setupSubscriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void cbFileInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void cbFileInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void cbFileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void cbFileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void cbFileDataFailure_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void cbFileDataFailure_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -104,11 +104,11 @@ namespace PATCHMAN
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void setupSubscriptions(NLNET::IModuleProxy *sender) =0;
+		virtual void setupSubscriptions(NLNET::TModuleProxyPtr sender) =0;
 		// 
 		virtual void cbFileInfo(NLNET::IModuleProxy *sender, const TFileInfoVector &files) =0;
 		// 
-		virtual void cbFileData(NLNET::IModuleProxy *sender, const std::string &fileName, uint32 startOffset, const NLNET::TBinBuffer &data) =0;
+		virtual void cbFileData(NLNET::TModuleProxyPtr sender, const std::string &fileName, uint32 startOffset, const NLNET::TBinBuffer &data) =0;
 		// 
 		virtual void cbFileDataFailure(NLNET::IModuleProxy *sender, const std::string &fileName) =0;
 
@@ -130,7 +130,7 @@ namespace PATCHMAN
 
 
 	public:
-		CFileReceiverProxy(NLNET::IModuleProxy *proxy)
+		CFileReceiverProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -155,7 +155,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -211,31 +211,31 @@ namespace PATCHMAN
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CFileRepositorySkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CFileRepositorySkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void requestFileInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestFileInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void requestFileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestFileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void getInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void getInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void subscribe_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void subscribe_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void unsubscribe_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void unsubscribe_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void unsubscribeAll_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void unsubscribeAll_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -248,14 +248,14 @@ namespace PATCHMAN
 		/////////////////////////////////////////////////////////////////
 
 		// Request info concerning a particular file
-		virtual void requestFileInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName) =0;
+		virtual void requestFileInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileName) =0;
 		// Request a data block for a particular file
-		virtual void requestFileData(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) =0;
+		virtual void requestFileData(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) =0;
 		// Ask for the info concerning files matching given filespec
-		virtual void getInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) =0;
+		virtual void getInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) =0;
 		// Ask for the info concerning files matching given filespec to be forwarded to me now
 		// and for updates to be sent to me as they are generated
-		virtual void subscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) =0;
+		virtual void subscribe(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) =0;
 		// Cancel subscription for given filespec
 		virtual void unsubscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) =0;
 		// Cancel all subscriptions for given filespec
@@ -279,7 +279,7 @@ namespace PATCHMAN
 
 
 	public:
-		CFileRepositoryProxy(NLNET::IModuleProxy *proxy)
+		CFileRepositoryProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -304,7 +304,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -371,25 +371,25 @@ namespace PATCHMAN
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CAdministeredModuleBaseSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CAdministeredModuleBaseSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void executeCommand_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executeCommand_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void installVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void installVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void launchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void launchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -403,7 +403,7 @@ namespace PATCHMAN
 
 		// 
 		// Message sent by SPM module to request execution of a command
-		virtual void executeCommand(NLNET::IModuleProxy *sender, const NLMISC::CSString &originator, const NLMISC::CSString &cmdline) =0;
+		virtual void executeCommand(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &originator, const NLMISC::CSString &cmdline) =0;
 		// 
 		virtual void installVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version) =0;
 		// 
@@ -427,7 +427,7 @@ namespace PATCHMAN
 
 
 	public:
-		CAdministeredModuleBaseProxy(NLNET::IModuleProxy *proxy)
+		CAdministeredModuleBaseProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -452,7 +452,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -504,37 +504,37 @@ namespace PATCHMAN
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CServerPatchTerminalSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CServerPatchTerminalSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void declareState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareModuleDown_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareModuleDown_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareVersionName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareVersionName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareDomainInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareDomainInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void ackVersionChange_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void ackVersionChange_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setInstallVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setInstallVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setLaunchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setLaunchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executedCommandAck_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executedCommandAck_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executedCommandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executedCommandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -594,7 +594,7 @@ namespace PATCHMAN
 
 
 	public:
-		CServerPatchTerminalProxy(NLNET::IModuleProxy *proxy)
+		CServerPatchTerminalProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -619,7 +619,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -711,35 +711,35 @@ namespace PATCHMAN
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CServerPatchManagerSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CServerPatchManagerSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void registerAdministeredModule_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerAdministeredModule_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void requestRefresh_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestRefresh_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setInstallVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setInstallVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setLaunchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setLaunchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareVersionName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareVersionName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executeCommandOnModules_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executeCommandOnModules_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executedCommandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executedCommandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -798,7 +798,7 @@ namespace PATCHMAN
 
 
 	public:
-		CServerPatchManagerProxy(NLNET::IModuleProxy *proxy)
+		CServerPatchManagerProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -823,7 +823,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -911,23 +911,23 @@ namespace PATCHMAN
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CDeploymentConfigurationSynchroniserSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CDeploymentConfigurationSynchroniserSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void requestSync_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestSync_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void sync_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sync_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -941,7 +941,7 @@ namespace PATCHMAN
 
 		// 
 		// Request for a copy of another module's CDeploymentConfiguration singleton
-		virtual void requestSync(NLNET::IModuleProxy *sender) =0;
+		virtual void requestSync(NLNET::TModuleProxyPtr sender) =0;
 		// 
 		// A copy of the data from the CDeploymentConfiguration singleton
 		virtual void sync(NLNET::IModuleProxy *sender, const NLNET::TBinBuffer &dataBlob) =0;
@@ -964,7 +964,7 @@ namespace PATCHMAN
 
 
 	public:
-		CDeploymentConfigurationSynchroniserProxy(NLNET::IModuleProxy *proxy)
+		CDeploymentConfigurationSynchroniserProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -989,7 +989,7 @@ namespace PATCHMAN
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

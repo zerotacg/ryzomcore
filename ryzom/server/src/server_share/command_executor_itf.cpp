@@ -48,7 +48,7 @@ namespace CMDEXE
 
 		return handlers;			
 	}
-	bool CCommandExecutorSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CCommandExecutorSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -66,7 +66,7 @@ namespace CMDEXE
 	}
 
 	
-	void CCommandExecutorSkel::sendCommand_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCommandExecutorSkel::sendCommand_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCommandExecutorSkel_sendCommand_CE_SC);
 		std::string	commandName;
@@ -79,7 +79,7 @@ namespace CMDEXE
 			nlRead(__message, serial, targetEId);
 		std::string	arg;
 			nlRead(__message, serial, arg);
-		sendCommand(sender, commandName, senderEId, haveTarget, targetEId, arg);
+		sendCommand(sender.get(), commandName, senderEId, haveTarget, targetEId, arg);
 	}
 		// 
 	void CCommandExecutorProxy::sendCommand(NLNET::IModule *sender, const std::string &commandName, const NLMISC::CEntityId &senderEId, bool haveTarget, const NLMISC::CEntityId &targetEId, const std::string &arg)
@@ -87,7 +87,7 @@ namespace CMDEXE
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sendCommand(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandName, senderEId, haveTarget, targetEId, arg);
+			_LocalModuleSkel->sendCommand(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandName, senderEId, haveTarget, targetEId, arg);
 		}
 		else
 		{

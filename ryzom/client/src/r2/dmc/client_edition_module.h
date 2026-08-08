@@ -456,8 +456,8 @@ public:
 	virtual bool isImmediateDispatchingSupported() const NL_OVERRIDE { return false; }
 
 
-	virtual void onModuleUp(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
-	virtual void onModuleDown(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
+	virtual void onModuleUp(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
+	virtual void onModuleDown(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
 
 
 
@@ -863,7 +863,7 @@ public:
 
 
 
-	virtual bool onProcessModuleMessage(NLNET::IModuleProxy *senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
+	virtual bool onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
 
 
 	virtual void scheduleStartAct(NLNET::IModuleProxy *sender, uint32 errorId, uint32 actId, uint32 nbSeconds) NL_OVERRIDE;

@@ -45,15 +45,15 @@ namespace TST_MOD_ITF
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {};
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {};
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {};
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {};
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {};
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CTestModuleInterfaceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CTestModuleInterfaceSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
@@ -119,7 +119,7 @@ namespace TST_MOD_ITF
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}

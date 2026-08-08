@@ -46,13 +46,13 @@ namespace NLNET
 		{
 			return "";
 		}
-		virtual void				onModuleUp(IModuleProxy * /* moduleProxy */) NL_OVERRIDE
+		virtual void				onModuleUp(TModuleProxyPtr /* moduleProxy */) NL_OVERRIDE
 		{}
-		virtual void				onModuleDown(IModuleProxy * /* moduleProxy */) NL_OVERRIDE
+		virtual void				onModuleDown(TModuleProxyPtr /* moduleProxy */) NL_OVERRIDE
 		{}
 		virtual void				onModuleSecurityChange(IModuleProxy * /* moduleProxy */) NL_OVERRIDE
 		{}
-		virtual bool				onProcessModuleMessage(IModuleProxy * /* senderModuleProxy */, const CMessage &/* message */) NL_OVERRIDE
+		virtual bool				onProcessModuleMessage(TModuleProxyPtr /* senderModuleProxy */, const CMessage &/* message */) NL_OVERRIDE
 		{	return false; }
 	};
 
@@ -103,15 +103,15 @@ namespace NLNET
 		{
 			return _Parent->fwdBuildModuleManifest();
 		}
-		virtual void				onModuleUp(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void				onModuleUp(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			_Parent->fwdOnModuleUp(moduleProxy);
 		}
-		virtual void				onModuleDown(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void				onModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			_Parent->fwdOnModuleDown(moduleProxy);
 		}
-		virtual bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) NL_OVERRIDE
+		virtual bool				onProcessModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &message) NL_OVERRIDE
 		{
 			return _Parent->fwdOnProcessModuleMessage(senderModuleProxy, message);
 		}
@@ -129,8 +129,8 @@ namespace NLNET
 	public:
 		virtual ~IModuleTrackerCb() { }
 
-		virtual void onTrackedModuleUp(IModuleProxy *moduleProxy) =0;
-		virtual void onTrackedModuleDown(IModuleProxy *moduleProxy) =0;
+		virtual void onTrackedModuleUp(TModuleProxyPtr moduleProxy) =0;
+		virtual void onTrackedModuleDown(TModuleProxyPtr moduleProxy) =0;
 	};
 
 	/** A module interceptor that keep of a set of known module that match a given
@@ -189,12 +189,12 @@ namespace NLNET
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
-		bool				fwdOnProcessModuleMessage(NLNET::IModuleProxy * /* sender */, const NLNET::CMessage &/* message */)	{return false;}
+		bool				fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr  /* sender */, const NLNET::CMessage &/* message */)	{return false;}
 
 		// check module up
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)
+		void				fwdOnModuleUp(TModuleProxyPtr moduleProxy)
 		{
-			if (_ModulePred(moduleProxy))
+			if (_ModulePred(moduleProxy.get()))
 			{
 				if (_TrackedModules.insert(moduleProxy).second && _TrackerCallback != nullptr)
 					// warn the callback
@@ -203,7 +203,7 @@ namespace NLNET
 		};
 
 		// check module down
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy)
+		void				fwdOnModuleDown(TModuleProxyPtr moduleProxy)
 		{
 			if (_TrackedModules.find(moduleProxy) != _TrackedModules.end())
 			{

@@ -43,7 +43,7 @@ namespace ADMIN
 	/// name of the persistent state file
 	const char *ASPersistentStateFilename = "as_state.txt";
 
-	class CAdminService 
+	class CAdminService
 		:	public CEmptyModuleServiceBehav<CEmptyModuleCommBehav<CEmptySocketBehav<CModuleBase> > >,
 			CAdminServiceSkel,
 			CAdminServiceWebItf,
@@ -316,7 +316,7 @@ namespace ADMIN
 		//// Virtuals from IModuleTrackerCb
 		///////////////////////////////////////////////////////////////////////
 
-		virtual void onTrackedModuleUp(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void onTrackedModuleUp(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			nldebug("AES module '%s' UP", moduleProxy->getModuleName().c_str());
 			
@@ -329,7 +329,7 @@ namespace ADMIN
 				aes.setShardOrders(this, first->first, first->second);
 			}
 		}
-		virtual void onTrackedModuleDown(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void onTrackedModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			nldebug("AES module '%s' DOWN", moduleProxy->getModuleName().c_str());
 
@@ -371,14 +371,18 @@ retry_pending_command:
 		// An AES send an update of the list of service up
 		virtual void upServiceUpdate(NLNET::IModuleProxy *sender, const std::vector < TServiceStatus > &serviceStatus) NL_OVERRIDE
 		{
-			if (_AESTracker.getTrackedModules().find(sender) == _AESTracker.getTrackedModules().end())
+			auto trackedModules(_AESTracker.getTrackedModules());
+			auto it(std::find_if(trackedModules.begin(), trackedModules.end(), [sender](const auto &moduleProxy) { return moduleProxy.get() == sender; }));
+			if (it == trackedModules.end())
 			{
 				nlwarning("'%s' send upServiceUpdate but is not an valid AES", sender->getModuleName().c_str());
 				return;
 			}
 
-			_KnownServices[sender].LastReportDate = NLMISC::CTime::getSecondsSince1970();
-			_KnownServices[sender].ServiceStatus = serviceStatus;
+			auto service(std::find_if(_KnownServices.begin(), _KnownServices.end(), [sender](const auto &entry) { return entry.first.get() == sender; })->second);
+
+			service.LastReportDate = NLMISC::CTime::getSecondsSince1970();
+			service.ServiceStatus = serviceStatus;
 
 			// check that we have this shards in the shard orders table
 			for (uint i=0; i<serviceStatus.size(); ++i)
@@ -730,7 +734,7 @@ retry_pending_command:
 			TAESTracker::TTrackedModules::iterator first(_AESTracker.getTrackedModules().begin()), last(_AESTracker.getTrackedModules().end());
 			for (; first != last; ++first)
 			{
-				IModuleProxy *aes = *first;
+				auto aes = *first;
 				const vector<TServiceStatus>	&status = _KnownServices[*first].ServiceStatus;
 
 				uint32 aesStallDelay = now - _KnownServices[*first].LastReportDate;
@@ -1038,7 +1042,7 @@ retry_pending_command:
 			log.displayNL("  There are %u AES services :", _AESTracker.getTrackedModules().size());
 			TAESTracker::TTrackedModules::iterator first(_AESTracker.getTrackedModules().begin()), last(_AESTracker.getTrackedModules().end());
 			for (; first != last; ++first)			{
-				IModuleProxy *aes = *first;
+				auto aes = *first;
 				const vector<TServiceStatus>	&status = _KnownServices[*first].ServiceStatus;
 				log.displayNL("  + AES '%s', with %u connected services", 
 					aes->getModuleName().c_str(), 

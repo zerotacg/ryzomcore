@@ -78,7 +78,7 @@ namespace PATCHMAN
 
 		// methods for use in derived classes
 		void init(NLNET::IModule* parent,const NLMISC::CSString& rootDirectory);
-		void onModuleUp(NLNET::IModuleProxy *module);
+		void onModuleUp(NLNET::TModuleProxyPtr module);
 		void onModuleDown(NLNET::IModuleProxy *module);
 		void onModuleUpdate();
 
@@ -101,14 +101,14 @@ namespace PATCHMAN
 
 	protected:
 		// treatment of incoming file requests
-		void requestFileInfo(NLNET::IModuleProxy *sender,const NLMISC::CSString& fileSpec) NL_OVERRIDE;
-		void requestFileData(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) NL_OVERRIDE;
+		void requestFileInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
+		void requestFileData(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) NL_OVERRIDE;
 
 		// treatment of subscriptions and unsubscriptions
-		void subscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
+		void subscribe(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
 		void unsubscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
 		void unsubscribeAll(NLNET::IModuleProxy *sender) NL_OVERRIDE;
-		void getInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
+		void getInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
 
 		// IFileInfoUpdateListener specialisation implementation
 		void cbFileInfoUpdate(const SFileInfo& fileInfo) NL_OVERRIDE;
@@ -136,7 +136,7 @@ namespace PATCHMAN
 		CAdministeredModuleWrapper _AdministeredModuleWrapper;
 
 		// the set of subscribers
-		typedef std::map<NLMISC::CSString,NLNET::IModuleProxy*> TSubscribers;
+		typedef std::map<NLMISC::CSString,NLNET::TModuleProxyPtr> TSubscribers;
 		TSubscribers _Subscribers;
 
 		// the recent info changes that the subscribers may be interested in

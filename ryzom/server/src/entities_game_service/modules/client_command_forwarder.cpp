@@ -45,7 +45,7 @@ class CClientCommandForwader : public CEmptyModuleServiceBehav<CEmptyModuleCommB
 
 public:
 
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module->getModuleClassName() == "CommandExecutor")
 		{
@@ -61,7 +61,7 @@ public:
 		}
 	}
 
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module->getModuleClassName() == "CommandExecutor")
 		{
@@ -79,7 +79,7 @@ public:
 
 	}
 
-	bool onProcessModuleMessage(IModuleProxy *sender, const CMessage &message) NL_OVERRIDE
+	bool onProcessModuleMessage(TModuleProxyPtr sender, const CMessage &message) NL_OVERRIDE
 	{
 		nlwarning("CRingSessionManager : Unknown message '%s' received", message.getName().c_str());
 

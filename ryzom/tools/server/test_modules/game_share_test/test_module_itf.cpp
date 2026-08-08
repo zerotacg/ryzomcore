@@ -35,7 +35,7 @@ namespace TST_MOD_ITF
 
 		return handlers;			
 	}
-	bool CTestModuleInterfaceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CTestModuleInterfaceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -53,7 +53,7 @@ namespace TST_MOD_ITF
 	}
 
 	
-	void CTestModuleInterfaceSkel::noParam_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CTestModuleInterfaceSkel::noParam_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CTestModuleInterfaceSkel_noParam_TMI_NP);
 		noParam(sender);

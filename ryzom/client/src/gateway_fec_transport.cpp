@@ -202,10 +202,10 @@ public:
 				log.displayNL("    The route has %u entries in the proxy translation table :",
 					route->ForeignToLocalIdx.getAToBMap().size());
 				{
-					CGatewayRoute::TForeignToLocalIdx::TAToBMap::const_iterator first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());
+					auto first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());
 					for (; first != last; ++first)
 					{
-						IModuleProxy *modProx = mm.getModuleProxy(first->second);
+						auto modProx = mm.getModuleProxy(first->second);
 
 						log.displayNL("      - Proxy '%s' : local proxy id %u => foreign module id %u",
 							modProx != nullptr ? modProx->getModuleName().c_str() : "ERROR, invalid module",

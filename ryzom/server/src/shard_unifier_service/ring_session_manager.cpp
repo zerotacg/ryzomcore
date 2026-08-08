@@ -2032,7 +2032,7 @@ endOfWelcomeUserResult:
 			*/
 
 
-			IModuleProxy *server = best->first;
+			auto server = best->first;
 
 			// insert pending session info
 			TPendingSessionCreateInfo psci;
@@ -4521,7 +4521,7 @@ endOfWelcomeUserResult:
 				TSessionServers::iterator first(_SessionServers.begin()), last(_SessionServers.end());
 				for( ; first != last; ++first)
 				{
-					IModuleProxy *server = first->first;
+					auto server = first->first;
 					TSessionServerInfo &ssi = first->second;
 
 					log.displayNL(" + Session server '%s' :", server->getModuleName().c_str());

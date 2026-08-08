@@ -48,7 +48,7 @@ namespace CNM
 
 		return handlers;			
 	}
-	bool CCharNameMapperSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CCharNameMapperSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -66,7 +66,7 @@ namespace CNM
 	}
 
 	
-	void CCharNameMapperSkel::mapCharNames_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharNameMapperSkel::mapCharNames_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharNameMapperSkel_mapCharNames_MCN);
 		std::vector < TCharNameInfo >	charNameInfos;
@@ -125,11 +125,11 @@ namespace CNM
 
 		return handlers;			
 	}
-	bool CCharNameMapperClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CCharNameMapperClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
+		auto it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -143,12 +143,12 @@ namespace CNM
 	}
 
 	
-	void CCharNameMapperClientSkel::charNamesMapped_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharNameMapperClientSkel::charNamesMapped_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharNameMapperClientSkel_charNamesMapped_MCN);
 		std::vector < TCharMappedInfo >	charMappedInfos;
 			nlRead(__message, serialCont, charMappedInfos);
-		charNamesMapped(sender, charMappedInfos);
+		charNamesMapped(sender.get(), charMappedInfos);
 	}
 		// 
 	void CCharNameMapperClientProxy::charNamesMapped(NLNET::IModule *sender, const std::vector < TCharMappedInfo > &charMappedInfos)
@@ -156,7 +156,7 @@ namespace CNM
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charNamesMapped(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charMappedInfos);
+			_LocalModuleSkel->charNamesMapped(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charMappedInfos);
 		}
 		else
 		{

@@ -337,7 +337,7 @@ namespace ADMIN
 			return true;
 		}
 
-		void onModuleUp(IModuleProxy *proxy) NL_OVERRIDE
+		void onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			if (proxy->getModuleClassName() == "AdminService")
 			{
@@ -355,7 +355,7 @@ namespace ADMIN
 
 					// first, fill the list with all the persistent state service name
 					{
-						TPersistentServiceOrders::iterator first(_PersistentServiceOrders.begin()), last(_PersistentServiceOrders.end());
+						auto first(_PersistentServiceOrders.begin()), last(_PersistentServiceOrders.end());
 						for (; first != last; ++first)
 						{
 							removeList.insert(first->first);
@@ -364,7 +364,7 @@ namespace ADMIN
 
 					// remove the registered service from the removelist
 					{
-						TRegisteredServices::iterator first(_RegisteredServices.begin()), last(_RegisteredServices.end());
+						auto first(_RegisteredServices.begin()), last(_RegisteredServices.end());
 						for (; first != last; ++first)
 						{
 							removeList.erase(*first);
@@ -418,7 +418,7 @@ namespace ADMIN
 			}
 		}
 
-		void onModuleDown(IModuleProxy *proxy) NL_OVERRIDE
+		void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			if (proxy == _AdminService)
 			{
@@ -712,9 +712,9 @@ namespace ADMIN
 			}
 		}
 
-		IModuleProxy *findOnlineService(const std::string &serviceAlias)
+		TModuleProxyPtr findOnlineService(const std::string &serviceAlias)
 		{
-			TConnectedServiceIndex::iterator first(_ConnectedServiceIndex.begin()), last(_ConnectedServiceIndex.end());
+		    auto first(_ConnectedServiceIndex.begin()), last(_ConnectedServiceIndex.end());
 			for (; first != last; ++first)
 			{
 				if (first->second == serviceAlias)
@@ -725,7 +725,7 @@ namespace ADMIN
 			}
 
 			// not found
-			return NULL;
+			return nullptr;
 		}
 
 		void checkShutdownRequest()
@@ -1022,7 +1022,7 @@ namespace ADMIN
 		//// Virtuals from IModuleTrackerCb
 		///////////////////////////////////////////////////////////////////////
 
-		virtual void onTrackedModuleUp(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void onTrackedModuleUp(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			nldebug("Service module '%s' UP", moduleProxy->getModuleName().c_str());
 
@@ -1102,11 +1102,11 @@ namespace ADMIN
 
 			sendUpServiceUpdate();			
 		}
-		virtual void onTrackedModuleDown(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void onTrackedModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			nldebug("Service module '%s' DOWN", moduleProxy->getModuleName().c_str());
 
-			TConnectedServiceIndex::iterator it(_ConnectedServiceIndex.find(moduleProxy));
+		    auto it(_ConnectedServiceIndex.find(moduleProxy));
 			if (it != _ConnectedServiceIndex.end())
 			{
 				string &aliasName = it->second;
@@ -1212,7 +1212,7 @@ retry_pending_command_loop:
 		}
 
 		// AS send a control command to this AES
-		virtual void controlCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) NL_OVERRIDE
+		virtual void controlCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) NL_OVERRIDE
 		{
 			// create a displayer to gather the output of the command
 			class CStringDisplayer: public IDisplayer
@@ -1232,8 +1232,8 @@ retry_pending_command_loop:
 				command.c_str());
 
 			// look in the list of service for a matching one
-			IModuleProxy *service = findOnlineService(serviceAlias);
-			if (service == NULL && _RegisteredServices.find(serviceAlias) == _RegisteredServices.end())
+			auto service = findOnlineService(serviceAlias);
+			if (service == nullptr && _RegisteredServices.find(serviceAlias) == _RegisteredServices.end())
 			{
 				CAdminServiceProxy as(sender);
 				as.commandResult(this, commandId, serviceAlias, "ERROR : AES : service not found will dispatching the control command");
@@ -1262,11 +1262,11 @@ retry_pending_command_loop:
 		}
 
 		//The return is sent back by another message
-		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) NL_OVERRIDE
+		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) NL_OVERRIDE
 		{
 			// look in the list of service for a matching one
-			IModuleProxy *proxy = findOnlineService(serviceAlias);
-			if (proxy == NULL)
+			auto proxy = findOnlineService(serviceAlias);
+			if (proxy == nullptr)
 			{
 				CAdminServiceProxy as(sender);
 				as.commandResult(this, commandId, serviceAlias, "ERROR AES : unknown service");
@@ -1335,7 +1335,7 @@ retry_pending_command_loop:
 		// A service send an update of of it's status string
 		virtual void serviceStatusUpdate(NLNET::IModuleProxy *sender, const std::string &status) NL_OVERRIDE
 		{
-			TConnectedServiceIndex::iterator it(_ConnectedServiceIndex.find(sender));
+			auto it(std::find_if(_ConnectedServiceIndex.begin(), _ConnectedServiceIndex.end(), [sender](const auto &pair) { return pair.first.get() == sender; }));
 			if (it == _ConnectedServiceIndex.end())
 			{
 				nlwarning("serviceStatusUpdate : service '%s' send status but is unknown !", sender->getModuleName().c_str());
@@ -1343,7 +1343,7 @@ retry_pending_command_loop:
 			}
 
 			string &aliasName = it->second;
-			TServiceStates::iterator it2(_ServiceStates.find(aliasName));
+			auto it2(_ServiceStates.find(aliasName));
 			BOMB_IF(it2 == _ServiceStates.end(), "serviceStateUpdate : service '"
 				<<sender->getModuleName()
 				<<"' send an update, but alias '"<<aliasName<<"' is not found in service status", return);

@@ -228,18 +228,18 @@ namespace NLNET
 //		{
 //			nlstop;
 //		}
-		virtual void onAddModuleProxy(IModuleProxy *addedModule) NL_OVERRIDE
+		virtual void onAddModuleProxy(TModuleProxyPtr addedModule) NL_OVERRIDE
 		{
 			// always disclose module to local modules
 			discloseModule(addedModule);
 		}
-		virtual void onRemoveModuleProxy(IModuleProxy * /* removedModule */) NL_OVERRIDE
+		virtual void onRemoveModuleProxy(TModuleProxyPtr /* removedModule */) NL_OVERRIDE
 		{
 		}
-		virtual void discloseModule(IModuleProxy *moduleProxy) NL_OVERRIDE
+		virtual void discloseModule(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			// check that the module is plugged here
-			nlassert(isPlugged(moduleProxy));
+			nlassert(isPlugged(moduleProxy.get()));
 
 //			CModuleProxy *modProx = dynamic_cast<CModuleProxy *>(moduleProxy);
 //			nlassert(modProx != NULL);
@@ -256,7 +256,7 @@ namespace NLNET
 				}
 			}
 		}
-		virtual IModuleProxy *getPluggedModuleProxy(IModule * /* pluggedModule */) NL_OVERRIDE
+		virtual TModuleProxyPtr getPluggedModuleProxy(IModule * /* pluggedModule */) NL_OVERRIDE
 		{
 			return nullptr;
 		}
@@ -290,10 +290,10 @@ namespace NLNET
 //		virtual void onReceiveModuleMessage(TModuleGatewayProxyPtr &senderGateway, TModuleMessagePtr &message)
 //		{
 //		}
-		virtual void sendModuleProxyMessage(IModuleProxy * /* senderProxy */, IModuleProxy * /* addresseeProxy */, const CMessage &/* message */) NL_OVERRIDE
+		virtual void sendModuleProxyMessage(TModuleProxyPtr /* senderProxy */, IModuleProxy * /* addresseeProxy */, const CMessage &/* message */) NL_OVERRIDE
 		{
 		}
-		virtual void dispatchModuleMessage(IModuleProxy * /* senderProxy */, IModuleProxy * /* addresseeProxy */, const CMessage &/* message */) NL_OVERRIDE
+		virtual void dispatchModuleMessage(TModuleProxyPtr /* senderProxy */, IModuleProxy * /* addresseeProxy */, const CMessage &/* message */) NL_OVERRIDE
 		{
 			nlstop;
 //			TModuleId sourceId = message->getSenderModuleProxyId();
@@ -341,13 +341,13 @@ namespace NLNET
 		void				onApplicationExit() NL_OVERRIDE
 		{
 		}
-		void				onModuleUp(IModuleProxy * /* moduleProxy */) NL_OVERRIDE
+		void				onModuleUp(TModuleProxyPtr /* moduleProxy */) NL_OVERRIDE
 		{
 		}
-		void				onModuleDown(IModuleProxy * /* moduleProxy */) NL_OVERRIDE
+		void				onModuleDown(TModuleProxyPtr /* moduleProxy */) NL_OVERRIDE
 		{
 		}
-		bool				onProcessModuleMessage(IModuleProxy * /* senderModuleProxy */, const CMessage &/* message */) NL_OVERRIDE
+		bool				onProcessModuleMessage(TModuleProxyPtr /* senderModuleProxy */, const CMessage &/* message */) NL_OVERRIDE
 		{
 			return false;
 		}
@@ -400,7 +400,7 @@ namespace NLNET
 			_ModuleProxies.add(modProx, CStringMapper::map(modProx->getModuleName()));
 
 			// disclose the new module to other modules
-			discloseModule(modProx.get());
+			discloseModule(modProx);
 
 			// second, disclose already plugged proxy to the new one
 			{
@@ -408,7 +408,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != pluggedModule->getModuleFullyQualifiedName())
-						pluggedModule->_onModuleUp(first->first.get());
+						pluggedModule->_onModuleUp(first->first);
 				}
 			}
 
@@ -429,7 +429,7 @@ namespace NLNET
 				{
 					IModule *module = first->second.get();
 					if (module->getModuleFullyQualifiedName() != modProx->getModuleName())
-						module->_onModuleDown(it->second.get());
+						module->_onModuleDown(it->second);
 				}
 			}
 
@@ -439,7 +439,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != unpluggedModule->getModuleFullyQualifiedName())
-						unpluggedModule->_onModuleDown(first->first.get());
+						unpluggedModule->_onModuleDown(first->first);
 				}
 			}
 

@@ -490,33 +490,33 @@ namespace GU
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CGuildUnifierClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CGuildUnifierClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void guildReady_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void guildReady_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void receiveForeignGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void receiveForeignGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateMemberList_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateMemberList_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateMemberInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateMemberInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void guildDeleted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void guildDeleted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void messageToGuildMembers_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void messageToGuildMembers_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -529,7 +529,7 @@ namespace GU
 		/////////////////////////////////////////////////////////////////
 
 		// A client says to others clients that it is ready to send/receive guild data
-		virtual void guildReady(NLNET::IModuleProxy *sender) =0;
+		virtual void guildReady(NLNET::TModuleProxyPtr sender) =0;
 		// The server send it local guilds to the client
 		virtual void receiveForeignGuild(NLNET::IModuleProxy *sender, const std::vector < CGuildDesc > &guilds) =0;
 		// The member list have changed, each guild unifier receive a copy of the new list
@@ -561,7 +561,7 @@ namespace GU
 
 
 	public:
-		CGuildUnifierClientProxy(NLNET::IModuleProxy *proxy)
+		CGuildUnifierClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -570,13 +570,13 @@ namespace GU
 			if (proxy->getModuleDistance() == 0)
 			{
 				_LocalModule = proxy->getLocalModule();
-				nlassert(_LocalModule != NULL);
-				CGuildUnifierClientSkel::TInterceptor *interceptor = NULL;
+				nlassert(_LocalModule != nullptr);
+				CGuildUnifierClientSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
-				nlassert(interceptor != NULL);
+				nlassert(interceptor != nullptr);
 
 				_LocalModuleSkel = interceptor->getParent();
-				nlassert(_LocalModuleSkel != NULL);
+				nlassert(_LocalModuleSkel != nullptr);
 			}
 			else
 				_LocalModuleSkel = 0;
@@ -586,7 +586,7 @@ namespace GU
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -618,7 +618,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -637,7 +637,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -656,7 +656,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -675,7 +675,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -694,7 +694,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -713,7 +713,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -732,7 +732,7 @@ namespace GU
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}

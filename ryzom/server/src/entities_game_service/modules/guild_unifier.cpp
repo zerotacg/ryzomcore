@@ -281,7 +281,8 @@ public:
 		nldebug("CGuildUnifier::deleteGuild : deleting guild %u", guildId);
 
 		CGuild *guild = CGuildManager::getInstance()->getGuildFromId(guildId);
-		BOMB_IF(guild == NULL, "Can't find the guild "<<guildId<<" to delete", _Peers[proxy].GuildIds.erase(guildId); return);
+		auto peer(std::find_if(_Peers.begin(), _Peers.end(), [proxy](const auto &pair) { return pair.first.get() == proxy; })->second);
+		BOMB_IF(guild == NULL, "Can't find the guild "<<guildId<<" to delete", peer.GuildIds.erase(guildId); return);
 
 		if (guild->getMembers().size() == 0)
 		{
@@ -304,14 +305,14 @@ public:
 		STOP_IF(CGuildManager::getInstance()->getGuildFromId(guildId) != NULL, "The guild "<<guildId<<" had not been removed after deleting the last member");
 
 		// remove the guild from the list of foreign guilds of this proxy
-		_Peers[proxy].GuildIds.erase(guildId);
+		peer.GuildIds.erase(guildId);
 	}
 
 	/*************************************************************************/
 	/* IModule virtual overloads											 */
 	/*************************************************************************/
 
-	void onModuleUp(NLNET::IModuleProxy *module) NL_OVERRIDE
+	void onModuleUp(NLNET::TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module->getModuleClassName() == "GuildUnifier")
 		{
@@ -327,7 +328,7 @@ public:
 		}
 	}
 
-	void onModuleDown(NLNET::IModuleProxy *module) NL_OVERRIDE
+	void onModuleDown(NLNET::TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module->getModuleClassName() == "GuildUnifier")
 		{
@@ -340,7 +341,7 @@ public:
 				while (!pg.GuildIds.empty())
 				{
 					TGuildId guildId = *(pg.GuildIds.begin());
-					deleteGuild(module, guildId);
+					deleteGuild(module.get(), guildId);
 //					pg.GuildIds.erase(pg.GuildIds.begin());
 				}
 
@@ -528,7 +529,7 @@ public:
 	/*************************************************************************/
 
 	// A client says to others clients that it is ready to send/receive guild data
-	virtual void guildReady(NLNET::IModuleProxy *sender) NL_OVERRIDE
+	virtual void guildReady(TModuleProxyPtr sender) NL_OVERRIDE
 	{
 		// this peer is ready, insert him to the broadcast list
 		_Broadcast.insert(sender);
@@ -574,7 +575,8 @@ public:
 			setGuildFames(guild, gd);
 
 			// store this guild as associated with the sender module.
-			this->_Peers[sender].GuildIds.insert(guild->getId());
+			auto peer(std::find_if(_Peers.begin(), _Peers.end(), [sender](const auto &pair) { return pair.first.get() == sender; })->second);
+			peer.GuildIds.insert(guild->getId());
 		}
 	}
 
@@ -624,7 +626,8 @@ public:
 				// wow, this is the last member !
 				// the guild will be deleted, so remove it from
 				// the list of guild for the sender
-				_Peers[sender].GuildIds.erase(guild->getId());
+				auto peer(std::find_if(_Peers.begin(), _Peers.end(), [sender](const auto &peer) { return peer.first.get() == sender; }));
+				peer->second.GuildIds.erase(guild->getId());
 			}
 			nldebug("CGuildUnifier::updateMemberList : removing member %s from foreign guild %u", memberToRemove.back().toString().c_str(), guildId);
 			guild->removeMember(memberToRemove.back());

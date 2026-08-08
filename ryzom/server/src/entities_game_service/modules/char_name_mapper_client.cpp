@@ -72,7 +72,7 @@ public:
 		CCharNameMapperClientSkel::init(this);
 	}
 
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module->getModuleClassName() == "CharNameMapper")
 		{
@@ -80,7 +80,7 @@ public:
 
 			// we need to remap all character names
 			const CEntityIdTranslator::TEntityCont	&entities = CEntityIdTranslator::getInstance()->getRegisteredEntities();
-			CEntityIdTranslator::TEntityCont::const_iterator first(entities.begin()), last(entities.end());
+			auto first(entities.begin()), last(entities.end());
 
 			for (; first != last; ++first)
 			{
@@ -89,12 +89,12 @@ public:
 		}
 	}
 
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		if (module == _CharNameMapper)
 		{
 			// we have lost the char name mapper.
-			_CharNameMapper = NULL;
+			_CharNameMapper = nullptr;
 		}
 	}
 
@@ -102,7 +102,7 @@ public:
 	{
 		H_AUTO(CCharNameMapperClient_onModuleUpdate);
 
-		if (_CharNameMapper != NULL && !_PendingCharNames.empty())
+		if (_CharNameMapper != nullptr && !_PendingCharNames.empty())
 		{
 			// send a batch of name each frame
 			std::vector < TCharNameInfo > charNameInfos;

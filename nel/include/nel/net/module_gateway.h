@@ -222,24 +222,24 @@ namespace NLNET
 		 *	The default behavior is to disclose the module to all
 		 *	connected gateway.
 		 */
-		virtual void onAddModuleProxy(IModuleProxy *addedModule) =0;
+		virtual void onAddModuleProxy(TModuleProxyPtr addedModule) =0;
 		/** Callback called when a module become unavailable, either
 		 *	because it is unplugged from it's socket, or, the
 		 *	gateway that disclosed it has been disconnected.
 		 */
-		virtual void onRemoveModuleProxy(IModuleProxy *removedModule) =0;
+		virtual void onRemoveModuleProxy(TModuleProxyPtr removedModule) =0;
 
 		/** Disclose module information to a connected gateway.
 		 *	This can also be this gateway itself.
 		 */
-		virtual void discloseModule(IModuleProxy *moduleProxy) =0;
+		virtual void discloseModule(TModuleProxyPtr moduleProxy) =0;
 
 		/** Retrieve the proxy for a locally plugged module.
 		 *	Each local module plugged in a gateway has an associated
 		 *	proxy. This method return this proxy or NULL if the
 		 *	module is not plugged here.
 		 */
-		virtual IModuleProxy *getPluggedModuleProxy(IModule *pluggedModule) =0;
+		virtual TModuleProxyPtr getPluggedModuleProxy(IModule *pluggedModule) =0;
 
 		/// Return the number of proxies managed by this gateway
 		virtual uint32	getProxyCount() const =0;
@@ -261,13 +261,13 @@ namespace NLNET
 
 		/** Send a message to a module.
 		 */
-		virtual void sendModuleProxyMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message) =0;
+		virtual void sendModuleProxyMessage(TModuleProxyPtr senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message) =0;
 
 		/** Send a message to the module plugged in this gateway.
 		 *	You can override this method to change the dispatching, add filtering,
 		 *	message hacking or interceptor.
 		 */
-		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const CMessage &message) =0;
+		virtual void dispatchModuleMessage(TModuleProxyPtr senderProxy, IModuleProxy *addresseeProxy, const CMessage &message) =0;
 		//@}
 	};
 

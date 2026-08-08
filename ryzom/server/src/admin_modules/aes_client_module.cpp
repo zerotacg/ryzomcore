@@ -196,7 +196,7 @@ namespace ADMIN
 		}
 
 
-		void onModuleUp(IModuleProxy *proxy) NL_OVERRIDE
+		void onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			if (proxy->getModuleClassName() == "AdminExecutorService")
 			{
@@ -228,13 +228,13 @@ namespace ADMIN
 			}
 		}
 
-		void onModuleDown(IModuleProxy *proxy) NL_OVERRIDE
+		void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			if (proxy == _AdminExecutorService)
 			{
 				nldebug("CAdminExecutorServiceClient : admin executor service '%s' is down", proxy->getModuleName().c_str());
 
-				_AdminExecutorService = NULL;
+				_AdminExecutorService = nullptr;
 			}
 		}
 
@@ -437,7 +437,7 @@ namespace ADMIN
 		///////////////////////////////////////////////////////////////
 
 		// execute a command and return the result.
-		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &command) NL_OVERRIDE
+		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &command) NL_OVERRIDE
 		{
 			// create a displayer to gather the output of the command
 			class CStringDisplayer: public IDisplayer
@@ -470,7 +470,7 @@ namespace ADMIN
 		}
 
 		// execute a command without result
-		virtual void serviceCmdNoReturn(NLNET::IModuleProxy *sender, const std::string &command) NL_OVERRIDE
+		virtual void serviceCmdNoReturn(NLNET::TModuleProxyPtr sender, const std::string &command) NL_OVERRIDE
 		{
 			// retrieve the command from the input message and execute it
 			nlinfo ("ADMIN: Executing command from network : '%s'", command.c_str());

@@ -69,7 +69,7 @@ namespace RSMGR
 
 		return handlers;
 	}
-	bool CRingSessionManagerSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CRingSessionManagerSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -87,25 +87,25 @@ namespace RSMGR
 	}
 
 	
-	void CRingSessionManagerSkel::registerDSS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::registerDSS_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_registerDSS_RDSS);
 		uint32	shardId;
 			nlRead(__message, serial, shardId);
 		std::vector < TRunningSessionInfo >	runningSessions;
 			nlRead(__message, serialCont, runningSessions);
-		registerDSS(sender, shardId, runningSessions);
+		registerDSS(sender.get(), shardId, runningSessions);
 	}
 
-	void CRingSessionManagerSkel::sessionCreated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::sessionCreated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_sessionCreated_SSC);
 		RSMGR::TRunningSessionInfo	sessionInfo;
 			nlRead(__message, serial, sessionInfo);
-		sessionCreated(sender, sessionInfo);
+		sessionCreated(sender.get(), sessionInfo);
 	}
 
-	void CRingSessionManagerSkel::reportSessionEvent_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::reportSessionEvent_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_reportSessionEvent_RSE);
 		RSMGR::TSessionEvent	event;
@@ -114,30 +114,30 @@ namespace RSMGR
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		reportSessionEvent(sender, event, sessionId, charId);
+		reportSessionEvent(sender.get(), event, sessionId, charId);
 	}
 
-	void CRingSessionManagerSkel::scenarioStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::scenarioStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_scenarioStarted_SCS);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		R2::TRunningScenarioInfo	scenarioInfo;
 			nlRead(__message, serial, scenarioInfo);
-		scenarioStarted(sender, sessionId, scenarioInfo);
+		scenarioStarted(sender.get(), sessionId, scenarioInfo);
 	}
 
-	void CRingSessionManagerSkel::reportCharacterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::reportCharacterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_reportCharacterKicked_RCK);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		reportCharacterKicked(sender, sessionId, charId);
+		reportCharacterKicked(sender.get(), sessionId, charId);
 	}
 
-	void CRingSessionManagerSkel::scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_scenarioEnded_SCE);
 		TSessionId	sessionId;
@@ -152,7 +152,7 @@ namespace RSMGR
 			nlRead(__message, serial, timeTaken);
 		std::vector < uint32 >	participants;
 			nlRead(__message, serialCont, participants);
-		scenarioEnded(sender, sessionId, scenarioInfo, rrpScored, scenarioPointScored, timeTaken, participants);
+		scenarioEnded(sender.get(), sessionId, scenarioInfo, rrpScored, scenarioPointScored, timeTaken, participants);
 	}
 		// A edition or animation server module register in the session manager
 		// It send the list of session hosted in the server
@@ -161,7 +161,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerDSS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, runningSessions);
+			_LocalModuleSkel->registerDSS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId, runningSessions);
 		}
 		else
 		{
@@ -179,7 +179,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sessionCreated(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionInfo);
+			_LocalModuleSkel->sessionCreated(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionInfo);
 		}
 		else
 		{
@@ -198,7 +198,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportSessionEvent(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), event, sessionId, charId);
+			_LocalModuleSkel->reportSessionEvent(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), event, sessionId, charId);
 		}
 		else
 		{
@@ -217,7 +217,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->scenarioStarted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, scenarioInfo);
+			_LocalModuleSkel->scenarioStarted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, scenarioInfo);
 		}
 		else
 		{
@@ -235,7 +235,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportCharacterKicked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, charId);
+			_LocalModuleSkel->reportCharacterKicked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, charId);
 		}
 		else
 		{
@@ -254,7 +254,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->scenarioEnded(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, scenarioInfo, rrpScored, scenarioPointScored, timeTaken, participants);
+			_LocalModuleSkel->scenarioEnded(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, scenarioInfo, rrpScored, scenarioPointScored, timeTaken, participants);
 		}
 		else
 		{
@@ -392,7 +392,7 @@ namespace RSMGR
 
 		return handlers;
 	}
-	bool CRingSessionManagerClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CRingSessionManagerClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -410,7 +410,7 @@ namespace RSMGR
 	}
 
 	
-	void CRingSessionManagerClientSkel::createSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::createSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_createSession_CSS);
 		uint32	ownerCharId;
@@ -419,10 +419,10 @@ namespace RSMGR
 			nlRead(__message, serial, sessionId);
 		RSMGR::TSessionType	type;
 			nlRead(__message, serial, type);
-		createSession(sender, ownerCharId, sessionId, type);
+		createSession(sender.get(), ownerCharId, sessionId, type);
 	}
 
-	void CRingSessionManagerClientSkel::addCharacterInSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::addCharacterInSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_addCharacterInSession_AHC);
 		TSessionId	sessionId;
@@ -435,48 +435,48 @@ namespace RSMGR
 			nlRead(__message, serial, ringAccess);
 		bool	newcomer;
 			nlRead(__message, serial, newcomer);
-		addCharacterInSession(sender, sessionId, charId, enterAs, ringAccess, newcomer);
+		addCharacterInSession(sender.get(), sessionId, charId, enterAs, ringAccess, newcomer);
 	}
 
-	void CRingSessionManagerClientSkel::closeSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::closeSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_closeSession_CLSDSS);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		closeSession(sender, sessionId);
+		closeSession(sender.get(), sessionId);
 	}
 
-	void CRingSessionManagerClientSkel::stopHibernation_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::stopHibernation_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_stopHibernation_SH);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	ownerId;
 			nlRead(__message, serial, ownerId);
-		stopHibernation(sender, sessionId, ownerId);
+		stopHibernation(sender.get(), sessionId, ownerId);
 	}
 
-	void CRingSessionManagerClientSkel::characterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::characterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_characterKicked_CK);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		characterKicked(sender, sessionId, charId);
+		characterKicked(sender.get(), sessionId, charId);
 	}
 
-	void CRingSessionManagerClientSkel::characterUnkicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::characterUnkicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_characterUnkicked_CUK);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		characterUnkicked(sender, sessionId, charId);
+		characterUnkicked(sender.get(), sessionId, charId);
 	}
 
-	void CRingSessionManagerClientSkel::teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_teleportOneCharacterToAnother_STOCTA);
 		TSessionId	sessionId;
@@ -485,18 +485,18 @@ namespace RSMGR
 			nlRead(__message, serial, sourceCharId);
 		uint32	destCharId;
 			nlRead(__message, serial, destCharId);
-		teleportOneCharacterToAnother(sender, sessionId, sourceCharId, destCharId);
+		teleportOneCharacterToAnother(sender.get(), sessionId, sourceCharId, destCharId);
 	}
 
-	void CRingSessionManagerClientSkel::hibernateSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::hibernateSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_hibernateSession_SHSA);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		hibernateSession(sender, sessionId);
+		hibernateSession(sender.get(), sessionId);
 	}
 
-	void CRingSessionManagerClientSkel::setSessionStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::setSessionStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_setSessionStartParams_SSSP);
 		uint32	charId;
@@ -509,7 +509,7 @@ namespace RSMGR
 			nlRead(__message, serial, initialEntryPointLocation);
 		std::string	initialSeason;
 			nlRead(__message, serial, initialSeason);
-		setSessionStartParams(sender, charId, sessionId, initialIslandLocation, initialEntryPointLocation, initialSeason);
+		setSessionStartParams(sender.get(), charId, sessionId, initialIslandLocation, initialEntryPointLocation, initialSeason);
 	}
 		// Ask the client to create a new session modules
 	void CRingSessionManagerClientProxy::createSession(NLNET::IModule *sender, uint32 ownerCharId, TSessionId sessionId, const RSMGR::TSessionType &type)
@@ -517,7 +517,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->createSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), ownerCharId, sessionId, type);
+			_LocalModuleSkel->createSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), ownerCharId, sessionId, type);
 		}
 		else
 		{
@@ -535,7 +535,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->addCharacterInSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, charId, enterAs, ringAccess, newcomer);
+			_LocalModuleSkel->addCharacterInSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, charId, enterAs, ringAccess, newcomer);
 		}
 		else
 		{
@@ -553,7 +553,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->closeSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId);
+			_LocalModuleSkel->closeSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId);
 		}
 		else
 		{
@@ -573,7 +573,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->stopHibernation(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, ownerId);
+			_LocalModuleSkel->stopHibernation(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, ownerId);
 		}
 		else
 		{
@@ -591,7 +591,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->characterKicked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, charId);
+			_LocalModuleSkel->characterKicked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, charId);
 		}
 		else
 		{
@@ -609,7 +609,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->characterUnkicked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, charId);
+			_LocalModuleSkel->characterUnkicked(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, charId);
 		}
 		else
 		{
@@ -628,7 +628,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->teleportOneCharacterToAnother(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId, sourceCharId, destCharId);
+			_LocalModuleSkel->teleportOneCharacterToAnother(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId, sourceCharId, destCharId);
 		}
 		else
 		{
@@ -646,7 +646,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->hibernateSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), sessionId);
+			_LocalModuleSkel->hibernateSession(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), sessionId);
 		}
 		else
 		{
@@ -664,7 +664,7 @@ namespace RSMGR
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setSessionStartParams(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, sessionId, initialIslandLocation, initialEntryPointLocation, initialSeason);
+			_LocalModuleSkel->setSessionStartParams(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, sessionId, initialIslandLocation, initialEntryPointLocation, initialSeason);
 		}
 		else
 		{

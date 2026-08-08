@@ -58,7 +58,7 @@ namespace PATCHMAN
 
 		return handlers;			
 	}
-	bool CFileReceiverSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CFileReceiverSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -76,21 +76,21 @@ namespace PATCHMAN
 	}
 
 	
-	void CFileReceiverSkel::setupSubscriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileReceiverSkel::setupSubscriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileReceiverSkel_setupSubscriptions_FR_SETUP_SUBS);
 		setupSubscriptions(sender);
 	}
 
-	void CFileReceiverSkel::cbFileInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileReceiverSkel::cbFileInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileReceiverSkel_cbFileInfo_FR_FILE_INFO);
 		TFileInfoVector	files;
 			nlRead(__message, serialCont, files);
-		cbFileInfo(sender, files);
+		cbFileInfo(sender.get(), files);
 	}
 
-	void CFileReceiverSkel::cbFileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileReceiverSkel::cbFileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileReceiverSkel_cbFileData_FR_FILE_DATA);
 		std::string	fileName;
@@ -102,12 +102,12 @@ namespace PATCHMAN
 		cbFileData(sender, fileName, startOffset, data);
 	}
 
-	void CFileReceiverSkel::cbFileDataFailure_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileReceiverSkel::cbFileDataFailure_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileReceiverSkel_cbFileDataFailure_FR_FILE_ERR);
 		std::string	fileName;
 			nlRead(__message, serial, fileName);
-		cbFileDataFailure(sender, fileName);
+		cbFileDataFailure(sender.get(), fileName);
 	}
 		// 
 	void CFileReceiverProxy::setupSubscriptions(NLNET::IModule *sender)
@@ -133,7 +133,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->cbFileInfo(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), files);
+			_LocalModuleSkel->cbFileInfo(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), files);
 		}
 		else
 		{
@@ -169,7 +169,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->cbFileDataFailure(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName);
+			_LocalModuleSkel->cbFileDataFailure(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName);
 		}
 		else
 		{
@@ -266,7 +266,7 @@ namespace PATCHMAN
 
 		return handlers;			
 	}
-	bool CFileRepositorySkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CFileRepositorySkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -284,7 +284,7 @@ namespace PATCHMAN
 	}
 
 	
-	void CFileRepositorySkel::requestFileInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileRepositorySkel::requestFileInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileRepositorySkel_requestFileInfo_FR_REQUEST_INFO);
 		NLMISC::CSString	fileName;
@@ -292,7 +292,7 @@ namespace PATCHMAN
 		requestFileInfo(sender, fileName);
 	}
 
-	void CFileRepositorySkel::requestFileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileRepositorySkel::requestFileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileRepositorySkel_requestFileData_FR_REQUEST_DATA);
 		NLMISC::CSString	fileName;
@@ -304,7 +304,7 @@ namespace PATCHMAN
 		requestFileData(sender, fileName, startOffset, numBytes);
 	}
 
-	void CFileRepositorySkel::getInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileRepositorySkel::getInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileRepositorySkel_getInfo_FR_GET_INFO);
 		NLMISC::CSString	fileSpec;
@@ -312,7 +312,7 @@ namespace PATCHMAN
 		getInfo(sender, fileSpec);
 	}
 
-	void CFileRepositorySkel::subscribe_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileRepositorySkel::subscribe_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileRepositorySkel_subscribe_FR_SUBSCRIBE);
 		NLMISC::CSString	fileSpec;
@@ -320,18 +320,18 @@ namespace PATCHMAN
 		subscribe(sender, fileSpec);
 	}
 
-	void CFileRepositorySkel::unsubscribe_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileRepositorySkel::unsubscribe_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileRepositorySkel_unsubscribe_FR_UNSUBSCRIBE);
 		NLMISC::CSString	fileSpec;
 			nlRead(__message, serial, fileSpec);
-		unsubscribe(sender, fileSpec);
+		unsubscribe(sender.get(), fileSpec);
 	}
 
-	void CFileRepositorySkel::unsubscribeAll_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CFileRepositorySkel::unsubscribeAll_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CFileRepositorySkel_unsubscribeAll_FR_UNSUBSCRIBE_ALL);
-		unsubscribeAll(sender);
+		unsubscribeAll(sender.get());
 	}
 		// Request info concerning a particular file
 	void CFileRepositoryProxy::requestFileInfo(NLNET::IModule *sender, const NLMISC::CSString &fileName)
@@ -412,7 +412,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->unsubscribe(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileSpec);
+			_LocalModuleSkel->unsubscribe(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileSpec);
 		}
 		else
 		{
@@ -430,7 +430,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->unsubscribeAll(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender));
+			_LocalModuleSkel->unsubscribeAll(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get());
 		}
 		else
 		{
@@ -535,7 +535,7 @@ namespace PATCHMAN
 
 		return handlers;			
 	}
-	bool CAdministeredModuleBaseSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CAdministeredModuleBaseSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -553,7 +553,7 @@ namespace PATCHMAN
 	}
 
 	
-	void CAdministeredModuleBaseSkel::executeCommand_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdministeredModuleBaseSkel::executeCommand_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdministeredModuleBaseSkel_executeCommand_ADMIN_EXEC);
 		NLMISC::CSString	originator;
@@ -563,24 +563,24 @@ namespace PATCHMAN
 		executeCommand(sender, originator, cmdline);
 	}
 
-	void CAdministeredModuleBaseSkel::installVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdministeredModuleBaseSkel::installVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdministeredModuleBaseSkel_installVersion_ADMIN_SETNEXT);
 		NLMISC::CSString	domainName;
 			nlRead(__message, serial, domainName);
 		uint32	version;
 			nlRead(__message, serial, version);
-		installVersion(sender, domainName, version);
+		installVersion(sender.get(), domainName, version);
 	}
 
-	void CAdministeredModuleBaseSkel::launchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdministeredModuleBaseSkel::launchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdministeredModuleBaseSkel_launchVersion_ADMIN_SETLIVE);
 		NLMISC::CSString	domainName;
 			nlRead(__message, serial, domainName);
 		uint32	version;
 			nlRead(__message, serial, version);
-		launchVersion(sender, domainName, version);
+		launchVersion(sender.get(), domainName, version);
 	}
 		// 
 		// Message sent by SPM module to request execution of a command
@@ -607,7 +607,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->installVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domainName, version);
+			_LocalModuleSkel->installVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domainName, version);
 		}
 		else
 		{
@@ -625,7 +625,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->launchVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domainName, version);
+			_LocalModuleSkel->launchVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domainName, version);
 		}
 		else
 		{
@@ -726,7 +726,7 @@ namespace PATCHMAN
 
 		return handlers;			
 	}
-	bool CServerPatchTerminalSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CServerPatchTerminalSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -744,25 +744,25 @@ namespace PATCHMAN
 	}
 
 	
-	void CServerPatchTerminalSkel::declareState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::declareState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_declareState_SPT_STATE);
 		NLMISC::CSString	moduleName;
 			nlRead(__message, serial, moduleName);
 		NLMISC::CSString	state;
 			nlRead(__message, serial, state);
-		declareState(sender, moduleName, state);
+		declareState(sender.get(), moduleName, state);
 	}
 
-	void CServerPatchTerminalSkel::declareModuleDown_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::declareModuleDown_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_declareModuleDown_SPT_MODULEDOWN);
 		NLMISC::CSString	moduleName;
 			nlRead(__message, serial, moduleName);
-		declareModuleDown(sender, moduleName);
+		declareModuleDown(sender.get(), moduleName);
 	}
 
-	void CServerPatchTerminalSkel::declareVersionName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::declareVersionName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_declareVersionName_SPT_VERSION_NAME);
 		NLMISC::CSString	versionName;
@@ -771,10 +771,10 @@ namespace PATCHMAN
 			nlRead(__message, serial, clientVersion);
 		uint32	serverVersion;
 			nlRead(__message, serial, serverVersion);
-		declareVersionName(sender, versionName, clientVersion, serverVersion);
+		declareVersionName(sender.get(), versionName, clientVersion, serverVersion);
 	}
 
-	void CServerPatchTerminalSkel::declareDomainInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::declareDomainInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_declareDomainInfo_SPT_DOMAIN_INFO);
 		NLMISC::CSString	domainName;
@@ -783,10 +783,10 @@ namespace PATCHMAN
 			nlRead(__message, serial, installVersion);
 		uint32	launchVersion;
 			nlRead(__message, serial, launchVersion);
-		declareDomainInfo(sender, domainName, installVersion, launchVersion);
+		declareDomainInfo(sender.get(), domainName, installVersion, launchVersion);
 	}
 
-	void CServerPatchTerminalSkel::ackVersionChange_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::ackVersionChange_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_ackVersionChange_SPT_VERSION_ACK);
 		NLMISC::CSString	domainName;
@@ -795,38 +795,38 @@ namespace PATCHMAN
 			nlRead(__message, serial, success);
 		NLMISC::CSString	comment;
 			nlRead(__message, serial, comment);
-		ackVersionChange(sender, domainName, success, comment);
+		ackVersionChange(sender.get(), domainName, success, comment);
 	}
 
-	void CServerPatchTerminalSkel::setInstallVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::setInstallVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_setInstallVersion_SPT_SETNEXT);
 		NLMISC::CSString	domain;
 			nlRead(__message, serial, domain);
 		uint32	version;
 			nlRead(__message, serial, version);
-		setInstallVersion(sender, domain, version);
+		setInstallVersion(sender.get(), domain, version);
 	}
 
-	void CServerPatchTerminalSkel::setLaunchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::setLaunchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_setLaunchVersion_SPT_SETLIVE);
 		NLMISC::CSString	domain;
 			nlRead(__message, serial, domain);
 		uint32	version;
 			nlRead(__message, serial, version);
-		setLaunchVersion(sender, domain, version);
+		setLaunchVersion(sender.get(), domain, version);
 	}
 
-	void CServerPatchTerminalSkel::executedCommandAck_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::executedCommandAck_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_executedCommandAck_SPT_EXEC_ACK);
 		NLMISC::CSString	result;
 			nlRead(__message, serial, result);
-		executedCommandAck(sender, result);
+		executedCommandAck(sender.get(), result);
 	}
 
-	void CServerPatchTerminalSkel::executedCommandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchTerminalSkel::executedCommandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchTerminalSkel_executedCommandResult_SPT_EXEC_RESULT);
 		NLMISC::CSString	originator;
@@ -835,7 +835,7 @@ namespace PATCHMAN
 			nlRead(__message, serial, commandline);
 		NLMISC::CSString	result;
 			nlRead(__message, serial, result);
-		executedCommandResult(sender, originator, commandline, result);
+		executedCommandResult(sender.get(), originator, commandline, result);
 	}
 		// 
 		// Message sent by SPM module to declare the state of a named module
@@ -846,7 +846,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->declareState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), moduleName, state);
+			_LocalModuleSkel->declareState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), moduleName, state);
 		}
 		else
 		{
@@ -865,7 +865,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->declareModuleDown(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), moduleName);
+			_LocalModuleSkel->declareModuleDown(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), moduleName);
 		}
 		else
 		{
@@ -884,7 +884,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->declareVersionName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), versionName, clientVersion, serverVersion);
+			_LocalModuleSkel->declareVersionName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), versionName, clientVersion, serverVersion);
 		}
 		else
 		{
@@ -903,7 +903,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->declareDomainInfo(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domainName, installVersion, launchVersion);
+			_LocalModuleSkel->declareDomainInfo(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domainName, installVersion, launchVersion);
 		}
 		else
 		{
@@ -922,7 +922,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->ackVersionChange(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domainName, success, comment);
+			_LocalModuleSkel->ackVersionChange(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domainName, success, comment);
 		}
 		else
 		{
@@ -941,7 +941,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setInstallVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domain, version);
+			_LocalModuleSkel->setInstallVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domain, version);
 		}
 		else
 		{
@@ -960,7 +960,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setLaunchVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domain, version);
+			_LocalModuleSkel->setLaunchVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domain, version);
 		}
 		else
 		{
@@ -979,7 +979,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->executedCommandAck(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), result);
+			_LocalModuleSkel->executedCommandAck(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), result);
 		}
 		else
 		{
@@ -998,7 +998,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->executedCommandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), originator, commandline, result);
+			_LocalModuleSkel->executedCommandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), originator, commandline, result);
 		}
 		else
 		{
@@ -1163,7 +1163,7 @@ namespace PATCHMAN
 
 		return handlers;			
 	}
-	bool CServerPatchManagerSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CServerPatchManagerSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -1181,7 +1181,7 @@ namespace PATCHMAN
 	}
 
 	
-	void CServerPatchManagerSkel::registerAdministeredModule_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::registerAdministeredModule_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_registerAdministeredModule_SPM_REGISTER);
 		bool	requireApplierUpdates;
@@ -1192,44 +1192,44 @@ namespace PATCHMAN
 			nlRead(__message, serial, requireDepCfgUpdates);
 		bool	isAdministered;
 			nlRead(__message, serial, isAdministered);
-		registerAdministeredModule(sender, requireApplierUpdates, requireTerminalUpdates, requireDepCfgUpdates, isAdministered);
+		registerAdministeredModule(sender.get(), requireApplierUpdates, requireTerminalUpdates, requireDepCfgUpdates, isAdministered);
 	}
 
-	void CServerPatchManagerSkel::requestRefresh_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::requestRefresh_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_requestRefresh_SPM_REFRESH);
-		requestRefresh(sender);
+		requestRefresh(sender.get());
 	}
 
-	void CServerPatchManagerSkel::setInstallVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::setInstallVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_setInstallVersion_SPM_SETNEXT);
 		NLMISC::CSString	domain;
 			nlRead(__message, serial, domain);
 		uint32	version;
 			nlRead(__message, serial, version);
-		setInstallVersion(sender, domain, version);
+		setInstallVersion(sender.get(), domain, version);
 	}
 
-	void CServerPatchManagerSkel::setLaunchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::setLaunchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_setLaunchVersion_SPM_SETLIVE);
 		NLMISC::CSString	domain;
 			nlRead(__message, serial, domain);
 		uint32	version;
 			nlRead(__message, serial, version);
-		setLaunchVersion(sender, domain, version);
+		setLaunchVersion(sender.get(), domain, version);
 	}
 
-	void CServerPatchManagerSkel::declareState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::declareState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_declareState_SPM_STATE);
 		NLMISC::CSString	state;
 			nlRead(__message, serial, state);
-		declareState(sender, state);
+		declareState(sender.get(), state);
 	}
 
-	void CServerPatchManagerSkel::declareVersionName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::declareVersionName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_declareVersionName_SPM_VERSION_NAME);
 		NLMISC::CSString	versionName;
@@ -1238,20 +1238,20 @@ namespace PATCHMAN
 			nlRead(__message, serial, clientVersion);
 		uint32	serverVersion;
 			nlRead(__message, serial, serverVersion);
-		declareVersionName(sender, versionName, clientVersion, serverVersion);
+		declareVersionName(sender.get(), versionName, clientVersion, serverVersion);
 	}
 
-	void CServerPatchManagerSkel::executeCommandOnModules_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::executeCommandOnModules_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_executeCommandOnModules_SPM_EXEC);
 		NLMISC::CSString	target;
 			nlRead(__message, serial, target);
 		NLMISC::CSString	commandline;
 			nlRead(__message, serial, commandline);
-		executeCommandOnModules(sender, target, commandline);
+		executeCommandOnModules(sender.get(), target, commandline);
 	}
 
-	void CServerPatchManagerSkel::executedCommandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CServerPatchManagerSkel::executedCommandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CServerPatchManagerSkel_executedCommandResult_SPM_EXEC_RESULT);
 		NLMISC::CSString	originator;
@@ -1260,7 +1260,7 @@ namespace PATCHMAN
 			nlRead(__message, serial, commandline);
 		NLMISC::CSString	result;
 			nlRead(__message, serial, result);
-		executedCommandResult(sender, originator, commandline, result);
+		executedCommandResult(sender.get(), originator, commandline, result);
 	}
 		// 
 		// Message sent by an administered module to register
@@ -1269,7 +1269,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerAdministeredModule(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), requireApplierUpdates, requireTerminalUpdates, requireDepCfgUpdates, isAdministered);
+			_LocalModuleSkel->registerAdministeredModule(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), requireApplierUpdates, requireTerminalUpdates, requireDepCfgUpdates, isAdministered);
 		}
 		else
 		{
@@ -1288,7 +1288,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->requestRefresh(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender));
+			_LocalModuleSkel->requestRefresh(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get());
 		}
 		else
 		{
@@ -1308,7 +1308,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setInstallVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domain, version);
+			_LocalModuleSkel->setInstallVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domain, version);
 		}
 		else
 		{
@@ -1328,7 +1328,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setLaunchVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), domain, version);
+			_LocalModuleSkel->setLaunchVersion(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), domain, version);
 		}
 		else
 		{
@@ -1348,7 +1348,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->declareState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), state);
+			_LocalModuleSkel->declareState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), state);
 		}
 		else
 		{
@@ -1367,7 +1367,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->declareVersionName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), versionName, clientVersion, serverVersion);
+			_LocalModuleSkel->declareVersionName(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), versionName, clientVersion, serverVersion);
 		}
 		else
 		{
@@ -1387,7 +1387,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->executeCommandOnModules(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), target, commandline);
+			_LocalModuleSkel->executeCommandOnModules(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), target, commandline);
 		}
 		else
 		{
@@ -1406,7 +1406,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->executedCommandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), originator, commandline, result);
+			_LocalModuleSkel->executedCommandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), originator, commandline, result);
 		}
 		else
 		{
@@ -1535,7 +1535,7 @@ namespace PATCHMAN
 
 		return handlers;			
 	}
-	bool CDeploymentConfigurationSynchroniserSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CDeploymentConfigurationSynchroniserSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -1553,18 +1553,18 @@ namespace PATCHMAN
 	}
 
 	
-	void CDeploymentConfigurationSynchroniserSkel::requestSync_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CDeploymentConfigurationSynchroniserSkel::requestSync_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CDeploymentConfigurationSynchroniserSkel_requestSync_DEPCFG_REQUEST);
 		requestSync(sender);
 	}
 
-	void CDeploymentConfigurationSynchroniserSkel::sync_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CDeploymentConfigurationSynchroniserSkel::sync_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CDeploymentConfigurationSynchroniserSkel_sync_DEPCFG_SYNC);
 		NLNET::TBinBuffer	dataBlob;
 			nlRead(__message, serial, dataBlob);
-		sync(sender, dataBlob);
+		sync(sender.get(), dataBlob);
 	}
 		// 
 		// Request for a copy of another module's CDeploymentConfiguration singleton
@@ -1592,7 +1592,7 @@ namespace PATCHMAN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sync(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), dataBlob);
+			_LocalModuleSkel->sync(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), dataBlob);
 		}
 		else
 		{

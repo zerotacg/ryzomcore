@@ -1172,7 +1172,7 @@ void CServerEditionModule::init(NLNET::IModuleSocket* gateway, CDynamicMapServic
 
 void CServerEditionModule::updateRSMGR()
 {
-	nlassert(!_SessionManager.isNull());
+	nlassert(_SessionManager);
 	nlassert(!_WaitingForBS);
 
 	RSMGR::CRingSessionManagerProxy rsm(_SessionManager);
@@ -1226,12 +1226,12 @@ void CServerEditionModule::simulateSU(CEntityId clientEid)
 }
 
 
-void CServerEditionModule::onModuleUp(NLNET::IModuleProxy *senderModuleProxy)
+void CServerEditionModule::onModuleUp(NLNET::TModuleProxyPtr senderModuleProxy)
 {
 	const std::string &moduleName = senderModuleProxy->getModuleClassName();
 	if (moduleName == "RingSessionManager")
 	{
-		nlassert(_SessionManager == NULL);
+		nlassert(_SessionManager == nullptr);
 		_SessionManager = senderModuleProxy;
 		if (!_WaitingForBS){ updateRSMGR(); }
 	}
@@ -1240,12 +1240,12 @@ void CServerEditionModule::onModuleUp(NLNET::IModuleProxy *senderModuleProxy)
 		_CharacterControlProxy = senderModuleProxy;
 		CCharacterControlItfProxy proxy(_CharacterControlProxy);
 		// add all editor and animator into the universe chat
-		TSessions::iterator first(_Sessions.begin()), last(_Sessions.end());
+		auto first(_Sessions.begin()), last(_Sessions.end());
 		for (; first != last; ++first)
 		{
 			CEditionSession *session = first->second;
 
-			CEditionSession::TCurrentChars::const_iterator f2(session->getCurrentChars().begin()), e2(session->getCurrentChars().end());
+			auto f2(session->getCurrentChars().begin()), e2(session->getCurrentChars().end());
 			for (; f2 != e2; ++f2)
 			{
 				const CCurrentChar *cc = *f2;
@@ -1286,7 +1286,7 @@ void CServerEditionModule::onModuleUp(NLNET::IModuleProxy *senderModuleProxy)
 		std::string extendedPriv;
 
 
-		bool ok = getCharInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+		bool ok = getCharInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 
 
 		simulateSU(clientEid);
@@ -1338,15 +1338,15 @@ void CServerEditionModule::tryCharConnection(TCharId charId)
 	std::string userPriv;
 	std::string extendedPriv;
 
-	const NLNET::TModuleProxyPtr*senderModuleProxyPtr = getClientProxyPtr(charId);
+	const auto senderModuleProxyPtr = getClientProxyPtr(charId);
 	if (!senderModuleProxyPtr){ return;} // player disconnect before BS an EGS Up
-	NLNET::IModuleProxy *senderModuleProxy = *senderModuleProxyPtr;
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	auto senderModuleProxy = *senderModuleProxyPtr;
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 	// Simulate SU if needed
 
 
-	TPioneersSessionsAlloweds::iterator found(_PioneersSessionsAllowed.find(charId));
+	auto found(_PioneersSessionsAllowed.find(charId));
 
 	if (found == _PioneersSessionsAllowed.end() )
 	{
@@ -1423,7 +1423,7 @@ void CServerEditionModule::connectChar(TSessionId sessionId, TCharId charId, TUs
 		std::string extendedPriv;
 
 		// Do not useeckSecurityInfo because we put the client in authorized list here.
-		bool ok = getCharInfo(clientEditionProxy, charId, clientEid, userPriv, extendedPriv);
+		bool ok = getCharInfo(clientEditionProxy.get(), charId, clientEid, userPriv, extendedPriv);
 		if (ok)
 		{
 			std::vector<std::string> values;
@@ -1483,7 +1483,7 @@ void CServerEditionModule::disconnectChar(TCharId charId)
 	}
 
 	// Will he receive the message?
-	DROP_IF(_CharacterControlProxy.isNull(), "Try to disconnect a player but no EGS?", return);
+	DROP_IF(_CharacterControlProxy == nullptr, "Try to disconnect a player but no EGS?", return);
 	CCharacterControlItfProxy proxy(_CharacterControlProxy);
 	proxy.returnToPreviousSession(this, charId);
 	//proxy.disconnectChar(this, charId); // removed because prevents the client from completing its FarTP to the previous session
@@ -1511,7 +1511,7 @@ void CServerEditionModule::createSessionWithoutSu(TCharId charId, NLMISC::CEntit
 			TSessions::iterator scenarioIt = _Sessions.find(sessionId);
 			if (scenarioIt == _Sessions.end())
 			{
-				createSession(_SessionManager, charId, sessionId, AutoCreateAnimationSession ? RSMGR::TSessionType::st_anim: RSMGR::TSessionType::st_edit);
+				createSession(_SessionManager.get(), charId, sessionId, AutoCreateAnimationSession ? RSMGR::TSessionType::st_anim: RSMGR::TSessionType::st_edit);
 			}
 		}
 
@@ -1522,7 +1522,7 @@ void CServerEditionModule::createSessionWithoutSu(TCharId charId, NLMISC::CEntit
 			return;
 		}
 
-		addCharacterInSession(_SessionManager, sessionId, charId, WS::TUserRole(AutoCreateRole), "", false);
+		addCharacterInSession(_SessionManager.get(), sessionId, charId, WS::TUserRole(AutoCreateRole), "", false);
 
 
 	}
@@ -1531,7 +1531,7 @@ void CServerEditionModule::createSessionWithoutSu(TCharId charId, NLMISC::CEntit
 }
 
 
-void CServerEditionModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
+void CServerEditionModule::onModuleDown(NLNET::TModuleProxyPtr moduleProxy)
 {
 	std::string moduleName = moduleProxy->getModuleClassName();
 
@@ -1573,7 +1573,7 @@ void CServerEditionModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
 			std::string extendedPriv;
 
 			// Do not useeckSecurityInfo because we put the client in authorized list here.
-			bool ok = getCharInfo(moduleProxy, charId, clientEid, userPriv, extendedPriv);
+			bool ok = getCharInfo(moduleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 
 
 			BOMB_IF(!ok, "R2Ed: User Module '"<<moduleProxy->getModuleName()<<"' is disconnecting but it does not have any security info", return);
@@ -1584,7 +1584,7 @@ void CServerEditionModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
 				session->disconnectChar(uint32(clientEid.getShortId()));
 
 				// Signal client disconnection to SU
-				if (!_SessionManager.isNull())
+				if (_SessionManager != nullptr)
 				{
 					RSMGR::CRingSessionManagerProxy rsm(_SessionManager);
 					rsm.reportSessionEvent(this, RSMGR::TSessionEvent::se_char_leave, session->SessionId.asInt(), charId);
@@ -1715,7 +1715,7 @@ void CServerEditionModule::stopTestRequested(NLNET::IModuleProxy *senderModulePr
 }
 
 
-void CServerEditionModule::onMapConnectionAsked( NLNET::IModuleProxy * clientEditionProxy,
+void CServerEditionModule::onMapConnectionAsked( NLNET::TModuleProxyPtr clientEditionProxy,
 	TSessionId sessionId, bool updateHighLevel, bool mustTp, TUserRole role)
 {
 
@@ -1725,20 +1725,20 @@ void CServerEditionModule::onMapConnectionAsked( NLNET::IModuleProxy * clientEdi
 	std::string extendedPriv;
 	bool mustForceVisionUpdate = true;
 
-	bool ok = checkSecurityInfo(clientEditionProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(clientEditionProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 
 	CEditionSession* session = getSession(sessionId);
 	CScenario* scenario = session ? session->getScenario() : nullptr;
 
-	TSessionId previousSessionId = TSessionId(0);
+	auto previousSessionId = TSessionId(0);
 	if (!session ||!scenario )
 	{
 		return;
 	}
 
-	TPioneersSessions::iterator previousSessionIdIt = _PioneersSessions.find(charId);
+	auto previousSessionIdIt = _PioneersSessions.find(charId);
 	if (previousSessionIdIt != _PioneersSessions.end())
 	{
 		previousSessionId = previousSessionIdIt->second;
@@ -1892,7 +1892,7 @@ void CServerEditionModule::onMapConnectionAsked( NLNET::IModuleProxy * clientEdi
 		{
 			if (mustTp && clientConnectBody.HighLevel.getData() )
 			{
-				tpToEntryPoint(clientEditionProxy, clientConnectBody.InitialActIndex);
+				tpToEntryPoint(clientEditionProxy.get(), clientConnectBody.InitialActIndex);
 				mustForceVisionUpdate = false;
 			}
 		}
@@ -1999,7 +1999,7 @@ void CServerEditionModule::broadcastToCharConnected(const NLNET::CMessage & msg,
 
 	fillBroadcastVector(session, broadcastList);
 
-	vector <NLNET::TModuleProxyPtr>::iterator first(broadcastList.begin()), last(broadcastList.end());
+	auto first(broadcastList.begin()), last(broadcastList.end());
 	for (;first != last ; ++first)
 	{
 		NLNET::TModuleProxyPtr proxy = *first;
@@ -2015,7 +2015,7 @@ void CServerEditionModule::fillBroadcastVector(CEditionSession * session, std::v
 	// cleanup the list
 	broadcastList.clear();
 
-	CEditionSession::TCurrentChars::const_iterator first(session->getCurrentChars().begin()), last(session->getCurrentChars().end());
+	auto first(session->getCurrentChars().begin()), last(session->getCurrentChars().end());
 	for (;first != last ; ++first)
 	{
 		TCharId charId = (*first)->getCharId();
@@ -2037,7 +2037,7 @@ void CServerEditionModule::fillBroadcastVectorNoSender(CEditionSession * session
 	// cleanup the list
 	broadcastList.clear();
 
-	CEditionSession::TCurrentChars::const_iterator first(session->getCurrentChars().begin()), last(session->getCurrentChars().end());
+	auto first(session->getCurrentChars().begin()), last(session->getCurrentChars().end());
 	for (;first != last ; ++first)
 	{
 		TCharId charId = (*first)->getCharId();
@@ -2094,7 +2094,7 @@ std::vector<NLNET::TModuleProxyPtr> CServerEditionModule::removeSender(const std
 }
 
 
-void CServerEditionModule::onScenarioUploadAsked(NLNET::IModuleProxy *senderModuleProxy, uint32 msgId,
+void CServerEditionModule::onScenarioUploadAsked(NLNET::TModuleProxyPtr senderModuleProxy, uint32 msgId,
 	const CObjectSerializerServer& hlScenario, bool mustBroadCast)
 {
 	TCharId charId;
@@ -2102,7 +2102,7 @@ void CServerEditionModule::onScenarioUploadAsked(NLNET::IModuleProxy *senderModu
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 	CShareClientEditionItfProxy sender(senderModuleProxy);
 
@@ -2145,7 +2145,7 @@ void CServerEditionModule::onScenarioUploadAsked(NLNET::IModuleProxy *senderModu
 		sender.ackMsg(this, msgId, true);
 
 		// Send the update message to all client except the one that send intial message
-		vector<TModuleProxyPtr> otherThantSender = removeSender(broadcastList, senderModuleProxy);
+		vector<TModuleProxyPtr> otherThantSender = removeSender(broadcastList, senderModuleProxy.get());
 
 		// Warning : Very BAD reinterpret cast due to necessity to convert a server to client object serial.
 		// This should not harm because the two objects are completely similar.
@@ -2156,7 +2156,7 @@ void CServerEditionModule::onScenarioUploadAsked(NLNET::IModuleProxy *senderModu
 		vector<TModuleProxyPtr>::const_iterator first(broadcastList.begin()), last(broadcastList.end());
 		for( ;first != last; ++first)
 		{
-			tpToEntryPoint(*first, scenario->getInitialActIndex());
+			tpToEntryPoint(first->get(), scenario->getInitialActIndex());
 		}
 
 	}
@@ -2165,7 +2165,7 @@ void CServerEditionModule::onScenarioUploadAsked(NLNET::IModuleProxy *senderModu
 }
 
 
-void CServerEditionModule::onNodeInsertAsked(NLNET::IModuleProxy *senderModuleProxy, uint32 messageId,
+void CServerEditionModule::onNodeInsertAsked(NLNET::TModuleProxyPtr senderModuleProxy, uint32 messageId,
 	const std::string& instanceId, const std::string & attrName, sint32 position,
 	const std::string& key, const CObjectSerializerServer& value2)
 {
@@ -2178,7 +2178,7 @@ void CServerEditionModule::onNodeInsertAsked(NLNET::IModuleProxy *senderModulePr
 	value2.uncompress();
 	CObject::TSmartPtr value = value2.getData();
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2200,7 +2200,7 @@ void CServerEditionModule::onNodeInsertAsked(NLNET::IModuleProxy *senderModulePr
 	}
 
 	vector<TModuleProxyPtr> broadcastList;
-	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy);
+	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy.get());
 	sender.ackMsg(this, messageId, true);
 	// Warning : Very BAD reinterpret cast due to necessity to convert a server to client object serial.
 	// This should not harm because the two objects are completely similar.
@@ -2210,7 +2210,7 @@ void CServerEditionModule::onNodeInsertAsked(NLNET::IModuleProxy *senderModulePr
 }
 
 
-void CServerEditionModule::onNodeSetAsked(NLNET::IModuleProxy *senderModuleProxy, uint32 messageId,
+void CServerEditionModule::onNodeSetAsked(NLNET::TModuleProxyPtr senderModuleProxy, uint32 messageId,
 	const std::string& instanceId, const std::string & attrName, const CObjectSerializerServer& value2)
 {
 
@@ -2223,7 +2223,7 @@ void CServerEditionModule::onNodeSetAsked(NLNET::IModuleProxy *senderModuleProxy
 	CObject::TSmartPtr value = value2.getData();
 
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2248,14 +2248,14 @@ void CServerEditionModule::onNodeSetAsked(NLNET::IModuleProxy *senderModuleProxy
 
 	vector<TModuleProxyPtr> broadcastList;
 	sender.ackMsg(this, messageId, true);
-	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy);
+	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy.get());
 	CShareClientEditionItfProxy::broadcast_onNodeSet(broadcastList.begin(), broadcastList.end(),
 		this,
 		instanceId, attrName, reinterpret_cast<const CObjectSerializerClient&>(value2));
 }
 
 
-void CServerEditionModule::onNodeEraseAsked(NLNET::IModuleProxy *senderModuleProxy, uint32 messageId,
+void CServerEditionModule::onNodeEraseAsked(NLNET::TModuleProxyPtr senderModuleProxy, uint32 messageId,
 	const std::string& instanceId, const std::string& attrName, sint32 position)
 {
 
@@ -2264,7 +2264,7 @@ void CServerEditionModule::onNodeEraseAsked(NLNET::IModuleProxy *senderModulePro
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 
@@ -2288,7 +2288,7 @@ void CServerEditionModule::onNodeEraseAsked(NLNET::IModuleProxy *senderModulePro
 	}
 
 	vector<TModuleProxyPtr> broadcastList;
-	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy);
+	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy.get());
 	sender.ackMsg(this, messageId, true);
 	CShareClientEditionItfProxy::broadcast_onNodeErased(broadcastList.begin(), broadcastList.end(),
 		this,
@@ -2296,7 +2296,7 @@ void CServerEditionModule::onNodeEraseAsked(NLNET::IModuleProxy *senderModulePro
 }
 
 
-void CServerEditionModule::onNodeMoveAsked(NLNET::IModuleProxy *senderModuleProxy, uint32 messageId,
+void CServerEditionModule::onNodeMoveAsked(NLNET::TModuleProxyPtr senderModuleProxy, uint32 messageId,
 	const std::string& instanceId1, const std::string& attrName1, sint32 position1,
 	const std::string& instanceId2, const std::string& attrName2, sint32 position2)
 {
@@ -2307,7 +2307,7 @@ void CServerEditionModule::onNodeMoveAsked(NLNET::IModuleProxy *senderModuleProx
 	std::string extendedPriv;
 
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2333,7 +2333,7 @@ void CServerEditionModule::onNodeMoveAsked(NLNET::IModuleProxy *senderModuleProx
 	}
 
 	vector<TModuleProxyPtr> broadcastList;
-	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy);
+	fillBroadcastVectorNoSender(session, broadcastList, senderModuleProxy.get());
 	sender.ackMsg(this, messageId, true);
 	CShareClientEditionItfProxy::broadcast_onNodeMoved(broadcastList.begin(), broadcastList.end(),
 		this,
@@ -2379,7 +2379,7 @@ void CServerEditionModule::onUserComponentUploaded(NLNET::IModuleProxy *senderMo
 	CScenario* scenario = session->getScenario();
 
 	CUserComponentRefCounter* refCounter = nullptr;
-	TUserComponentRefCounter::const_iterator found = _UserComponentRefCounter.find(component->Md5);
+	auto found = _UserComponentRefCounter.find(component->Md5);
 	if (found == _UserComponentRefCounter.end())
 	{
 		refCounter = new CUserComponentRefCounter();
@@ -2402,7 +2402,7 @@ void CServerEditionModule::onUserComponentUploaded(NLNET::IModuleProxy *senderMo
 CUserComponent* CServerEditionModule::getUserComponent( const NLMISC::CHashKeyMD5& md5) const
 {
 
-	TUserComponentRefCounter::const_iterator found = _UserComponentRefCounter.find(md5);
+	auto found = _UserComponentRefCounter.find(md5);
 	if (found != _UserComponentRefCounter.end())
 	{
 		return found->second->get();
@@ -2432,17 +2432,17 @@ void CServerEditionModule::onUserComponentDownloading(NLNET::IModuleProxy *sende
 
 }
 
-void CServerEditionModule::onUserComponentRegistered(NLNET::IModuleProxy *senderModuleProxy, const NLMISC::CHashKeyMD5& md5 )
+void CServerEditionModule::onUserComponentRegistered(NLNET::TModuleProxyPtr senderModuleProxy, const NLMISC::CHashKeyMD5& md5 )
 {
 	TCharId charId;
 	CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
-	TUserComponentRefCounter::const_iterator found=_UserComponentRefCounter.find(md5);
+	auto found=_UserComponentRefCounter.find(md5);
 	if (found == _UserComponentRefCounter.end())
 	{
 		CShareClientEditionItfProxy proxy(senderModuleProxy);
@@ -2464,7 +2464,7 @@ void CServerEditionModule::onUserComponentRegistered(NLNET::IModuleProxy *sender
 	CShareClientEditionItfProxy::broadcast_onUserComponentRegistered(broadcastList.begin(), broadcastList.end(), this, md5);
 }
 
-bool CServerEditionModule::onProcessModuleMessage(NLNET::IModuleProxy *senderModuleProxy, const NLNET::CMessage &message)
+bool CServerEditionModule::onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message)
 {
 	std::string operationName = message.getName();
 
@@ -2476,7 +2476,7 @@ bool CServerEditionModule::onProcessModuleMessage(NLNET::IModuleProxy *senderMod
 		std::string userPriv;
 		std::string extendedPriv;
 
-		bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+		bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 		if (!ok) { return true; }
 
 		uint32 length = message.length();
@@ -2488,19 +2488,19 @@ bool CServerEditionModule::onProcessModuleMessage(NLNET::IModuleProxy *senderMod
 			CUserComponent* component = new CUserComponent();
 			//message.serial(const_cast<CUserComponent&>(*component));
 			component->serial( const_cast<CMessage&>(message));
-			onUserComponentUploaded(senderModuleProxy, component);
+			onUserComponentUploaded(senderModuleProxy.get(), component);
 			return true;
 		}
 
 		if (operationName == "DBG_CREATE_PRIMITIVES")
 		{
-			onMessageReceivedCreatePrimitives(senderModuleProxy, charId );
+			onMessageReceivedCreatePrimitives(senderModuleProxy.get(), charId );
 			return true;
 		}
 
 		if (operationName == "STOP_TEST")
 		{
-			stopTestRequested(senderModuleProxy, charId);
+			stopTestRequested(senderModuleProxy.get(), charId);
 			return true;
 		}
 
@@ -2510,10 +2510,10 @@ bool CServerEditionModule::onProcessModuleMessage(NLNET::IModuleProxy *senderMod
 			nlRead(message,serial,obj);
 			obj.uncompress();
 
-			bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+			bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 			if (!ok) { return true; }
 
-			rtScenarioUpdateRequested(senderModuleProxy, charId, obj.getData());
+			rtScenarioUpdateRequested(senderModuleProxy.get(), charId, obj.getData());
 
 			return true;
 		}
@@ -2623,7 +2623,7 @@ NLMISC_CLASS_COMMAND_IMPL(CServerEditionModule, createSession)
 	fromString(args[1], id);
 	TSessionId sessionId = (TSessionId)id;
 	log.displayNL("Creating session %u %s", sessionId.asInt(), value.toString().c_str());
-	this->createSession(_SessionManager, ownerCharId, sessionId, value );
+	this->createSession(_SessionManager.get(), ownerCharId, sessionId, value );
 	return true;
 }
 
@@ -2750,7 +2750,7 @@ void CServerEditionModule::createSession(NLNET::IModuleProxy *sender, TCharId ow
 	// send MSG to session manager
 	if (sender)
 	{
-		nlassert(sender == _SessionManager);
+		nlassert(sender == _SessionManager.get());
 
 		// you need to report the creation to session manager :
 		RSMGR::CRingSessionManagerProxy rsm(_SessionManager);
@@ -2840,7 +2840,7 @@ void CServerEditionModule::createSession(NLNET::IModuleProxy *sender, TCharId ow
 				uint32 charId;
 				NLMISC::CEntityId clientEid;
 				std::string userPriv;
-				getCharInfo(*ownerModule, charId, clientEid, userPriv, extendedPriv);
+				getCharInfo(ownerModule->get(), charId, clientEid, userPriv, extendedPriv);
 			}
 
 			if (!trialAllowed && getIsCharRoS(ownerCharId) && extendedPriv.find("TRIAL") != std::string::npos)
@@ -3593,7 +3593,7 @@ bool CServerEditionModule::teleportOneCharacterToAnotherImpl(TSessionId sessionI
 		return false;
 	}
 
-	if (_CharacterControlProxy.isNull())
+	if (_CharacterControlProxy == nullptr)
 	{
 		msg="Try to tp to another player but no EGS?";
 		return false;
@@ -4618,14 +4618,14 @@ NLMISC_CLASS_COMMAND_IMPL(CServerEditionModule, displayCharRingAccess)
 }
 
 
-void CServerEditionModule::onCharModeUpdateAsked(NLNET::IModuleProxy *senderModuleProxy, TCharMode mode)
+void CServerEditionModule::onCharModeUpdateAsked(NLNET::TModuleProxyPtr senderModuleProxy, TCharMode mode)
 {
 	TCharId charId;
 	CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok = checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok = checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	nldebug("R2Ed: Char %u is now in mode '%s'", charId, mode.toString().c_str());
@@ -5656,7 +5656,7 @@ void CServerEditionModule::onTpPositionAsked( NLNET::IModuleProxy *senderModuleP
 
 void CServerEditionModule::tpPosition(NLNET::IModuleProxy *sender, const NLMISC::CEntityId & eid, float x, float y, float z, uint8 season,  const R2::TR2TpInfos& tpInfos)
 {
-	if ( !_CharacterControlProxy.isNull())
+	if (_CharacterControlProxy)
 	{
 		CCharacterControlItfProxy ccip( _CharacterControlProxy );
 		ccip.onTpPositionAsked(this, eid, x, y, z, season, tpInfos);
@@ -5750,14 +5750,14 @@ void CServerEditionModule::tpToEntryPoint(NLNET::IModuleProxy *senderModuleProxy
 }
 
 
-void CServerEditionModule::onScenarioRingAccessUpdated(NLNET::IModuleProxy *senderModuleProxy, bool ok,const std::string & ringAccess, const std::string& errMsg)
+void CServerEditionModule::onScenarioRingAccessUpdated(NLNET::TModuleProxyPtr senderModuleProxy, bool ok,const std::string & ringAccess, const std::string& errMsg)
 {
 	TCharId charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	if (! checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv) ) { return; }
+	if (! checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv) ) { return; }
 
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -5817,14 +5817,14 @@ bool CServerEditionModule::isSessionHibernating(TSessionId sessionId, RSMGR::TSe
 
 
 // a message to validate a file waiting to be saved
-void CServerEditionModule::saveScenarioFile(NLNET::IModuleProxy *sender, const std::string &md5, const TScenarioHeaderSerializer &header)
+void CServerEditionModule::saveScenarioFile(NLNET::TModuleProxyPtr sender, const std::string &md5, const TScenarioHeaderSerializer &header)
 {
 	TCharId charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	if (! checkSecurityInfo(sender, charId, clientEid, userPriv, extendedPriv) ) { return; }
+	if (! checkSecurityInfo(sender.get(), charId, clientEid, userPriv, extendedPriv) ) { return; }
 
 	std::string signature = _KeysHolder->getCurrentSignature(md5);
 	bool ok = true;
@@ -5854,7 +5854,7 @@ void CServerEditionModule::saveScenarioFile(NLNET::IModuleProxy *sender, const s
 
 
 // a message to validate a file waiting to be loaded
-void CServerEditionModule::loadScenarioFile(NLNET::IModuleProxy *senderModuleProxy, const std::string &md5, const std::string &signature)
+void CServerEditionModule::loadScenarioFile(NLNET::TModuleProxyPtr senderModuleProxy, const std::string &md5, const std::string &signature)
 {
 	TCharId charId;
 	NLMISC::CEntityId clientEid;
@@ -5863,7 +5863,7 @@ void CServerEditionModule::loadScenarioFile(NLNET::IModuleProxy *senderModulePro
 
 
 
-	if (! checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv) ) { return; }
+	if (! checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv) ) { return; }
 
 	bool ok = _KeysHolder->verifyKey(md5, signature);
 	CShareClientEditionItfProxy client(senderModuleProxy);
@@ -5871,14 +5871,14 @@ void CServerEditionModule::loadScenarioFile(NLNET::IModuleProxy *senderModulePro
 }
 
 // a message to validate a user component file waiting to be saved
-void CServerEditionModule::saveUserComponentFile(NLNET::IModuleProxy *sender, const std::string &md5, const TScenarioHeaderSerializer &header)
+void CServerEditionModule::saveUserComponentFile(TModuleProxyPtr sender, const std::string &md5, const TScenarioHeaderSerializer &header)
 {
 	TCharId charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	if (! checkSecurityInfo(sender, charId, clientEid, userPriv, extendedPriv) ) { return; }
+	if (! checkSecurityInfo(sender.get(), charId, clientEid, userPriv, extendedPriv) ) { return; }
 
 	std::string signature = _KeysHolder->getCurrentSignature(md5);
 
@@ -5887,7 +5887,7 @@ void CServerEditionModule::saveUserComponentFile(NLNET::IModuleProxy *sender, co
 }
 
 // a message to validate a file waiting to be loaded
-void CServerEditionModule::loadUserComponentFile(NLNET::IModuleProxy *senderModuleProxy, const std::string &md5, const std::string &signature)
+void CServerEditionModule::loadUserComponentFile(TModuleProxyPtr senderModuleProxy, const std::string &md5, const std::string &signature)
 {
 	TCharId charId;
 	NLMISC::CEntityId clientEid;
@@ -5896,7 +5896,7 @@ void CServerEditionModule::loadUserComponentFile(NLNET::IModuleProxy *senderModu
 
 
 
-	if (! checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv) ) { return; }
+	if (! checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv) ) { return; }
 
 	bool ok = _KeysHolder->verifyKey(md5, signature);
 	CShareClientEditionItfProxy client(senderModuleProxy);
@@ -6143,7 +6143,7 @@ void CServerEditionModule::teleportWhileUploadingScenario(NLNET::IModuleProxy *s
 
 void CServerEditionModule::returnToPreviousSession(TCharId charId)
 {
-	DROP_IF(_CharacterControlProxy.isNull(), "Try to disconnect a player but no EGS?", return);
+	DROP_IF(_CharacterControlProxy == nullptr, "Try to disconnect a player but no EGS?", return);
 	nlinfo("The charId '%u' was send back to its previous session (maybe the session he was invited was closed)", charId);
 	CCharacterControlItfProxy proxy(_CharacterControlProxy);
 	proxy.returnToPreviousSession(this, charId);
@@ -6357,7 +6357,7 @@ void CServerEditionModule::multiPartMsgFoot(NLNET::IModuleProxy *sbs, uint32 cha
 
 }
 // Simulate the dss
-void CServerEditionModule::forwardToDss(NLNET::IModuleProxy *senderModuleProxy, uint32 charId, const NLNET::CMessage& msg)
+void CServerEditionModule::forwardToDss(TModuleProxyPtr senderModuleProxy, uint32 charId, const NLNET::CMessage &msg)
 {
 	NLNET::CMessage message(msg);
 	if (!message.isReading())

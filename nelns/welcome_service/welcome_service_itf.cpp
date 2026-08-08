@@ -35,7 +35,7 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CWelcomeServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CWelcomeServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -53,7 +53,7 @@ namespace WS
 	}
 
 	
-	void CWelcomeServiceSkel::welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceSkel::welcomeUser_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CWelcomeServiceSkel_welcomeUser_WU);
 		uint32	charId;
@@ -73,7 +73,7 @@ namespace WS
 		welcomeUser(sender, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 	}
 
-	void CWelcomeServiceSkel::disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceSkel::disconnectUser_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CWelcomeServiceSkel_disconnectUser_DU);
 		uint32	userId;
@@ -166,7 +166,7 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CLoginServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CLoginServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -255,7 +255,7 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CWelcomeServiceClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CWelcomeServiceClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 

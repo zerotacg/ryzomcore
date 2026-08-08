@@ -144,12 +144,12 @@ void CStringManagerModule::init(NLNET::IModuleSocket* clientGW,CDynamicMapServic
 }
 
 
-void CStringManagerModule::onModuleUp(NLNET::IModuleProxy *moduleProxy)
+void CStringManagerModule::onModuleUp(NLNET::TModuleProxyPtr moduleProxy)
 {
 	std::string moduleName = moduleProxy->getModuleClassName();
 	if( moduleName == "ClientEditionModule")
 	{
-		insertClient(moduleProxy,TChanID());;
+		insertClient(moduleProxy.get(),TChanID());;
 	}
 }
 
@@ -179,7 +179,7 @@ void CStringManagerModule::removeClient(NLNET::IModuleProxy *moduleProxy)
 	}
 }
 
-void CStringManagerModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
+void CStringManagerModule::onModuleDown(NLNET::TModuleProxyPtr moduleProxy)
 {
 	std::string moduleName = moduleProxy->getModuleClassName();
 	if( moduleName == "ClientEditionModule")
@@ -194,7 +194,7 @@ void CStringManagerModule::onModuleDown(NLNET::IModuleProxy *moduleProxy)
 	}
 }
 
-bool CStringManagerModule::onProcessModuleMessage(NLNET::IModuleProxy *senderModuleProxy, const NLNET::CMessage &message)
+bool CStringManagerModule::onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message)
 {
 	nlassert(message.isReading());
 

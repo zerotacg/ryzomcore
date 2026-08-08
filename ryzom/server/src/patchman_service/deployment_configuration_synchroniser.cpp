@@ -44,7 +44,7 @@ using namespace DEPCFG;
 // methods CDeploymentConfigurationSynchroniser
 //-----------------------------------------------------------------------------
 
-void CDeploymentConfigurationSynchroniser::requestSync(NLNET::IModuleProxy *sender)
+void CDeploymentConfigurationSynchroniser::requestSync(TModuleProxyPtr sender)
 {
 	// make sure we're initialised
 	nlassert(_Parent!=NULL);

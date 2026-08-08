@@ -44,7 +44,7 @@ public:
 		CIOSRingItfSkel::init(this);
 	}
 
-	virtual void onModuleDown(IModuleProxy *proxy) NL_OVERRIDE
+	virtual void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 	{
 		if (proxy->getModuleClassName() == "ServerEditionModule" && IsRingShard)
 		{

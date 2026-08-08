@@ -52,7 +52,7 @@ namespace LGS
 
 		return handlers;			
 	}
-	bool CLoggerServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CLoggerServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -64,7 +64,7 @@ namespace LGS
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender, message);
+		(this->*cmd)(sender.get(), message);
 
 		return true;
 	}
@@ -95,7 +95,7 @@ namespace LGS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerClient(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, logDef);
+			_LocalModuleSkel->registerClient(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId, logDef);
 		}
 		else
 		{
@@ -113,7 +113,7 @@ namespace LGS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportLog(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), logInfos);
+			_LocalModuleSkel->reportLog(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), logInfos);
 		}
 		else
 		{

@@ -81,11 +81,11 @@ public:
 	~CServerAdminModule() NL_OVERRIDE;
 
 
-	virtual void onModuleUp(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
+	virtual void onModuleUp(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
 
-	virtual void onModuleDown(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
+	virtual void onModuleDown(NLNET::TModuleProxyPtr moduleProxy) NL_OVERRIDE;
 
-	virtual bool onProcessModuleMessage(NLNET::IModuleProxy *senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
+	virtual bool onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
 
 	virtual void onModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) NL_OVERRIDE;
 

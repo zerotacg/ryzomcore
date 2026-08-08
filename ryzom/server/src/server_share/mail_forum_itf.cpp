@@ -52,7 +52,7 @@ namespace MFS
 
 		return handlers;			
 	}
-	bool CMailForumNotifierSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CMailForumNotifierSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -70,15 +70,15 @@ namespace MFS
 	}
 
 	
-	void CMailForumNotifierSkel::notifyMail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CMailForumNotifierSkel::notifyMail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CMailForumNotifierSkel_notifyMail_MFS_NM);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		notifyMail(sender, charId);
+		notifyMail(sender.get(), charId);
 	}
 
-	void CMailForumNotifierSkel::notifyForumMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CMailForumNotifierSkel::notifyForumMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CMailForumNotifierSkel_notifyForumMessage_MFS_NFM);
 		uint32	charId;
@@ -87,7 +87,7 @@ namespace MFS
 			nlRead(__message, serial, guildId);
 		uint32	threadId;
 			nlRead(__message, serial, threadId);
-		notifyForumMessage(sender, charId, guildId, threadId);
+		notifyForumMessage(sender.get(), charId, guildId, threadId);
 	}
 		// A character have received a mail
 	void CMailForumNotifierProxy::notifyMail(NLNET::IModule *sender, uint32 charId)
@@ -95,7 +95,7 @@ namespace MFS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->notifyMail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
+			_LocalModuleSkel->notifyMail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
 		}
 		else
 		{
@@ -114,7 +114,7 @@ namespace MFS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->notifyForumMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, guildId, threadId);
+			_LocalModuleSkel->notifyForumMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, guildId, threadId);
 		}
 		else
 		{

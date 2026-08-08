@@ -55,7 +55,7 @@ public:
 	}
 
 	
-	void onModuleUp(IModuleProxy *proxy) NL_OVERRIDE
+	void onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 	{
 		if (proxy->getModuleClassName() == "ChatUnifierServer")
 		{
@@ -70,7 +70,7 @@ public:
 		}
 	}
 
-	void onModuleDown(IModuleProxy *proxy) NL_OVERRIDE
+	void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 	{
 		if (proxy == _ChatUnifierServer)
 		{

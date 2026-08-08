@@ -1186,7 +1186,6 @@ bool CServerAnimationModule::queueSession(CAnimationSession* session, bool /* ru
 
 void CServerAnimationModule::startTest(TSessionId sessionId, CPersistentDataRecord& pdr)
 {
-
 	CAnimationSession* session = getSession(sessionId);
 	if (!session) { return ; }
 	uint32 aiInstance = session->AiInstance;
@@ -1194,12 +1193,12 @@ void CServerAnimationModule::startTest(TSessionId sessionId, CPersistentDataReco
 	nlinfo( "R2An: startTest for sessionId %u in ai instance %u", sessionId.asInt(), aiInstance );
 
 
-	if (! _CharacterControlProxy.isNull() )
+	if (_CharacterControlProxy)
 	{
 		CCharacterControlItfProxy proxy(_CharacterControlProxy);
   		proxy.sendItemDescription(this,  sessionId, session->MissionItems);
 	}
-	if (_IOSRingProxy != nullptr)
+	if (_IOSRingProxy)
 	{
 		CIOSRingItfProxy proxy(_IOSRingProxy);
 		vector<TCharMappedInfo>	itemInfos;
@@ -1317,14 +1316,12 @@ void CServerAnimationModule::startAct(TSessionId sessionId, uint32 actId)
 	// send position to connected users
 	CAnimationSession* session = getSession(sessionId);
 	BOMB_IF(!session, NLMISC::toString( "Session not found for session %u", sessionId.asInt() ), return);
-	for(uint32 i = 0; i < session->ConnectedChars.size(); ++i)
+	for(auto charId : session->ConnectedChars)
 	{
-		uint32 charId = session->ConnectedChars[i];
-
-		const NLNET::TModuleProxyPtr * pUserModuleProxy = getEditionModule()->getClientProxyPtr(charId);
+		const auto pUserModuleProxy = getEditionModule()->getClientProxyPtr(charId);
 		if (pUserModuleProxy)
 		{
-			if ( !_CharacterControlProxy.isNull())
+			if (_CharacterControlProxy)
 			{
 				CCharacterControlItfProxy ccip( _CharacterControlProxy );
 				ccip.setUserCharActPosition(this, charId, entryPoint, season);
@@ -1332,7 +1329,7 @@ void CServerAnimationModule::startAct(TSessionId sessionId, uint32 actId)
 			addPioneer(sessionId, charId);
 			if (mustTp)
 			{
-				getEditionModule()->tpToEntryPoint(*pUserModuleProxy, actId);
+				getEditionModule()->tpToEntryPoint(pUserModuleProxy->get(), actId);
 			}
 		}
 		else
@@ -2128,7 +2125,7 @@ bool CServerAnimationModule::stopTestImpl(TSessionId sessionId, uint32 & lastAct
 	requestUnloadTable(sessionId);
 	requestReleaseChannels(sessionId);
 
-	if ( !_CharacterControlProxy.isNull())
+	if (_CharacterControlProxy)
 	{
 		CCharacterControlItfProxy proxy(_CharacterControlProxy);
 		proxy.scenarioEnded(this,  sessionId);
@@ -2201,7 +2198,7 @@ void CServerAnimationModule::onModuleUpdate()
 
 }
 
-void CServerAnimationModule::onModuleUp(NLNET::IModuleProxy *senderModuleProxy)
+void CServerAnimationModule::onModuleUp(NLNET::TModuleProxyPtr senderModuleProxy)
 {
 	std::string moduleName = senderModuleProxy->getModuleClassName();
 	// send back a message to the client to open the firewall
@@ -2222,7 +2219,7 @@ void CServerAnimationModule::onModuleUp(NLNET::IModuleProxy *senderModuleProxy)
 }
 
 
-void  CServerAnimationModule::onModuleDown(NLNET::IModuleProxy *senderModuleProxy)
+void  CServerAnimationModule::onModuleDown(NLNET::TModuleProxyPtr senderModuleProxy)
 {
 	std::string moduleName = senderModuleProxy->getModuleClassName();
 
@@ -2243,7 +2240,7 @@ void  CServerAnimationModule::onModuleDown(NLNET::IModuleProxy *senderModuleProx
 		std::string userPriv;
 		std::string extendedPriv;
 
-		bool ok =  getCharInfo(senderModuleProxy, charId, eid, userPriv, extendedPriv);
+		bool ok =  getCharInfo(senderModuleProxy.get(), charId, eid, userPriv, extendedPriv);
 		if (!ok) { return ; }
 
 		TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2284,7 +2281,7 @@ void  CServerAnimationModule::onModuleDown(NLNET::IModuleProxy *senderModuleProx
 				}
 
 				{
-					TCharSessions::iterator found( _CharSessions.find(charId) );
+					auto found( _CharSessions.find(charId) );
 					if (found != _CharSessions.end()) { sessionId = found->second; _CharSessions.erase(found); }
 				}
 			}
@@ -2412,7 +2409,7 @@ CAnimationSession* CServerAnimationModule::getSession(TSessionId sessionId) cons
 }
 
 
-void CServerAnimationModule::connectAnimationModePlay(NLNET::IModuleProxy* proxy)
+void CServerAnimationModule::connectAnimationModePlay(NLNET::TModuleProxyPtr proxy)
 {
 
 	CShareClientEditionItfProxy client(proxy);
@@ -2548,7 +2545,7 @@ void CServerAnimationModule::onDssTarget( IModuleProxy *senderModuleProxy, const
 void CServerAnimationModule::stopTalk(const NLMISC::CEntityId &eid, const NLMISC::CEntityId &/* creatureId */,
 									  TDataSetRow entityRowId)
 {
-	TCharId charId = static_cast<TCharId>(eid.getShortId());
+	auto charId = static_cast<TCharId>(eid.getShortId());
 	const NLNET::TModuleProxyPtr * foundModule = getEditionModule()->getClientProxyPtr(charId);
 	BOMB_IF(foundModule==NULL, "stopTalk failed because getClientProxyPtr() returned NULL for entity "+eid.toString(),return);
 
@@ -2618,7 +2615,7 @@ void CServerAnimationModule::stopControlNpcs(TCharId charId)
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(clientProxyPtr, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(clientProxyPtr.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2676,7 +2673,7 @@ void CServerAnimationModule::stopControlNpcs(TCharId charId)
 
 }
 
-void CServerAnimationModule::askUpdateScenarioHeader(NLNET::IModuleProxy *clientProxyPtr)
+void CServerAnimationModule::askUpdateScenarioHeader(TModuleProxyPtr clientProxyPtr)
 {
 
 	uint32 charId;
@@ -2684,7 +2681,7 @@ void CServerAnimationModule::askUpdateScenarioHeader(NLNET::IModuleProxy *client
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(clientProxyPtr, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(clientProxyPtr.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2697,7 +2694,7 @@ void CServerAnimationModule::askUpdateScenarioHeader(NLNET::IModuleProxy *client
 
 }
 
-void CServerAnimationModule::askIncarnatingListUpdate(NLNET::IModuleProxy *clientProxyPtr)
+void CServerAnimationModule::askIncarnatingListUpdate(TModuleProxyPtr clientProxyPtr)
 {
 
 	uint32 charId;
@@ -2705,7 +2702,7 @@ void CServerAnimationModule::askIncarnatingListUpdate(NLNET::IModuleProxy *clien
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(clientProxyPtr, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(clientProxyPtr.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -2739,14 +2736,14 @@ void CServerAnimationModule::askIncarnatingListUpdate(NLNET::IModuleProxy *clien
 
 }
 
-void CServerAnimationModule::askTalkingAsListUpdate(NLNET::IModuleProxy  *clientProxyPtr)
+void CServerAnimationModule::askTalkingAsListUpdate(TModuleProxyPtr clientProxyPtr)
 {
 	uint32 charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(clientProxyPtr, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(clientProxyPtr.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -3023,7 +3020,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 
 	if (!alived || entityRowId == TDataSetRow() || alias == 0 ||  creatureId == CEntityId::Unknown )
 	{
-		updateAnimationProperties(* foundModule, CEntityId::Unknown, nullptr, nullptr);
+		updateAnimationProperties(foundModule->get(), CEntityId::Unknown, nullptr, nullptr);
 		return;
 	}
 
@@ -3136,7 +3133,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 
 	if (args.empty())
 	{
-		updateAnimationProperties(*foundModule, eid, rtNpc, rtGrp);
+		updateAnimationProperties(foundModule->get(), eid, rtNpc, rtGrp);
 		return;
 	}
 
@@ -3204,7 +3201,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 						*/
 						CAiWrapper::getInstance().askBotDespawnNotification(creatureId, alias);
 
-						updateAnimationProperties(*foundModule, eid, rtNpc, rtGrp);
+						updateAnimationProperties(foundModule->get(), eid, rtNpc, rtGrp);
 					}
 				}
 				else
@@ -3250,7 +3247,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 				stopTalk(eid, bot, entityRowId);
 				removeTalkingAsPlayer(sessionId, bot, eid);
 			}
-			updateAnimationProperties(*foundModule, eid, rtNpc, rtGrp);
+			updateAnimationProperties(foundModule->get(), eid, rtNpc, rtGrp);
 			return;
 		}
 
@@ -3278,7 +3275,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 					_StringManagerProxy->sendModuleMessage(this,msg);
 
 					CAiWrapper::getInstance().askBotDespawnNotification(creatureId, alias);
-					updateAnimationProperties(*foundModule, eid, rtNpc, rtGrp);
+					updateAnimationProperties(foundModule->get(), eid, rtNpc, rtGrp);
 				}
 			}
 			else
@@ -3317,7 +3314,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 			{
 				stopTalk(eid, bot,botDSR);
 				removeTalkingAsPlayer(sessionId, bot, eid);
-				updateAnimationProperties(*foundModule, eid, rtNpc, rtGrp);
+				updateAnimationProperties(foundModule->get(), eid, rtNpc, rtGrp);
 			}
 			return;
 		}
@@ -3337,7 +3334,7 @@ void CServerAnimationModule::characterReady(NLNET::IModuleProxy * /* sender */, 
 
 
 
-bool CServerAnimationModule::onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &msgin)
+bool CServerAnimationModule::onProcessModuleMessage(TModuleProxyPtr senderModuleProxy, const CMessage &msgin)
 {
 	std::string operationName = msgin.getName();
 
@@ -3383,7 +3380,7 @@ bool CServerAnimationModule::onProcessModuleMessage(IModuleProxy *senderModulePr
 		NLMISC::CEntityId clientEid;
 		std::string userPriv;
 		std::string extendedPriv;
-		bool ok =  checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+		bool ok =  checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 		if (!ok) { return true; }
 
 
@@ -3833,14 +3830,14 @@ void CServerAnimationModule::onServiceDown(const std::string &serviceName, TServ
 }
 
 
-void CServerAnimationModule::askMissionItemsDescription(NLNET::IModuleProxy *senderModuleProxy)
+void CServerAnimationModule::askMissionItemsDescription(TModuleProxyPtr senderModuleProxy)
 {
 	uint32 charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -3855,7 +3852,7 @@ void CServerAnimationModule::askMissionItemsDescription(NLNET::IModuleProxy *sen
 
 void CServerAnimationModule::deactivateEasterEggsFromAct(TSessionId scenarioId, uint32 actId)
 {
-	DROP_IF(_CharacterControlProxy.isNull() , "No CharacterControlProxy", return);
+	DROP_IF(_CharacterControlProxy == nullptr , "No CharacterControlProxy", return);
 
 
 	CAnimationSession* session = getSession(scenarioId);
@@ -3896,7 +3893,7 @@ void CServerAnimationModule::deactivateEasterEggsFromAct(TSessionId scenarioId, 
 
 void CServerAnimationModule::deactivateEasterEgg(class NLNET::IModuleProxy * /* aisControl */, uint32 easterEggId, TSessionId scenarioId, uint32 actId)
 {
-	DROP_IF(_CharacterControlProxy.isNull(), "No CharacterControlProxy", return);
+	DROP_IF(_CharacterControlProxy == nullptr, "No CharacterControlProxy", return);
 
 
 	CAnimationSession* session = getSession(scenarioId);
@@ -3925,7 +3922,7 @@ void CServerAnimationModule::deactivateEasterEgg(class NLNET::IModuleProxy * /* 
 
 void CServerAnimationModule::activateEasterEgg(class NLNET::IModuleProxy * /* aisControl */, uint32 easterEggId, TSessionId scenarioId, uint32 actId ,const std::string & items, float x, float y, float z, float heading, const std::string& grpControler, const std::string& name, const std::string& look)
 {
-	DROP_IF(_CharacterControlProxy.isNull(), "No CharacterControlProxy", return);
+	DROP_IF(_CharacterControlProxy == nullptr, "No CharacterControlProxy", return);
 
 	CAnimationSession* session = getSession(scenarioId);
 	DROP_IF(!session, toString("No Session %d", scenarioId.asInt()), return);
@@ -4038,14 +4035,14 @@ void CServerAnimationModule::triggerUserTrigger( TSessionId sessionId, uint32 ac
 
 
 
-void CServerAnimationModule::askActPositionDescriptions(NLNET::IModuleProxy *senderModuleProxy)
+void CServerAnimationModule::askActPositionDescriptions(TModuleProxyPtr senderModuleProxy)
 {
 	uint32 charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -4060,14 +4057,14 @@ void CServerAnimationModule::askActPositionDescriptions(NLNET::IModuleProxy *sen
 
 }
 
-void CServerAnimationModule::askUserTriggerDescriptions(NLNET::IModuleProxy *senderModuleProxy)
+void CServerAnimationModule::askUserTriggerDescriptions(TModuleProxyPtr senderModuleProxy)
 {
 	uint32 charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -4112,7 +4109,7 @@ void CServerAnimationModule::onBotDespawnNotification(NLMISC::CEntityId& creatur
 			const NLNET::TModuleProxyPtr* pClient = getEditionModule()->getClientProxyPtr(charId);
 			if (pClient)
 			{
-					updateAnimationProperties(*pClient, CEntityId::Unknown, nullptr, nullptr);
+					updateAnimationProperties(pClient->get(), CEntityId::Unknown, nullptr, nullptr);
 			}
 		}
 		_TargetedEntities.erase(itTarget);
@@ -4137,7 +4134,7 @@ void CServerAnimationModule::onBotDespawnNotification(NLMISC::CEntityId& creatur
 			const NLNET::TModuleProxyPtr* pClient = getEditionModule()->getClientProxyPtr(charId);
 			if (pClient)
 			{
-					updateAnimationProperties(*pClient, CEntityId::Unknown, nullptr, nullptr);
+					updateAnimationProperties(pClient->get(), CEntityId::Unknown, nullptr, nullptr);
 			}
 		}
 
@@ -4160,7 +4157,7 @@ void CServerAnimationModule::onBotDespawnNotification(NLMISC::CEntityId& creatur
 			const NLNET::TModuleProxyPtr* pClient = getEditionModule()->getClientProxyPtr(charId);
 			if (pClient)
 			{
-				updateAnimationProperties(*pClient, CEntityId::Unknown, nullptr, nullptr);
+				updateAnimationProperties(pClient->get(), CEntityId::Unknown, nullptr, nullptr);
 			}
 		}
 	}
@@ -4191,7 +4188,7 @@ void CServerAnimationModule::onStopNpcControlNotification(NLMISC::CEntityId& cre
 			const NLNET::TModuleProxyPtr* pClient = getEditionModule()->getClientProxyPtr(charId);
 			if (pClient)
 			{
-					updateAnimationProperties(*pClient, CEntityId::Unknown, nullptr, nullptr);
+					updateAnimationProperties(pClient->get(), CEntityId::Unknown, nullptr, nullptr);
 			}
 		}
 	}
@@ -4463,7 +4460,7 @@ void CServerAnimationModule::teleportCharacter(NLNET::IModuleProxy * /* ais */, 
 	{
 		const R2::TR2TpInfos tpInfos; //no tp Infos
 
-		if ( !_CharacterControlProxy.isNull())
+		if (_CharacterControlProxy)
 		{
 			CCharacterControlItfProxy ccip( _CharacterControlProxy );
 			ccip.onTpPositionAsked(this, eid, x, y, z, session->CurrSeason, tpInfos);

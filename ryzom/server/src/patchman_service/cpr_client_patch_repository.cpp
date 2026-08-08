@@ -52,8 +52,8 @@ public:
 
 	// CModuleBase specialisation implementation
 	bool initModule(const NLNET::TParsedCommandLine &initInfo) NL_OVERRIDE;
-	void onModuleUp(NLNET::IModuleProxy *module) NL_OVERRIDE;
-	void onModuleDown(NLNET::IModuleProxy *module) NL_OVERRIDE;
+	void onModuleUp(NLNET::TModuleProxyPtr module) NL_OVERRIDE;
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE;
 //	void onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &msg);
 	void onModuleUpdate() NL_OVERRIDE;
 	std::string buildModuleManifest() const NL_OVERRIDE;
@@ -168,7 +168,7 @@ bool CClientPatchRepository::initModule(const TParsedCommandLine &initInfo)
 	return true;
 }
 
-void CClientPatchRepository::onModuleUp(IModuleProxy *module)
+void CClientPatchRepository::onModuleUp(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleUp(module);
@@ -183,11 +183,11 @@ void CClientPatchRepository::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CClientPatchRepository::onModuleDown(IModuleProxy *module)
+void CClientPatchRepository::onModuleDown(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleDown(module);
-	CFileRepository::onModuleDown(module);
+	CFileRepository::onModuleDown(module.get());
 }
 
 //void CClientPatchRepository::onProcessModuleMessage(IModuleProxy *sender, const CMessage &msg)

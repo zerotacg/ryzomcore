@@ -64,7 +64,7 @@ namespace ENTITYLOC
 
 		return handlers;			
 	}
-	bool CEntityLocatorSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CEntityLocatorSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -82,48 +82,48 @@ namespace ENTITYLOC
 	}
 
 	
-	void CEntityLocatorSkel::initState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::initState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_initState_EL_IS);
 		std::vector < uint32 >	connectedUsers;
 			nlRead(__message, serialCont, connectedUsers);
 		std::vector < TConnectedCharInfo >	connectedChars;
 			nlRead(__message, serialCont, connectedChars);
-		initState(sender, connectedUsers, connectedChars);
+		initState(sender.get(), connectedUsers, connectedChars);
 	}
 
-	void CEntityLocatorSkel::playerConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::playerConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_playerConnected_EL_PC);
 		uint32	userId;
 			nlRead(__message, serial, userId);
-		playerConnected(sender, userId);
+		playerConnected(sender.get(), userId);
 	}
 
-	void CEntityLocatorSkel::playerDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::playerDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_playerDisconnected_EL_PD);
 		uint32	userId;
 			nlRead(__message, serial, userId);
-		playerDisconnected(sender, userId);
+		playerDisconnected(sender.get(), userId);
 	}
 
-	void CEntityLocatorSkel::charConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::charConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_charConnected_EL_CC);
 		NLMISC::CEntityId	charEId;
 			nlRead(__message, serial, charEId);
 		uint32	lastDisconnectionDate;
 			nlRead(__message, serial, lastDisconnectionDate);
-		charConnected(sender, charEId, lastDisconnectionDate);
+		charConnected(sender.get(), charEId, lastDisconnectionDate);
 	}
 
-	void CEntityLocatorSkel::charDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::charDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_charDisconnected_EL_CD);
 		NLMISC::CEntityId	charEId;
 			nlRead(__message, serial, charEId);
-		charDisconnected(sender, charEId);
+		charDisconnected(sender.get(), charEId);
 	}
 		// The locator client send the initial state of active player and character connections
 	void CEntityLocatorProxy::initState(NLNET::IModule *sender, const std::vector < uint32 > &connectedUsers, const std::vector < TConnectedCharInfo > &connectedChars)
@@ -131,7 +131,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->initState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), connectedUsers, connectedChars);
+			_LocalModuleSkel->initState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), connectedUsers, connectedChars);
 		}
 		else
 		{
@@ -149,7 +149,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->playerConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			_LocalModuleSkel->playerConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId);
 		}
 		else
 		{
@@ -167,7 +167,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->playerDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			_LocalModuleSkel->playerDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId);
 		}
 		else
 		{
@@ -185,7 +185,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, lastDisconnectionDate);
+			_LocalModuleSkel->charConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, lastDisconnectionDate);
 		}
 		else
 		{
@@ -203,7 +203,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId);
+			_LocalModuleSkel->charDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId);
 		}
 		else
 		{
@@ -291,7 +291,7 @@ namespace ENTITYLOC
 
 		return handlers;			
 	}
-	bool CEntityLocatorClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CEntityLocatorClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -309,12 +309,12 @@ namespace ENTITYLOC
 	}
 
 	
-	void CEntityLocatorClientSkel::connectionEvents_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorClientSkel::connectionEvents_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorClientSkel_connectionEvents_ELC_CE);
 		std::vector < TCharConnectionEvent >	events;
 			nlRead(__message, serialCont, events);
-		connectionEvents(sender, events);
+		connectionEvents(sender.get(), events);
 	}
 		// The entity locator send a list of connection event to EGS
 	void CEntityLocatorClientProxy::connectionEvents(NLNET::IModule *sender, const std::vector < TCharConnectionEvent > &events)
@@ -322,7 +322,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->connectionEvents(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), events);
+			_LocalModuleSkel->connectionEvents(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), events);
 		}
 		else
 		{

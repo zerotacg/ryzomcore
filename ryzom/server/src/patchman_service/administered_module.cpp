@@ -68,7 +68,7 @@ NLMISC::CSString CAdministeredModuleBase::init(const TParsedCommandLine &initInf
 // methods CAdministeredModuleBase - hooks for methods that this interface implements and that must be called from the parent class
 //-----------------------------------------------------------------------------
 
-void CAdministeredModuleBase::onModuleUp(IModuleProxy *module)
+void CAdministeredModuleBase::onModuleUp(TModuleProxyPtr module)
 {
 	// if the module coming up is an SPM module then we call it 'dad'
 	if (CSString(module->getModuleManifest()).contains(ManifestEntryIsAdministrator))
@@ -78,7 +78,7 @@ void CAdministeredModuleBase::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CAdministeredModuleBase::onModuleDown(IModuleProxy *module)
+void CAdministeredModuleBase::onModuleDown(TModuleProxyPtr module)
 {
 	// if the module going down is an SPM module then remove it from our lists
 	if (_PatchManagers.find(module)!=_PatchManagers.end())
@@ -108,7 +108,7 @@ void CAdministeredModuleBase::onModuleUpdate()
 // methods CAdministeredModuleBase - callbackf for treating module messages
 //-----------------------------------------------------------------------------
 
-void CAdministeredModuleBase::executeCommand(NLNET::IModuleProxy *sender, const NLMISC::CSString &cmdline, const NLMISC::CSString &originator)
+void CAdministeredModuleBase::executeCommand(TModuleProxyPtr sender, const NLMISC::CSString &cmdline, const NLMISC::CSString &originator)
 {
 	// create a displayer to gather the output of the command
 	class SStringDisplayer: public IDisplayer

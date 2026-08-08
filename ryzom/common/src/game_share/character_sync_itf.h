@@ -782,37 +782,37 @@ namespace CHARSYNC
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy * /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CCharacterSyncSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CCharacterSyncSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void addCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void addCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void deleteCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void deleteCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharRespawnPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharRespawnPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharsBestLevel_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharsBestLevel_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharNewbieFlag_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharNewbieFlag_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharAllegiance_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharAllegiance_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharHomeMainlandSessionId_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharHomeMainlandSessionId_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void syncUserChars_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void syncUserChars_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -865,7 +865,7 @@ namespace CHARSYNC
 
 
 	public:
-		CCharacterSyncProxy(NLNET::IModuleProxy *proxy)
+		CCharacterSyncProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -890,7 +890,7 @@ namespace CHARSYNC
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -1267,15 +1267,15 @@ namespace CHARSYNC
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy * /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CNameUnifierSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CNameUnifierSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
@@ -1352,7 +1352,7 @@ namespace CHARSYNC
 
 
 	public:
-		CNameUnifierProxy(NLNET::IModuleProxy *proxy)
+		CNameUnifierProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -1377,7 +1377,7 @@ namespace CHARSYNC
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -1735,15 +1735,15 @@ namespace CHARSYNC
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy * /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
 
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CNameUnifierClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CNameUnifierClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
@@ -1834,7 +1834,7 @@ namespace CHARSYNC
 
 
 	public:
-		CNameUnifierClientProxy(NLNET::IModuleProxy *proxy)
+		CNameUnifierClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -1859,7 +1859,7 @@ namespace CHARSYNC
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -1915,7 +1915,7 @@ namespace CHARSYNC
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -1935,7 +1935,7 @@ namespace CHARSYNC
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}

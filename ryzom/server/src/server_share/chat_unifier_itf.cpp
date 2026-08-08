@@ -48,7 +48,7 @@ namespace CHATUNI
 
 		return handlers;			
 	}
-	bool CChatUnifierSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CChatUnifierSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -66,7 +66,7 @@ namespace CHATUNI
 	}
 
 	
-	void CChatUnifierSkel::sendFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierSkel::sendFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierSkel_sendFarTell_CUSFT);
 		NLMISC::CEntityId	senderCharId;
@@ -77,7 +77,7 @@ namespace CHATUNI
 			nlRead(__message, serial, destName);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		sendFarTell(sender, senderCharId, havePrivilege, destName, text);
+		sendFarTell(sender.get(), senderCharId, havePrivilege, destName, text);
 	}
 		// IOS forward a tell message to the unifier
 		// If IOS can't find the player localy, it forward
@@ -87,7 +87,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sendFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderCharId, havePrivilege, destName, text);
+			_LocalModuleSkel->sendFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderCharId, havePrivilege, destName, text);
 		}
 		else
 		{
@@ -164,7 +164,7 @@ namespace CHATUNI
 
 		return handlers;			
 	}
-	bool CChatUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CChatUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -182,7 +182,7 @@ namespace CHATUNI
 	}
 
 	
-	void CChatUnifierClientSkel::recvFarTellFail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvFarTellFail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvFarTellFail_CURFTF);
 		NLMISC::CEntityId	senderCharId;
@@ -191,10 +191,10 @@ namespace CHATUNI
 			nlRead(__message, serial, destName);
 		TFailInfo	failInfo;
 			nlRead(__message, serial, failInfo);
-		recvFarTellFail(sender, senderCharId, destName, failInfo);
+		recvFarTellFail(sender.get(), senderCharId, destName, failInfo);
 	}
 
-	void CChatUnifierClientSkel::recvFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvFarTell_CURFT);
 		NLMISC::CEntityId	senderCharId;
@@ -207,10 +207,10 @@ namespace CHATUNI
 			nlRead(__message, serial, destName);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		recvFarTell(sender, senderCharId, senderName, havePrivilege, destName, text);
+		recvFarTell(sender.get(), senderCharId, senderName, havePrivilege, destName, text);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat_CURFGC);
 		ucstring	senderName;
@@ -219,10 +219,10 @@ namespace CHATUNI
 			nlRead(__message, serial, guildId);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		farGuildChat(sender, senderName, guildId, text);
+		farGuildChat(sender.get(), senderName, guildId, text);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat2_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat2_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat2_CURFGC2);
 		ucstring	senderName;
@@ -231,10 +231,10 @@ namespace CHATUNI
 			nlRead(__message, serial, guildId);
 		ucstring	phraseName;
 			nlRead(__message, serial, phraseName);
-		farGuildChat2(sender, senderName, guildId, phraseName);
+		farGuildChat2(sender.get(), senderName, guildId, phraseName);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat2Ex_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat2Ex_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat2Ex_CURFGC2E);
 		ucstring	senderName;
@@ -243,10 +243,10 @@ namespace CHATUNI
 			nlRead(__message, serial, guildId);
 		uint32	phraseId;
 			nlRead(__message, serial, phraseId);
-		farGuildChat2Ex(sender, senderName, guildId, phraseId);
+		farGuildChat2Ex(sender.get(), senderName, guildId, phraseId);
 	}
 
-	void CChatUnifierClientSkel::universeBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::universeBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_universeBroadcast_CURUB);
 		ucstring	senderName;
@@ -255,10 +255,10 @@ namespace CHATUNI
 			nlRead(__message, serial, senderHomeSession);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		universeBroadcast(sender, senderName, senderHomeSession, text);
+		universeBroadcast(sender.get(), senderName, senderHomeSession, text);
 	}
 
-	void CChatUnifierClientSkel::dynChanBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::dynChanBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_dynChanBroadcast_CUDCB);
 		NLMISC::CEntityId	chanId;
@@ -267,15 +267,15 @@ namespace CHATUNI
 			nlRead(__message, serial, senderName);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		dynChanBroadcast(sender, chanId, senderName, text);
+		dynChanBroadcast(sender.get(), chanId, senderName, text);
 	}
 
-	void CChatUnifierClientSkel::recvBroadcastMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvBroadcastMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvBroadcastMessage_CURBM);
 		ucstring	message;
 			nlRead(__message, serial, message);
-		recvBroadcastMessage(sender, message);
+		recvBroadcastMessage(sender.get(), message);
 	}
 		// SU send a far tell failure to IOS. This mean that the player is offline or unknow
 	void CChatUnifierClientProxy::recvFarTellFail(NLNET::IModule *sender, const NLMISC::CEntityId &senderCharId, const ucstring &destName, TFailInfo failInfo)
@@ -283,7 +283,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->recvFarTellFail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderCharId, destName, failInfo);
+			_LocalModuleSkel->recvFarTellFail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderCharId, destName, failInfo);
 		}
 		else
 		{
@@ -301,7 +301,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->recvFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderCharId, senderName, havePrivilege, destName, text);
+			_LocalModuleSkel->recvFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderCharId, senderName, havePrivilege, destName, text);
 		}
 		else
 		{
@@ -319,7 +319,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->farGuildChat(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, guildId, text);
+			_LocalModuleSkel->farGuildChat(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, guildId, text);
 		}
 		else
 		{
@@ -337,7 +337,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->farGuildChat2(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, guildId, phraseName);
+			_LocalModuleSkel->farGuildChat2(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, guildId, phraseName);
 		}
 		else
 		{
@@ -355,7 +355,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->farGuildChat2Ex(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, guildId, phraseId);
+			_LocalModuleSkel->farGuildChat2Ex(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, guildId, phraseId);
 		}
 		else
 		{
@@ -373,7 +373,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->universeBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, senderHomeSession, text);
+			_LocalModuleSkel->universeBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, senderHomeSession, text);
 		}
 		else
 		{
@@ -391,7 +391,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->dynChanBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), chanId, senderName, text);
+			_LocalModuleSkel->dynChanBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), chanId, senderName, text);
 		}
 		else
 		{
@@ -409,7 +409,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->recvBroadcastMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), message);
+			_LocalModuleSkel->recvBroadcastMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), message);
 		}
 		else
 		{

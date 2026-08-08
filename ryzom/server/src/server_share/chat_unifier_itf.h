@@ -212,21 +212,21 @@ namespace CHATUNI
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CChatUnifierSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CChatUnifierSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void sendFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sendFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -261,7 +261,7 @@ namespace CHATUNI
 
 
 	public:
-		CChatUnifierProxy(NLNET::IModuleProxy *proxy)
+		CChatUnifierProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -286,7 +286,7 @@ namespace CHATUNI
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -329,35 +329,35 @@ namespace CHATUNI
 
 		// unused interceptors 
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
 		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
 	
 		// process module message interceptor
-		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
 
-		typedef void (CChatUnifierClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef void (CChatUnifierClientSkel::*TMessageHandler)(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void recvFarTellFail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void recvFarTellFail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void recvFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void recvFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void farGuildChat_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void farGuildChat_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void farGuildChat2_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void farGuildChat2_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void farGuildChat2Ex_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void farGuildChat2Ex_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void universeBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void universeBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void dynChanBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void dynChanBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void recvBroadcastMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void recvBroadcastMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -404,7 +404,7 @@ namespace CHATUNI
 
 
 	public:
-		CChatUnifierClientProxy(NLNET::IModuleProxy *proxy)
+		CChatUnifierClientProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -429,7 +429,7 @@ namespace CHATUNI
 		{
 		}
 
-		NLNET::IModuleProxy *getModuleProxy()
+		NLNET::TModuleProxyPtr getModuleProxy()
 		{
 			return _ModuleProxy;
 		}
@@ -463,7 +463,7 @@ namespace CHATUNI
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -482,7 +482,7 @@ namespace CHATUNI
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -501,7 +501,7 @@ namespace CHATUNI
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -520,7 +520,7 @@ namespace CHATUNI
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}
@@ -539,7 +539,7 @@ namespace CHATUNI
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
+				auto proxy = *first;
 
 				proxy->sendModuleMessage(sender, message);
 			}

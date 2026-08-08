@@ -52,7 +52,7 @@ namespace BS
 
 		return handlers;			
 	}
-	bool CBackupServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CBackupServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -70,24 +70,24 @@ namespace BS
 	}
 
 	
-	void CBackupServiceSkel::saveFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceSkel::saveFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceSkel_saveFile_BSSF);
 		std::string	fileName;
 			nlRead(__message, serial, fileName);
 		NLNET::TBinBuffer	data;
 			nlRead(__message, serial, data);
-		saveFile(sender, fileName, data);
+		saveFile(sender.get(), fileName, data);
 	}
 
-	void CBackupServiceSkel::loadFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceSkel::loadFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceSkel_loadFile_BSLF);
 		std::string	fileName;
 			nlRead(__message, serial, fileName);
 		uint32	requestId;
 			nlRead(__message, serial, requestId);
-		loadFile(sender, fileName, requestId);
+		loadFile(sender.get(), fileName, requestId);
 	}
 		// A module ask to save a file in the backup repository
 	void CBackupServiceProxy::saveFile(NLNET::IModule *sender, const std::string &fileName, const NLNET::TBinBuffer &data)
@@ -95,7 +95,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->saveFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName, data);
+			_LocalModuleSkel->saveFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName, data);
 		}
 		else
 		{
@@ -113,7 +113,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->loadFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName, requestId);
+			_LocalModuleSkel->loadFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName, requestId);
 		}
 		else
 		{
@@ -175,7 +175,7 @@ namespace BS
 
 		return handlers;			
 	}
-	bool CBackupServiceClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CBackupServiceClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -193,7 +193,7 @@ namespace BS
 	}
 
 	
-	void CBackupServiceClientSkel::loadFileResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceClientSkel::loadFileResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceClientSkel_loadFileResult_BSLFR);
 		uint32	requestId;
@@ -204,17 +204,17 @@ namespace BS
 			nlRead(__message, serial, fileTimeStamp);
 		NLNET::TBinBuffer	data;
 			nlRead(__message, serial, data);
-		loadFileResult(sender, requestId, fileName, fileTimeStamp, data);
+		loadFileResult(sender.get(), requestId, fileName, fileTimeStamp, data);
 	}
 
-	void CBackupServiceClientSkel::fileUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceClientSkel::fileUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceClientSkel_fileUpdate_BSFU);
 		std::string	fileName;
 			nlRead(__message, serial, fileName);
 		std::vector < std::string >	content;
 			nlRead(__message, serialCont, content);
-		fileUpdate(sender, fileName, content);
+		fileUpdate(sender.get(), fileName, content);
 	}
 		// The BS return for a load file request
 	void CBackupServiceClientProxy::loadFileResult(NLNET::IModule *sender, uint32 requestId, const std::string &fileName, uint32 fileTimeStamp, const NLNET::TBinBuffer &data)
@@ -222,7 +222,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->loadFileResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), requestId, fileName, fileTimeStamp, data);
+			_LocalModuleSkel->loadFileResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), requestId, fileName, fileTimeStamp, data);
 		}
 		else
 		{
@@ -240,7 +240,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->fileUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName, content);
+			_LocalModuleSkel->fileUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName, content);
 		}
 		else
 		{

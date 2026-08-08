@@ -72,7 +72,7 @@ namespace GU
 
 		return handlers;			
 	}
-	bool CGuildUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CGuildUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -90,57 +90,57 @@ namespace GU
 	}
 
 	
-	void CGuildUnifierClientSkel::guildReady_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::guildReady_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_guildReady_GR);
 		guildReady(sender);
 	}
 
-	void CGuildUnifierClientSkel::receiveForeignGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::receiveForeignGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_receiveForeignGuild_RFG);
 		std::vector < CGuildDesc >	guilds;
 			nlRead(__message, serialCont, guilds);
-		receiveForeignGuild(sender, guilds);
+		receiveForeignGuild(sender.get(), guilds);
 	}
 
-	void CGuildUnifierClientSkel::updateMemberList_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::updateMemberList_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_updateMemberList_UML);
 		uint32	guildId;
 			nlRead(__message, serial, guildId);
 		std::vector < CGuildMemberDesc >	members;
 			nlRead(__message, serialCont, members);
-		updateMemberList(sender, guildId, members);
+		updateMemberList(sender.get(), guildId, members);
 	}
 
-	void CGuildUnifierClientSkel::updateMemberInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::updateMemberInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_updateMemberInfo_UMI);
 		uint32	guildId;
 			nlRead(__message, serial, guildId);
 		CGuildMemberDesc	membersInfo;
 			nlRead(__message, serial, membersInfo);
-		updateMemberInfo(sender, guildId, membersInfo);
+		updateMemberInfo(sender.get(), guildId, membersInfo);
 	}
 
-	void CGuildUnifierClientSkel::updateGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::updateGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_updateGuild_UG);
 		CGuildDesc	guildInfo;
 			nlRead(__message, serial, guildInfo);
-		updateGuild(sender, guildInfo);
+		updateGuild(sender.get(), guildInfo);
 	}
 
-	void CGuildUnifierClientSkel::guildDeleted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::guildDeleted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_guildDeleted_GD);
 		uint32	guildId;
 			nlRead(__message, serial, guildId);
-		guildDeleted(sender, guildId);
+		guildDeleted(sender.get(), guildId);
 	}
 
-	void CGuildUnifierClientSkel::messageToGuildMembers_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CGuildUnifierClientSkel::messageToGuildMembers_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CGuildUnifierClientSkel_messageToGuildMembers_MGM);
 		uint32	guildId;
@@ -149,7 +149,7 @@ namespace GU
 			nlRead(__message, serial, messageName);
 		TVectorParamCheck	params;
 			nlRead(__message, serialCont, params);
-		messageToGuildMembers(sender, guildId, messageName, params);
+		messageToGuildMembers(sender.get(), guildId, messageName, params);
 	}
 		// A client says to others clients that it is ready to send/receive guild data
 	void CGuildUnifierClientProxy::guildReady(NLNET::IModule *sender)
@@ -175,7 +175,7 @@ namespace GU
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->receiveForeignGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guilds);
+			_LocalModuleSkel->receiveForeignGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guilds);
 		}
 		else
 		{
@@ -193,7 +193,7 @@ namespace GU
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateMemberList(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId, members);
+			_LocalModuleSkel->updateMemberList(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId, members);
 		}
 		else
 		{
@@ -211,7 +211,7 @@ namespace GU
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateMemberInfo(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId, membersInfo);
+			_LocalModuleSkel->updateMemberInfo(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId, membersInfo);
 		}
 		else
 		{
@@ -229,7 +229,7 @@ namespace GU
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->updateGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildInfo);
+			_LocalModuleSkel->updateGuild(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildInfo);
 		}
 		else
 		{
@@ -247,7 +247,7 @@ namespace GU
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->guildDeleted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId);
+			_LocalModuleSkel->guildDeleted(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId);
 		}
 		else
 		{
@@ -265,7 +265,7 @@ namespace GU
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->messageToGuildMembers(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), guildId, messageName, params);
+			_LocalModuleSkel->messageToGuildMembers(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), guildId, messageName, params);
 		}
 		else
 		{

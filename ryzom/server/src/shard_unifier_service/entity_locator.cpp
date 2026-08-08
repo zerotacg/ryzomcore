@@ -365,7 +365,7 @@ namespace ENTITYLOC
 			elc.connectionEvents(this, connections);
 		}
 
-		virtual void onTrackedModuleDown(IModuleProxy *moduleProxy)
+		virtual void onTrackedModuleDown(ITModuleProxyPtr moduleProxy)
 		{
 			// nothing for now
 		}
