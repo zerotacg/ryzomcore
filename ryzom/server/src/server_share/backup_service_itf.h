@@ -75,9 +75,9 @@ namespace BS
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void saveFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void saveFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void loadFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void loadFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -90,9 +90,9 @@ namespace BS
 		/////////////////////////////////////////////////////////////////
 
 		// A module ask to save a file in the backup repository
-		virtual void saveFile(NLNET::IModuleProxy *sender, const std::string &fileName, const NLNET::TBinBuffer &data) =0;
+		virtual void saveFile(NLNET::TModuleProxyPtr sender, const std::string &fileName, const NLNET::TBinBuffer &data) =0;
 		// A module ask to load a file
-		virtual void loadFile(NLNET::IModuleProxy *sender, const std::string &fileName, uint32 requestId) =0;
+		virtual void loadFile(NLNET::TModuleProxyPtr sender, const std::string &fileName, uint32 requestId) =0;
 
 
 	};
@@ -197,9 +197,9 @@ namespace BS
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void loadFileResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void loadFileResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void fileUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void fileUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -212,9 +212,9 @@ namespace BS
 		/////////////////////////////////////////////////////////////////
 
 		// The BS return for a load file request
-		virtual void loadFileResult(NLNET::IModuleProxy *sender, uint32 requestId, const std::string &fileName, uint32 fileTimeStamp, const NLNET::TBinBuffer &data) =0;
+		virtual void loadFileResult(NLNET::TModuleProxyPtr sender, uint32 requestId, const std::string &fileName, uint32 fileTimeStamp, const NLNET::TBinBuffer &data) =0;
 		// A file listened by the client have been changed, BS resend the file content
-		virtual void fileUpdate(NLNET::IModuleProxy *sender, const std::string &fileName, const std::vector < std::string > &content) =0;
+		virtual void fileUpdate(NLNET::TModuleProxyPtr sender, const std::string &fileName, const std::vector < std::string > &content) =0;
 
 
 	};

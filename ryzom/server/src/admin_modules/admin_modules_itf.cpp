@@ -78,7 +78,7 @@ namespace ADMIN
 	}
 
 
-	void CAdminServiceSkel::upServiceUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::upServiceUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_upServiceUpdate_USU);
 		std::vector < TServiceStatus >	serviceStatus;
@@ -86,7 +86,7 @@ namespace ADMIN
 		upServiceUpdate(sender, serviceStatus);
 	}
 
-	void CAdminServiceSkel::graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_graphUpdate_GU);
 		TGraphDatas	graphDatas;
@@ -94,7 +94,7 @@ namespace ADMIN
 		graphUpdate(sender, graphDatas);
 	}
 
-	void CAdminServiceSkel::highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_highRezGraphUpdate_HRGU);
 		THighRezDatas	graphDatas;
@@ -102,7 +102,7 @@ namespace ADMIN
 		highRezGraphUpdate(sender, graphDatas);
 	}
 
-	void CAdminServiceSkel::commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_commandResult_CR);
 		uint32	commandId;
@@ -119,7 +119,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->upServiceUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), serviceStatus);
+			_LocalModuleSkel->upServiceUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), serviceStatus);
 		}
 		else
 		{
@@ -137,7 +137,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->graphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), graphDatas);
+			_LocalModuleSkel->graphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), graphDatas);
 		}
 		else
 		{
@@ -155,7 +155,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->highRezGraphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), graphDatas);
+			_LocalModuleSkel->highRezGraphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), graphDatas);
 		}
 		else
 		{
@@ -173,7 +173,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->commandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, serviceAlias, result);
+			_LocalModuleSkel->commandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, serviceAlias, result);
 		}
 		else
 		{
@@ -297,7 +297,7 @@ namespace ADMIN
 	}
 
 
-	void CAdminExecutorServiceSkel::setShardOrders_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::setShardOrders_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_setShardOrders_SCO);
 		std::string	shardName;
@@ -307,7 +307,7 @@ namespace ADMIN
 		setShardOrders(sender, shardName, shardOrders);
 	}
 
-	void CAdminExecutorServiceSkel::shutdownShard_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::shutdownShard_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_shutdownShard_SDS);
 		std::string	shardName;
@@ -317,7 +317,7 @@ namespace ADMIN
 		shutdownShard(sender, shardName, delay);
 	}
 
-	void CAdminExecutorServiceSkel::controlCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::controlCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_controlCmd_CC);
 		uint32	commandId;
@@ -329,7 +329,7 @@ namespace ADMIN
 		controlCmd(sender, commandId, serviceAlias, command);
 	}
 
-	void CAdminExecutorServiceSkel::serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_serviceCmd_SCMD);
 		uint32	commandId;
@@ -341,7 +341,7 @@ namespace ADMIN
 		serviceCmd(sender, commandId, serviceAlias, command);
 	}
 
-	void CAdminExecutorServiceSkel::commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_commandResult_CR);
 		uint32	commandId;
@@ -353,7 +353,7 @@ namespace ADMIN
 		commandResult(sender, commandId, serviceAlias, result);
 	}
 
-	void CAdminExecutorServiceSkel::graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_graphUpdate_GU);
 		TGraphDatas	graphDatas;
@@ -361,7 +361,7 @@ namespace ADMIN
 		graphUpdate(sender, graphDatas);
 	}
 
-	void CAdminExecutorServiceSkel::highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_highRezGraphUpdate_HRGU);
 		THighRezDatas	graphDatas;
@@ -369,7 +369,7 @@ namespace ADMIN
 		highRezGraphUpdate(sender, graphDatas);
 	}
 
-	void CAdminExecutorServiceSkel::serviceStatusUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::serviceStatusUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_serviceStatusUpdate_SSU);
 		std::string	status;
@@ -382,7 +382,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->setShardOrders(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardName, shardOrders);
+			_LocalModuleSkel->setShardOrders(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardName, shardOrders);
 		}
 		else
 		{
@@ -400,7 +400,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->shutdownShard(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardName, delay);
+			_LocalModuleSkel->shutdownShard(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardName, delay);
 		}
 		else
 		{
@@ -418,7 +418,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->controlCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, serviceAlias, command);
+			_LocalModuleSkel->controlCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, serviceAlias, command);
 		}
 		else
 		{
@@ -436,7 +436,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, serviceAlias, command);
+			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, serviceAlias, command);
 		}
 		else
 		{
@@ -454,7 +454,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->commandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, serviceAlias, result);
+			_LocalModuleSkel->commandResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, serviceAlias, result);
 		}
 		else
 		{
@@ -472,7 +472,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->graphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), graphDatas);
+			_LocalModuleSkel->graphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), graphDatas);
 		}
 		else
 		{
@@ -490,7 +490,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->highRezGraphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), graphDatas);
+			_LocalModuleSkel->highRezGraphUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), graphDatas);
 		}
 		else
 		{
@@ -508,7 +508,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceStatusUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), status);
+			_LocalModuleSkel->serviceStatusUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), status);
 		}
 		else
 		{
@@ -654,7 +654,7 @@ namespace ADMIN
 	}
 
 
-	void CAdminExecutorServiceClientSkel::serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceClientSkel::serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceClientSkel_serviceCmd_SCMD);
 		uint32	commandId;
@@ -664,7 +664,7 @@ namespace ADMIN
 		serviceCmd(sender, commandId, command);
 	}
 
-	void CAdminExecutorServiceClientSkel::serviceCmdNoReturn_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceClientSkel::serviceCmdNoReturn_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceClientSkel_serviceCmdNoReturn_SCMDNR);
 		std::string	command;
@@ -677,7 +677,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, command);
+			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, command);
 		}
 		else
 		{
@@ -695,7 +695,7 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceCmdNoReturn(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), command);
+			_LocalModuleSkel->serviceCmdNoReturn(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), command);
 		}
 		else
 		{

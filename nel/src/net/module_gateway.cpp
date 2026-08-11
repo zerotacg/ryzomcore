@@ -2336,7 +2336,7 @@ namespace NLNET
 				TPluggedModules::TAToBMap::const_iterator first(_PluggedModules.getAToBMap().begin()), last(_PluggedModules.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					IModule *module = first->second;
+					auto module = first->second;
 					log.displayNL("    ID:%5u : \tName = '%s' \tclass = '%s'",
 						module->getModuleId(),
 						module->getModuleName().c_str(),

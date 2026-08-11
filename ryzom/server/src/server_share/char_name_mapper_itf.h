@@ -208,7 +208,7 @@ namespace CNM
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void mapCharNames_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void mapCharNames_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -221,7 +221,7 @@ namespace CNM
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void mapCharNames(NLNET::IModuleProxy *sender, const std::vector < TCharNameInfo > &charNameInfos) =0;
+		virtual void mapCharNames(NLNET::TModuleProxyPtr sender, const std::vector < TCharNameInfo > &charNameInfos) =0;
 
 
 	};
@@ -321,7 +321,7 @@ namespace CNM
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void charNamesMapped_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charNamesMapped_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -334,7 +334,7 @@ namespace CNM
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void charNamesMapped(NLNET::IModuleProxy *sender, const std::vector < TCharMappedInfo > &charMappedInfos) =0;
+		virtual void charNamesMapped(NLNET::TModuleProxyPtr sender, const std::vector < TCharMappedInfo > &charMappedInfos) =0;
 
 
 	};

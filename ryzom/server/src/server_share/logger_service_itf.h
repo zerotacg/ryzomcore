@@ -945,9 +945,9 @@ namespace LGS
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void registerClient_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerClient_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportLog_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportLog_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -962,9 +962,9 @@ namespace LGS
 		// A logger client register itself wy providing it's definition of 
 		// the log content. It is mandatory that ALL client share
 		// Exactly the same definition of log.
-		virtual void registerClient(NLNET::IModuleProxy *sender, uint32 shardId, const std::vector < TLogDefinition > &logDef) =0;
+		virtual void registerClient(NLNET::TModuleProxyPtr sender, uint32 shardId, const std::vector < TLogDefinition > &logDef) =0;
 		// A client send a log
-		virtual void reportLog(NLNET::IModuleProxy *sender, const std::vector < TLogInfo > &logInfos) =0;
+		virtual void reportLog(NLNET::TModuleProxyPtr sender, const std::vector < TLogInfo > &logInfos) =0;
 
 
 	};

@@ -75,7 +75,7 @@ namespace CMDEXE
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void sendCommand_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sendCommand_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -88,7 +88,7 @@ namespace CMDEXE
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void sendCommand(NLNET::IModuleProxy *sender, const std::string &commandName, const NLMISC::CEntityId &senderEId, bool haveTarget, const NLMISC::CEntityId &targetEId, const std::string &arg) =0;
+		virtual void sendCommand(NLNET::TModuleProxyPtr sender, const std::string &commandName, const NLMISC::CEntityId &senderEId, bool haveTarget, const NLMISC::CEntityId &targetEId, const std::string &arg) =0;
 
 
 	};

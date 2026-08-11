@@ -70,7 +70,7 @@ namespace MFS
 	}
 
 
-	void CMailForumNotifierSkel::notifyMail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CMailForumNotifierSkel::notifyMail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CMailForumNotifierSkel_notifyMail_MFS_NM);
 		uint32	charId;
@@ -78,7 +78,7 @@ namespace MFS
 		notifyMail(sender, charId);
 	}
 
-	void CMailForumNotifierSkel::notifyForumMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CMailForumNotifierSkel::notifyForumMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CMailForumNotifierSkel_notifyForumMessage_MFS_NFM);
 		uint32	charId;
@@ -95,7 +95,7 @@ namespace MFS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->notifyMail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId);
+			_LocalModuleSkel->notifyMail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId);
 		}
 		else
 		{
@@ -114,7 +114,7 @@ namespace MFS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->notifyForumMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charId, guildId, threadId);
+			_LocalModuleSkel->notifyForumMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, guildId, threadId);
 		}
 		else
 		{

@@ -66,7 +66,7 @@ namespace CHATUNI
 	}
 
 
-	void CChatUnifierSkel::sendFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierSkel::sendFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierSkel_sendFarTell_CUSFT);
 		NLMISC::CEntityId	senderCharId;
@@ -87,7 +87,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->sendFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderCharId, havePrivilege, destName, text);
+			_LocalModuleSkel->sendFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderCharId, havePrivilege, destName, text);
 		}
 		else
 		{
@@ -182,7 +182,7 @@ namespace CHATUNI
 	}
 
 
-	void CChatUnifierClientSkel::recvFarTellFail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvFarTellFail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvFarTellFail_CURFTF);
 		NLMISC::CEntityId	senderCharId;
@@ -194,7 +194,7 @@ namespace CHATUNI
 		recvFarTellFail(sender, senderCharId, destName, failInfo);
 	}
 
-	void CChatUnifierClientSkel::recvFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvFarTell_CURFT);
 		NLMISC::CEntityId	senderCharId;
@@ -210,7 +210,7 @@ namespace CHATUNI
 		recvFarTell(sender, senderCharId, senderName, havePrivilege, destName, text);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat_CURFGC);
 		ucstring	senderName;
@@ -222,7 +222,7 @@ namespace CHATUNI
 		farGuildChat(sender, senderName, guildId, text);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat2_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat2_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat2_CURFGC2);
 		ucstring	senderName;
@@ -234,7 +234,7 @@ namespace CHATUNI
 		farGuildChat2(sender, senderName, guildId, phraseName);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat2Ex_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat2Ex_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat2Ex_CURFGC2E);
 		ucstring	senderName;
@@ -246,7 +246,7 @@ namespace CHATUNI
 		farGuildChat2Ex(sender, senderName, guildId, phraseId);
 	}
 
-	void CChatUnifierClientSkel::universeBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::universeBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_universeBroadcast_CURUB);
 		ucstring	senderName;
@@ -258,7 +258,7 @@ namespace CHATUNI
 		universeBroadcast(sender, senderName, senderHomeSession, text);
 	}
 
-	void CChatUnifierClientSkel::dynChanBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::dynChanBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_dynChanBroadcast_CUDCB);
 		NLMISC::CEntityId	chanId;
@@ -270,7 +270,7 @@ namespace CHATUNI
 		dynChanBroadcast(sender, chanId, senderName, text);
 	}
 
-	void CChatUnifierClientSkel::recvBroadcastMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvBroadcastMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvBroadcastMessage_CURBM);
 		ucstring	message;
@@ -283,7 +283,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->recvFarTellFail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderCharId, destName, failInfo);
+			_LocalModuleSkel->recvFarTellFail(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderCharId, destName, failInfo);
 		}
 		else
 		{
@@ -301,7 +301,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->recvFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderCharId, senderName, havePrivilege, destName, text);
+			_LocalModuleSkel->recvFarTell(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderCharId, senderName, havePrivilege, destName, text);
 		}
 		else
 		{
@@ -319,7 +319,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->farGuildChat(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, guildId, text);
+			_LocalModuleSkel->farGuildChat(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, guildId, text);
 		}
 		else
 		{
@@ -337,7 +337,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->farGuildChat2(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, guildId, phraseName);
+			_LocalModuleSkel->farGuildChat2(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, guildId, phraseName);
 		}
 		else
 		{
@@ -355,7 +355,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->farGuildChat2Ex(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, guildId, phraseId);
+			_LocalModuleSkel->farGuildChat2Ex(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, guildId, phraseId);
 		}
 		else
 		{
@@ -373,7 +373,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->universeBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), senderName, senderHomeSession, text);
+			_LocalModuleSkel->universeBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), senderName, senderHomeSession, text);
 		}
 		else
 		{
@@ -391,7 +391,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->dynChanBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), chanId, senderName, text);
+			_LocalModuleSkel->dynChanBroadcast(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), chanId, senderName, text);
 		}
 		else
 		{
@@ -409,7 +409,7 @@ namespace CHATUNI
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->recvBroadcastMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), message);
+			_LocalModuleSkel->recvBroadcastMessage(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), message);
 		}
 		else
 		{

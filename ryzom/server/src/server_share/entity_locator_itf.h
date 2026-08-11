@@ -142,15 +142,15 @@ namespace ENTITYLOC
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void initState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void initState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void playerConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void playerConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void playerDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void playerDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void charConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void charDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -163,15 +163,15 @@ namespace ENTITYLOC
 		/////////////////////////////////////////////////////////////////
 
 		// The locator client send the initial state of active player and character connections
-		virtual void initState(NLNET::IModuleProxy *sender, const std::vector < uint32 > &connectedUsers, const std::vector < TConnectedCharInfo > &connectedChars) =0;
+		virtual void initState(NLNET::TModuleProxyPtr sender, const std::vector < uint32 > &connectedUsers, const std::vector < TConnectedCharInfo > &connectedChars) =0;
 		// A player has connected on a shard
-		virtual void playerConnected(NLNET::IModuleProxy *sender, uint32 userId) =0;
+		virtual void playerConnected(NLNET::TModuleProxyPtr sender, uint32 userId) =0;
 		// A player has disconnected from a shard
-		virtual void playerDisconnected(NLNET::IModuleProxy *sender, uint32 userId) =0;
+		virtual void playerDisconnected(NLNET::TModuleProxyPtr sender, uint32 userId) =0;
 		// A character has connected
-		virtual void charConnected(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, uint32 lastDisconnectionDate) =0;
+		virtual void charConnected(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, uint32 lastDisconnectionDate) =0;
 		// A character has disconnected
-		virtual void charDisconnected(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId) =0;
+		virtual void charDisconnected(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId) =0;
 
 
 	};
@@ -377,7 +377,7 @@ namespace ENTITYLOC
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void connectionEvents_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void connectionEvents_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -390,7 +390,7 @@ namespace ENTITYLOC
 		/////////////////////////////////////////////////////////////////
 
 		// The entity locator send a list of connection event to EGS
-		virtual void connectionEvents(NLNET::IModuleProxy *sender, const std::vector < TCharConnectionEvent > &events) =0;
+		virtual void connectionEvents(NLNET::TModuleProxyPtr sender, const std::vector < TCharConnectionEvent > &events) =0;
 
 
 	};

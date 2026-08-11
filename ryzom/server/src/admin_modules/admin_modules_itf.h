@@ -1757,13 +1757,13 @@ namespace ADMIN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void upServiceUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void upServiceUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1776,13 +1776,13 @@ namespace ADMIN
 		/////////////////////////////////////////////////////////////////
 
 		// An AES send an update of the list of service up
-		virtual void upServiceUpdate(NLNET::IModuleProxy *sender, const std::vector < TServiceStatus > &serviceStatus) =0;
+		virtual void upServiceUpdate(NLNET::TModuleProxyPtr sender, const std::vector < TServiceStatus > &serviceStatus) =0;
 		// An AES send graph data update
-		virtual void graphUpdate(NLNET::IModuleProxy *sender, const TGraphDatas &graphDatas) =0;
+		virtual void graphUpdate(NLNET::TModuleProxyPtr sender, const TGraphDatas &graphDatas) =0;
 		// An AES send high rez graph data update
-		virtual void highRezGraphUpdate(NLNET::IModuleProxy *sender, const THighRezDatas &graphDatas) =0;
+		virtual void highRezGraphUpdate(NLNET::TModuleProxyPtr sender, const THighRezDatas &graphDatas) =0;
 		// AES send back the result of execution of a command
-		virtual void commandResult(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) =0;
+		virtual void commandResult(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) =0;
 
 
 	};
@@ -1897,21 +1897,21 @@ namespace ADMIN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void setShardOrders_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setShardOrders_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void shutdownShard_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void shutdownShard_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void controlCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void controlCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void serviceStatusUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceStatusUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1924,21 +1924,21 @@ namespace ADMIN
 		/////////////////////////////////////////////////////////////////
 
 		// AS send orders for a shard
-		virtual void setShardOrders(NLNET::IModuleProxy *sender, const std::string &shardName, const TShardOrders &shardOrders) =0;
+		virtual void setShardOrders(NLNET::TModuleProxyPtr sender, const std::string &shardName, const TShardOrders &shardOrders) =0;
 		// AS send a command to shutdown a shard with a delay
-		virtual void shutdownShard(NLNET::IModuleProxy *sender, const std::string &shardName, uint32 delay) =0;
+		virtual void shutdownShard(NLNET::TModuleProxyPtr sender, const std::string &shardName, uint32 delay) =0;
 		// AS send a control command to this AES
-		virtual void controlCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
+		virtual void controlCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
 		// Send a command to a service.
-		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
+		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
 		// AES client send back the result of execution of a command
-		virtual void commandResult(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) =0;
+		virtual void commandResult(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) =0;
 		// A service send graph data update
-		virtual void graphUpdate(NLNET::IModuleProxy *sender, const TGraphDatas &graphDatas) =0;
+		virtual void graphUpdate(NLNET::TModuleProxyPtr sender, const TGraphDatas &graphDatas) =0;
 		// A service high rez graph data update
-		virtual void highRezGraphUpdate(NLNET::IModuleProxy *sender, const THighRezDatas &graphDatas) =0;
+		virtual void highRezGraphUpdate(NLNET::TModuleProxyPtr sender, const THighRezDatas &graphDatas) =0;
 		// A service send an update of of it's status string
-		virtual void serviceStatusUpdate(NLNET::IModuleProxy *sender, const std::string &status) =0;
+		virtual void serviceStatusUpdate(NLNET::TModuleProxyPtr sender, const std::string &status) =0;
 
 
 	};
@@ -2124,9 +2124,9 @@ namespace ADMIN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void serviceCmdNoReturn_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void serviceCmdNoReturn_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2139,9 +2139,9 @@ namespace ADMIN
 		/////////////////////////////////////////////////////////////////
 
 		// execute a command and return the result.
-		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &command) =0;
+		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &command) =0;
 		// Send a command to a service without waiting for the return value.
-		virtual void serviceCmdNoReturn(NLNET::IModuleProxy *sender, const std::string &command) =0;
+		virtual void serviceCmdNoReturn(NLNET::TModuleProxyPtr sender, const std::string &command) =0;
 
 
 	};

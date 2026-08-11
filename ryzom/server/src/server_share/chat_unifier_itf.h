@@ -226,7 +226,7 @@ namespace CHATUNI
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void sendFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sendFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -241,7 +241,7 @@ namespace CHATUNI
 		// IOS forward a tell message to the unifier
 		// If IOS can't find the player localy, it forward
 		// the tell to the unifier
-		virtual void sendFarTell(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &senderCharId, bool havePrivilege, const ucstring &destName, const ucstring &text) =0;
+		virtual void sendFarTell(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &senderCharId, bool havePrivilege, const ucstring &destName, const ucstring &text) =0;
 
 
 	};
@@ -343,21 +343,21 @@ namespace CHATUNI
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void recvFarTellFail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void recvFarTellFail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void recvFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void recvFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void farGuildChat_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void farGuildChat_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void farGuildChat2_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void farGuildChat2_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void farGuildChat2Ex_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void farGuildChat2Ex_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void universeBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void universeBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void dynChanBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void dynChanBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void recvBroadcastMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void recvBroadcastMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -370,21 +370,21 @@ namespace CHATUNI
 		/////////////////////////////////////////////////////////////////
 
 		// SU send a far tell failure to IOS. This mean that the player is offline or unknow
-		virtual void recvFarTellFail(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &senderCharId, const ucstring &destName, TFailInfo failInfo) =0;
+		virtual void recvFarTellFail(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &senderCharId, const ucstring &destName, TFailInfo failInfo) =0;
 		// SU send a far tell to the IOS hosting the addresse character
-		virtual void recvFarTell(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &senderCharId, const ucstring &senderName, bool havePrivilege, const ucstring &destName, const ucstring &text) =0;
+		virtual void recvFarTell(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &senderCharId, const ucstring &senderName, bool havePrivilege, const ucstring &destName, const ucstring &text) =0;
 		// IOS forward a guild chat message to the IOS
-		virtual void farGuildChat(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 guildId, const ucstring &text) =0;
+		virtual void farGuildChat(NLNET::TModuleProxyPtr sender, const ucstring &senderName, uint32 guildId, const ucstring &text) =0;
 		// IOS forward a guild chat message to the IOS
-		virtual void farGuildChat2(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 guildId, const ucstring &phraseName) =0;
+		virtual void farGuildChat2(NLNET::TModuleProxyPtr sender, const ucstring &senderName, uint32 guildId, const ucstring &phraseName) =0;
 		// IOS forward a guild chat message to the IOS
-		virtual void farGuildChat2Ex(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 guildId, uint32 phraseId) =0;
+		virtual void farGuildChat2Ex(NLNET::TModuleProxyPtr sender, const ucstring &senderName, uint32 guildId, uint32 phraseId) =0;
 		// IOS forward a univers chat message to the IOSs
-		virtual void universeBroadcast(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 senderHomeSession, const ucstring &text) =0;
+		virtual void universeBroadcast(NLNET::TModuleProxyPtr sender, const ucstring &senderName, uint32 senderHomeSession, const ucstring &text) =0;
 		// IOS forward a dyn chat chat message to the IOSs
-		virtual void dynChanBroadcast(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &chanId, const ucstring &senderName, const ucstring &text) =0;
+		virtual void dynChanBroadcast(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &chanId, const ucstring &senderName, const ucstring &text) =0;
 		// SU send a broadcast message to the IOS
-		virtual void recvBroadcastMessage(NLNET::IModuleProxy *sender, const ucstring &message) =0;
+		virtual void recvBroadcastMessage(NLNET::TModuleProxyPtr sender, const ucstring &message) =0;
 
 
 	};

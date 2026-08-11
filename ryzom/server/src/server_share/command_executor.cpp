@@ -68,7 +68,7 @@ public:
 	///////// CCommandExecutorSkel implementation  ////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////
 
-	void sendCommand(NLNET::IModuleProxy *sender, const std::string &commandName, const NLMISC::CEntityId &senderEId, bool haveTarget, const NLMISC::CEntityId &targetEId, const std::string &arg) NL_OVERRIDE
+	void sendCommand(TModuleProxyPtr sender, const std::string &commandName, const NLMISC::CEntityId &senderEId, bool haveTarget, const NLMISC::CEntityId &targetEId, const std::string &arg) NL_OVERRIDE
 	{
 		// rebuild the command line
 		string cmdLine = commandName+" "+senderEId.toString();

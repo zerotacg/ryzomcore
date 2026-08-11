@@ -70,7 +70,7 @@ namespace BS
 	}
 
 
-	void CBackupServiceSkel::saveFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceSkel::saveFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceSkel_saveFile_BSSF);
 		std::string	fileName;
@@ -80,7 +80,7 @@ namespace BS
 		saveFile(sender, fileName, data);
 	}
 
-	void CBackupServiceSkel::loadFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceSkel::loadFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceSkel_loadFile_BSLF);
 		std::string	fileName;
@@ -95,7 +95,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->saveFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName, data);
+			_LocalModuleSkel->saveFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName, data);
 		}
 		else
 		{
@@ -113,7 +113,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->loadFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName, requestId);
+			_LocalModuleSkel->loadFile(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName, requestId);
 		}
 		else
 		{
@@ -193,7 +193,7 @@ namespace BS
 	}
 
 
-	void CBackupServiceClientSkel::loadFileResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceClientSkel::loadFileResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceClientSkel_loadFileResult_BSLFR);
 		uint32	requestId;
@@ -207,7 +207,7 @@ namespace BS
 		loadFileResult(sender, requestId, fileName, fileTimeStamp, data);
 	}
 
-	void CBackupServiceClientSkel::fileUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CBackupServiceClientSkel::fileUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CBackupServiceClientSkel_fileUpdate_BSFU);
 		std::string	fileName;
@@ -222,7 +222,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->loadFileResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), requestId, fileName, fileTimeStamp, data);
+			_LocalModuleSkel->loadFileResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), requestId, fileName, fileTimeStamp, data);
 		}
 		else
 		{
@@ -240,7 +240,7 @@ namespace BS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->fileUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), fileName, content);
+			_LocalModuleSkel->fileUpdate(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), fileName, content);
 		}
 		else
 		{

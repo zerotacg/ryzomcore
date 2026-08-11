@@ -189,29 +189,29 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void getStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void getStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void askSetUserCharActPosition_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void askSetUserCharActPosition_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void activateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void activateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void dssMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void dssMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setScenarioPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setScenarioPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void startScenarioTiming_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void startScenarioTiming_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void endScenarioTiming_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void endScenarioTiming_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void deactivateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void deactivateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onEasterEggLooted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onEasterEggLooted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onCharTargetReceived_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onCharTargetReceived_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void characterReady_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void characterReady_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -226,30 +226,30 @@ namespace R2
 		// Ask for the position, season and adventure mode of a connecting character
 		// The reply will either give a new position or tell to load the last stored one
 		// Used by the EGS of a Ring shard to send the start position to a connecting client
-		virtual void getStartParams(NLNET::IModuleProxy *sender, uint32 charId, TSessionId lastStoredSessionId) =0;
+		virtual void getStartParams(NLNET::TModuleProxyPtr sender, uint32 charId, TSessionId lastStoredSessionId) =0;
 		// Ask to server animation module to re-send usre char entry point
 		// The reply call CCharacterControlItf::setUserCharActPosition
-		virtual void askSetUserCharActPosition(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void askSetUserCharActPosition(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// AIS Message to activate a scenario generated easter egg
-		virtual void activateEasterEgg(NLNET::IModuleProxy *sender, uint32 easterEggId, TSessionId scenarioId, uint32 actId, const std::string &items, float x, float y, float z, float heading, const std::string &grpCtrl, const std::string &name, const std::string &look) =0;
+		virtual void activateEasterEgg(NLNET::TModuleProxyPtr sender, uint32 easterEggId, TSessionId scenarioId, uint32 actId, const std::string &items, float x, float y, float z, float heading, const std::string &grpCtrl, const std::string &name, const std::string &look) =0;
 		// AIS Message to make the dss send a message
-		virtual void dssMessage(NLNET::IModuleProxy *sender, TSessionId sessionId, const std::string &mode, const std::string &who, const std::string &msg) =0;
+		virtual void dssMessage(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const std::string &mode, const std::string &who, const std::string &msg) =0;
 		// AIS Message to make the dss set the scenario points
-		virtual void setScenarioPoints(NLNET::IModuleProxy *sender, TSessionId sessionId, float scenarioPoints) =0;
+		virtual void setScenarioPoints(NLNET::TModuleProxyPtr sender, TSessionId sessionId, float scenarioPoints) =0;
 		// AIS Message to make the dss start scenario timing
-		virtual void startScenarioTiming(NLNET::IModuleProxy *sender, TSessionId sessionId) =0;
+		virtual void startScenarioTiming(NLNET::TModuleProxyPtr sender, TSessionId sessionId) =0;
 		// AIS Message to make the dss end scenario timing
-		virtual void endScenarioTiming(NLNET::IModuleProxy *sender, TSessionId sessionId) =0;
+		virtual void endScenarioTiming(NLNET::TModuleProxyPtr sender, TSessionId sessionId) =0;
 		// AIS Message to activate a scenario generated easter egg
-		virtual void deactivateEasterEgg(NLNET::IModuleProxy *sender, uint32 easterEggId, TSessionId scenarioId, uint32 actId) =0;
+		virtual void deactivateEasterEgg(NLNET::TModuleProxyPtr sender, uint32 easterEggId, TSessionId scenarioId, uint32 actId) =0;
 		// EGS Message to indicates that an easter egg is looted
-		virtual void onEasterEggLooted(NLNET::IModuleProxy *sender, uint32 eggId, TSessionId scenarioId) =0;
+		virtual void onEasterEggLooted(NLNET::TModuleProxyPtr sender, uint32 eggId, TSessionId scenarioId) =0;
 		// EGS message to indicates info of the target of a player
-		virtual void onCharTargetReceived(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &eid, const NLMISC::CEntityId &creatureId, uint32 creatureAlias, TDataSetRow creatureRowId, const ucstring &name, uint32 nameId, const std::vector<std::string> &params, bool alived) =0;
+		virtual void onCharTargetReceived(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &eid, const NLMISC::CEntityId &creatureId, uint32 creatureAlias, TDataSetRow creatureRowId, const ucstring &name, uint32 nameId, const std::vector<std::string> &params, bool alived) =0;
 		// AIS message to ask the dss to teleport a character to a position
-		virtual void teleportCharacter(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &player, float x, float y, float z) =0;
+		virtual void teleportCharacter(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &player, float x, float y, float z) =0;
 		// EGS message to indicates that a character is ready in mirror
-		virtual void characterReady(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEid) =0;
+		virtual void characterReady(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEid) =0;
 
 
 	};
@@ -407,57 +407,57 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void setUserCharStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setUserCharStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void charJoinAnimSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charJoinAnimSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void charLeaveAnimSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void charLeaveAnimSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setUserCharActPosition_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setUserCharActPosition_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void animSessionStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void animSessionStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void animSessionEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void animSessionEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void sendItemDescription_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sendItemDescription_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void activateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void activateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void deactivateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void deactivateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void deactivateEasterEggs_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void deactivateEasterEggs_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void sendCharTargetToDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sendCharTargetToDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onTpPositionAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onTpPositionAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void disconnectChar_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void disconnectChar_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void returnToPreviousSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void returnToPreviousSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setPioneerRight_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setPioneerRight_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportCharacterToNpc_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportCharacterToNpc_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setUserCharCurrentSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setUserCharCurrentSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportLinkedSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportLinkedSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportUnlinkedSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportUnlinkedSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void giveRewardMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void giveRewardMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportNpcControl_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportNpcControl_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportStopNpcControl_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportStopNpcControl_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void subscribeCharacterInRingUniverse_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void subscribeCharacterInRingUniverse_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void unsubscribeCharacterInRingUniverse_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void unsubscribeCharacterInRingUniverse_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -472,59 +472,59 @@ namespace R2
 		// The reply of CServerAnimationItf::getStartParams. If reloadPos is true,
 		// the character will start from his current saved pos, otherwise the character
 		// will start at farPos. In all cases farPos is the respawn point to set.
-		virtual void setUserCharStartParams(NLNET::IModuleProxy *sender, uint32 charId, const CFarPosition &farPos, bool reloadPos, uint8 scenarioSeason, R2::TUserRole role) =0;
+		virtual void setUserCharStartParams(NLNET::TModuleProxyPtr sender, uint32 charId, const CFarPosition &farPos, bool reloadPos, uint8 scenarioSeason, R2::TUserRole role) =0;
 		// A character enter an anim session as player
-		virtual void charJoinAnimSession(NLNET::IModuleProxy *sender, uint32 charId, uint32 sessionId) =0;
+		virtual void charJoinAnimSession(NLNET::TModuleProxyPtr sender, uint32 charId, uint32 sessionId) =0;
 		// A character leave an anim session as player
-		virtual void charLeaveAnimSession(NLNET::IModuleProxy *sender, uint32 charId, uint32 sessionId) =0;
+		virtual void charLeaveAnimSession(NLNET::TModuleProxyPtr sender, uint32 charId, uint32 sessionId) =0;
 		// The reply of CServerAnimationItf::startAct telling to teleport user
-		virtual void setUserCharActPosition(NLNET::IModuleProxy *sender, uint32 charId, const CFarPosition &farPos, uint8 season) =0;
+		virtual void setUserCharActPosition(NLNET::TModuleProxyPtr sender, uint32 charId, const CFarPosition &farPos, uint8 season) =0;
 		// A DSS to EGS signal that an anim session is started
-		virtual void animSessionStarted(NLNET::IModuleProxy *sender, TSessionId sessionId, const TRunningScenarioInfo &scenarioInfo) =0;
+		virtual void animSessionStarted(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const TRunningScenarioInfo &scenarioInfo) =0;
 		// A DSS to EGS signal that an anim session is ended
-		virtual void animSessionEnded(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 scenarioScore, NLMISC::TTime timeTaken) =0;
+		virtual void animSessionEnded(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 scenarioScore, NLMISC::TTime timeTaken) =0;
 		// A DSS Message to signal that a session is ended
-		virtual void scenarioEnded(NLNET::IModuleProxy *sender, TSessionId sessionId) =0;
+		virtual void scenarioEnded(NLNET::TModuleProxyPtr sender, TSessionId sessionId) =0;
 		// A DSS Message to register mission item of a scenario
-		virtual void sendItemDescription(NLNET::IModuleProxy *sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItem) =0;
+		virtual void sendItemDescription(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItem) =0;
 		// AIS Message to activate a scenario generated easter egg
-		virtual void activateEasterEgg(NLNET::IModuleProxy *sender, uint32 easterEggId, TSessionId scenarioId, uint32 aiInstanceId, const std::vector<R2::TItemAndQuantity> &items, const CFarPosition &pos, const std::string &name, const std::string &look) =0;
+		virtual void activateEasterEgg(NLNET::TModuleProxyPtr sender, uint32 easterEggId, TSessionId scenarioId, uint32 aiInstanceId, const std::vector<R2::TItemAndQuantity> &items, const CFarPosition &pos, const std::string &name, const std::string &look) =0;
 		// AIS Message to deactivate a scenario generated easter egg
-		virtual void deactivateEasterEgg(NLNET::IModuleProxy *sender, uint32 easterEggId, TSessionId scenarioId) =0;
+		virtual void deactivateEasterEgg(NLNET::TModuleProxyPtr sender, uint32 easterEggId, TSessionId scenarioId) =0;
 		// AIS Message to deactivate a multiple easterEgg scenario generated easter egg
-		virtual void deactivateEasterEggs(NLNET::IModuleProxy *sender, const std::set<uint32> &items, TSessionId scenarioId) =0;
+		virtual void deactivateEasterEggs(NLNET::TModuleProxyPtr sender, const std::set<uint32> &items, TSessionId scenarioId) =0;
 		// DSS message to ask info of the target of a player
-		virtual void sendCharTargetToDss(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &eid, const std::vector<std::string> &params) =0;
+		virtual void sendCharTargetToDss(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &eid, const std::vector<std::string> &params) =0;
 		// DSS message to ask the tp of a pioneer
-		virtual void onTpPositionAsked(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &eid, float x, float y, float z, uint8 season, const R2::TR2TpInfos &teleportInfos) =0;
+		virtual void onTpPositionAsked(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &eid, float x, float y, float z, uint8 season, const R2::TR2TpInfos &teleportInfos) =0;
 		// DSS message to ask to disconnect a char
-		virtual void disconnectChar(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void disconnectChar(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// DSS message to ask the egs to return a player to mainland
-		virtual void returnToPreviousSession(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void returnToPreviousSession(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// DSS message to ask the egs to set DM righ (aggro, visible, god)
-		virtual void setPioneerRight(NLNET::IModuleProxy *sender, uint32 charId, bool isDM) =0;
+		virtual void setPioneerRight(NLNET::TModuleProxyPtr sender, uint32 charId, bool isDM) =0;
 		// DSS message to ask the egs to teleport a character to another character
-		virtual void teleportOneCharacterToAnother(NLNET::IModuleProxy *sender, uint32 sourceId, uint32 destId, uint8 season) =0;
+		virtual void teleportOneCharacterToAnother(NLNET::TModuleProxyPtr sender, uint32 sourceId, uint32 destId, uint8 season) =0;
 		// DSS message to ask the egs to teleport a character to a npc
-		virtual void teleportCharacterToNpc(NLNET::IModuleProxy *sender, uint32 sourceId, const NLMISC::CEntityId &destEid, uint8 season) =0;
+		virtual void teleportCharacterToNpc(NLNET::TModuleProxyPtr sender, uint32 sourceId, const NLMISC::CEntityId &destEid, uint8 season) =0;
 		// DSS message to update the respawn point
-		virtual void setUserCharCurrentSession(NLNET::IModuleProxy *sender, uint32 charId, TSessionId oldSessionId, const CFarPosition &respawnPoint, R2::TUserRole role) =0;
+		virtual void setUserCharCurrentSession(NLNET::TModuleProxyPtr sender, uint32 charId, TSessionId oldSessionId, const CFarPosition &respawnPoint, R2::TUserRole role) =0;
 		// DSS message to indicates to the egs that session may be linked
-		virtual void reportLinkedSession(NLNET::IModuleProxy *sender, TSessionId editionSession, TSessionId animationSession) =0;
+		virtual void reportLinkedSession(NLNET::TModuleProxyPtr sender, TSessionId editionSession, TSessionId animationSession) =0;
 		// DSS message to indicates to the egs that linked session are no more linked
-		virtual void reportUnlinkedSession(NLNET::IModuleProxy *sender, TSessionId editionSession, TSessionId animationSession) =0;
+		virtual void reportUnlinkedSession(NLNET::TModuleProxyPtr sender, TSessionId editionSession, TSessionId animationSession) =0;
 		// AIS Message to give some reward to the player
-		virtual void giveRewardMessage(NLNET::IModuleProxy *sender, TDataSetRow characterRowId, TDataSetRow creatureRowId, const std::string &rewardText, const std::string &rareRewardText, const std::string &inventoryFullText, const std::string &notEnoughPointsText) =0;
+		virtual void giveRewardMessage(NLNET::TModuleProxyPtr sender, TDataSetRow characterRowId, TDataSetRow creatureRowId, const std::string &rewardText, const std::string &rareRewardText, const std::string &inventoryFullText, const std::string &notEnoughPointsText) =0;
 		// AIS Message to indicates that a bot is being controled
-		virtual void reportNpcControl(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &playerEid, const NLMISC::CEntityId &botEid) =0;
+		virtual void reportNpcControl(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &playerEid, const NLMISC::CEntityId &botEid) =0;
 		// AIS Message to indicates that a bot is stop being controled
-		virtual void reportStopNpcControl(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &playerEid, const NLMISC::CEntityId &botEid) =0;
+		virtual void reportStopNpcControl(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &playerEid, const NLMISC::CEntityId &botEid) =0;
 		// DSS ask to put a character in the ring universe channel
 		// This is for editors and animator characters only
-		virtual void subscribeCharacterInRingUniverse(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void subscribeCharacterInRingUniverse(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// DSS ask to remove a character from the ring universe channel
 		// This is for editors and animator characters only
-		virtual void unsubscribeCharacterInRingUniverse(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void unsubscribeCharacterInRingUniverse(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 
 
 	};
@@ -915,13 +915,13 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void reportDeletedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportDeletedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportHibernatedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportHibernatedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportSavedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportSavedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void registerDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -934,13 +934,13 @@ namespace R2
 		/////////////////////////////////////////////////////////////////
 
 		// DSS message to report session backup that have been deleteed
-		virtual void reportDeletedSessions(NLNET::IModuleProxy *sender, const std::vector<TSessionId> &sessionIds) =0;
+		virtual void reportDeletedSessions(NLNET::TModuleProxyPtr sender, const std::vector<TSessionId> &sessionIds) =0;
 		// DSS message to report session backup that have been hibernated
-		virtual void reportHibernatedSessions(NLNET::IModuleProxy *sender, const std::vector<TSessionId> &sessionIds) =0;
+		virtual void reportHibernatedSessions(NLNET::TModuleProxyPtr sender, const std::vector<TSessionId> &sessionIds) =0;
 		// DSS message to report session backup that have been deleteed
-		virtual void reportSavedSessions(NLNET::IModuleProxy *sender, const std::vector< TR2SbmSessionInfo > &sessionInfos) =0;
+		virtual void reportSavedSessions(NLNET::TModuleProxyPtr sender, const std::vector< TR2SbmSessionInfo > &sessionInfos) =0;
 		// DSS message to register itself to the R2SBM
-		virtual void registerDss(NLNET::IModuleProxy *sender, TShardId shardId) =0;
+		virtual void registerDss(NLNET::TModuleProxyPtr sender, TShardId shardId) =0;
 
 
 	};

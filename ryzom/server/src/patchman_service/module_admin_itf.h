@@ -83,13 +83,13 @@ namespace PATCHMAN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void setupSubscriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setupSubscriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void cbFileInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void cbFileInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void cbFileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void cbFileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void cbFileDataFailure_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void cbFileDataFailure_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -102,13 +102,13 @@ namespace PATCHMAN
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void setupSubscriptions(NLNET::IModuleProxy *sender) =0;
+		virtual void setupSubscriptions(NLNET::TModuleProxyPtr sender) =0;
 		// 
-		virtual void cbFileInfo(NLNET::IModuleProxy *sender, const TFileInfoVector &files) =0;
+		virtual void cbFileInfo(NLNET::TModuleProxyPtr sender, const TFileInfoVector &files) =0;
 		// 
-		virtual void cbFileData(NLNET::IModuleProxy *sender, const std::string &fileName, uint32 startOffset, const NLNET::TBinBuffer &data) =0;
+		virtual void cbFileData(NLNET::TModuleProxyPtr sender, const std::string &fileName, uint32 startOffset, const NLNET::TBinBuffer &data) =0;
 		// 
-		virtual void cbFileDataFailure(NLNET::IModuleProxy *sender, const std::string &fileName) =0;
+		virtual void cbFileDataFailure(NLNET::TModuleProxyPtr sender, const std::string &fileName) =0;
 
 
 	};
@@ -223,17 +223,17 @@ namespace PATCHMAN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void requestFileInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestFileInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void requestFileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestFileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void getInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void getInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void subscribe_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void subscribe_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void unsubscribe_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void unsubscribe_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void unsubscribeAll_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void unsubscribeAll_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -246,18 +246,18 @@ namespace PATCHMAN
 		/////////////////////////////////////////////////////////////////
 
 		// Request info concerning a particular file
-		virtual void requestFileInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName) =0;
+		virtual void requestFileInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileName) =0;
 		// Request a data block for a particular file
-		virtual void requestFileData(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) =0;
+		virtual void requestFileData(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileName, uint32 startOffset, uint32 numBytes) =0;
 		// Ask for the info concerning files matching given filespec
-		virtual void getInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) =0;
+		virtual void getInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) =0;
 		// Ask for the info concerning files matching given filespec to be forwarded to me now
 		// and for updates to be sent to me as they are generated
-		virtual void subscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) =0;
+		virtual void subscribe(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) =0;
 		// Cancel subscription for given filespec
-		virtual void unsubscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) =0;
+		virtual void unsubscribe(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) =0;
 		// Cancel all subscriptions for given filespec
-		virtual void unsubscribeAll(NLNET::IModuleProxy *sender) =0;
+		virtual void unsubscribeAll(NLNET::TModuleProxyPtr sender) =0;
 
 
 	};
@@ -383,11 +383,11 @@ namespace PATCHMAN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void executeCommand_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executeCommand_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void installVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void installVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void launchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void launchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -401,11 +401,11 @@ namespace PATCHMAN
 
 		// 
 		// Message sent by SPM module to request execution of a command
-		virtual void executeCommand(NLNET::IModuleProxy *sender, const NLMISC::CSString &originator, const NLMISC::CSString &cmdline) =0;
+		virtual void executeCommand(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &originator, const NLMISC::CSString &cmdline) =0;
 		// 
-		virtual void installVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version) =0;
+		virtual void installVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) =0;
 		// 
-		virtual void launchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version) =0;
+		virtual void launchVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) =0;
 
 
 	};
@@ -516,23 +516,23 @@ namespace PATCHMAN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void declareState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareModuleDown_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareModuleDown_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareVersionName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareVersionName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareDomainInfo_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareDomainInfo_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void ackVersionChange_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void ackVersionChange_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setInstallVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setInstallVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setLaunchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setLaunchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executedCommandAck_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executedCommandAck_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executedCommandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executedCommandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -548,31 +548,31 @@ namespace PATCHMAN
 		// Message sent by SPM module to declare the state of a named module
 		// This message is sent by the SPM for each connected SP / RE / RR type module on connection of SPT to SPM
 		// This message is also sent by the SPM for each type the SPM receives a state update from a SP / RE / RR type module
-		virtual void declareState(NLNET::IModuleProxy *sender, const NLMISC::CSString &moduleName, const NLMISC::CSString &state) =0;
+		virtual void declareState(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &moduleName, const NLMISC::CSString &state) =0;
 		// 
 		// Message sent by SPM module to declare module down for a connected SPA / SPR / SPB type module
-		virtual void declareModuleDown(NLNET::IModuleProxy *sender, const NLMISC::CSString &moduleName) =0;
+		virtual void declareModuleDown(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &moduleName) =0;
 		// 
 		// Message sent by SPM module to define a named version
-		virtual void declareVersionName(NLNET::IModuleProxy *sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion) =0;
+		virtual void declareVersionName(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion) =0;
 		// 
 		// Message sent by SPM module to give info on a named domain
-		virtual void declareDomainInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 installVersion, uint32 launchVersion) =0;
+		virtual void declareDomainInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 installVersion, uint32 launchVersion) =0;
 		// 
 		// Message sent by SPM module to acknowledge a version change attempt
-		virtual void ackVersionChange(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, bool success, const NLMISC::CSString &comment) =0;
+		virtual void ackVersionChange(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domainName, bool success, const NLMISC::CSString &comment) =0;
 		// 
 		// Message sent by SPM to inform us of the current installed version for a given domain
-		virtual void setInstallVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domain, uint32 version) =0;
+		virtual void setInstallVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domain, uint32 version) =0;
 		// 
 		// Message sent by SPM to inform us of the current live version for a given domain
-		virtual void setLaunchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domain, uint32 version) =0;
+		virtual void setLaunchVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domain, uint32 version) =0;
 		// 
 		// Message sent by SPM with result of command issuued via executeCommandOnModules()
-		virtual void executedCommandAck(NLNET::IModuleProxy *sender, const NLMISC::CSString &result) =0;
+		virtual void executedCommandAck(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &result) =0;
 		// 
 		// Message sent by SPM with result of command issuued via executeCommandOnModules()
-		virtual void executedCommandResult(NLNET::IModuleProxy *sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result) =0;
+		virtual void executedCommandResult(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result) =0;
 
 
 	};
@@ -723,21 +723,21 @@ namespace PATCHMAN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void registerAdministeredModule_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerAdministeredModule_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void requestRefresh_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestRefresh_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setInstallVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setInstallVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setLaunchVersion_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setLaunchVersion_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void declareVersionName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void declareVersionName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executeCommandOnModules_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executeCommandOnModules_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void executedCommandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void executedCommandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -751,32 +751,32 @@ namespace PATCHMAN
 
 		// 
 		// Message sent by an administered module to register
-		virtual void registerAdministeredModule(NLNET::IModuleProxy *sender, bool requireApplierUpdates, bool requireTerminalUpdates, bool requireDepCfgUpdates, bool isAdministered) =0;
+		virtual void registerAdministeredModule(NLNET::TModuleProxyPtr sender, bool requireApplierUpdates, bool requireTerminalUpdates, bool requireDepCfgUpdates, bool isAdministered) =0;
 		// 
 		// Message sent by SPT module to request a refresh of state info etc
-		virtual void requestRefresh(NLNET::IModuleProxy *sender) =0;
+		virtual void requestRefresh(NLNET::TModuleProxyPtr sender) =0;
 		// 
 		// Message sent by SPT module to request a change of install version for a given domain
 		// This message is forwarded to all SPA modules of the given domain
-		virtual void setInstallVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domain, uint32 version) =0;
+		virtual void setInstallVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domain, uint32 version) =0;
 		// 
 		// Message sent by SPT module to request a change of launch version for a given domain
 		// This message is forwarded to all SPA modules of the given domain
-		virtual void setLaunchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domain, uint32 version) =0;
+		virtual void setLaunchVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domain, uint32 version) =0;
 		// 
 		// Message sent by SPR / SPB / SPA type modules to declare their states
 		// This message is forwarded to all connected SPT modules
-		virtual void declareState(NLNET::IModuleProxy *sender, const NLMISC::CSString &state) =0;
+		virtual void declareState(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &state) =0;
 		// 
 		// Message sent by SPT module to define a new named version
-		virtual void declareVersionName(NLNET::IModuleProxy *sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion) =0;
+		virtual void declareVersionName(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion) =0;
 		// 
 		// Message sent by SPT module to request execution of a command on one or more modules
 		// Note that the 'target' parameter may be a wildcard
-		virtual void executeCommandOnModules(NLNET::IModuleProxy *sender, const NLMISC::CSString &target, const NLMISC::CSString &commandline) =0;
+		virtual void executeCommandOnModules(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &target, const NLMISC::CSString &commandline) =0;
 		// 
 		// Message with result of command issuued via executeCommandOnSPA()
-		virtual void executedCommandResult(NLNET::IModuleProxy *sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result) =0;
+		virtual void executedCommandResult(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result) =0;
 
 
 	};
@@ -923,9 +923,9 @@ namespace PATCHMAN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void requestSync_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void requestSync_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void sync_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sync_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -939,10 +939,10 @@ namespace PATCHMAN
 
 		// 
 		// Request for a copy of another module's CDeploymentConfiguration singleton
-		virtual void requestSync(NLNET::IModuleProxy *sender) =0;
+		virtual void requestSync(NLNET::TModuleProxyPtr sender) =0;
 		// 
 		// A copy of the data from the CDeploymentConfiguration singleton
-		virtual void sync(NLNET::IModuleProxy *sender, const NLNET::TBinBuffer &dataBlob) =0;
+		virtual void sync(NLNET::TModuleProxyPtr sender, const NLNET::TBinBuffer &dataBlob) =0;
 
 
 	};

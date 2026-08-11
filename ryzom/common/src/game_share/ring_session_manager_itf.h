@@ -2053,17 +2053,17 @@ namespace RSMGR
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void registerDSS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerDSS_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void sessionCreated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void sessionCreated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportSessionEvent_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportSessionEvent_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void scenarioStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void scenarioStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void reportCharacterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportCharacterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2077,20 +2077,20 @@ namespace RSMGR
 
 		// A edition or animation server module register in the session manager
 		// It send the list of session hosted in the server
-		virtual void registerDSS(NLNET::IModuleProxy *sender, uint32 shardId, const std::vector < TRunningSessionInfo > &runningSessions) =0;
+		virtual void registerDSS(NLNET::TModuleProxyPtr sender, uint32 shardId, const std::vector < TRunningSessionInfo > &runningSessions) =0;
 		// The session server report a session creation.
-		virtual void sessionCreated(NLNET::IModuleProxy *sender, const RSMGR::TRunningSessionInfo &sessionInfo) =0;
+		virtual void sessionCreated(NLNET::TModuleProxyPtr sender, const RSMGR::TRunningSessionInfo &sessionInfo) =0;
 		// The session report an event.
 		// charId is used only when the event is about a character.
-		virtual void reportSessionEvent(NLNET::IModuleProxy *sender, RSMGR::TSessionEvent event, TSessionId sessionId, uint32 charId) =0;
+		virtual void reportSessionEvent(NLNET::TModuleProxyPtr sender, RSMGR::TSessionEvent event, TSessionId sessionId, uint32 charId) =0;
 		// The DSS report that an animation scenario has just started
 		// this allow SU to create the session log and scenario info record if needed.
-		virtual void scenarioStarted(NLNET::IModuleProxy *sender, TSessionId sessionId, const R2::TRunningScenarioInfo &scenarioInfo) =0;
+		virtual void scenarioStarted(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const R2::TRunningScenarioInfo &scenarioInfo) =0;
 		// The session report that a DM has kicked a character from a session.
-		virtual void reportCharacterKicked(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 charId) =0;
+		virtual void reportCharacterKicked(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 charId) =0;
 		// The DSS report the end of an animation session and
 		// provides a bunch of data about the session life.
-		virtual void scenarioEnded(NLNET::IModuleProxy *sender, TSessionId sessionId, const R2::TRunningScenarioInfo &scenarioInfo, uint32 rrpScored, uint32 scenarioPointScored, uint32 timeTaken, const std::vector < uint32 > &participants) =0;
+		virtual void scenarioEnded(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const R2::TRunningScenarioInfo &scenarioInfo, uint32 rrpScored, uint32 scenarioPointScored, uint32 timeTaken, const std::vector < uint32 > &participants) =0;
 
 
 	};
@@ -2219,23 +2219,23 @@ namespace RSMGR
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void createSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void createSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void addCharacterInSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void addCharacterInSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void closeSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void closeSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void stopHibernation_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void stopHibernation_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void characterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void characterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void characterUnkicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void characterUnkicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void hibernateSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void hibernateSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setSessionStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setSessionStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2248,26 +2248,26 @@ namespace RSMGR
 		/////////////////////////////////////////////////////////////////
 
 		// Ask the client to create a new session modules
-		virtual void createSession(NLNET::IModuleProxy *sender, uint32 ownerCharId, TSessionId sessionId, const RSMGR::TSessionType &type) =0;
+		virtual void createSession(NLNET::TModuleProxyPtr sender, uint32 ownerCharId, TSessionId sessionId, const RSMGR::TSessionType &type) =0;
 		// Ask the client to allow a character in the session
-		virtual void addCharacterInSession(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 charId, const WS::TUserRole &enterAs, const std::string &ringAccess, bool newcomer) =0;
+		virtual void addCharacterInSession(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 charId, const WS::TUserRole &enterAs, const std::string &ringAccess, bool newcomer) =0;
 		// Ask the client to close a running session
-		virtual void closeSession(NLNET::IModuleProxy *sender, TSessionId sessionId) =0;
+		virtual void closeSession(NLNET::TModuleProxyPtr sender, TSessionId sessionId) =0;
 		// Ask the client stop hibernation for the
 		// specified session. This mean to remove any
 		// hibernated scenario file from the backup.
-		virtual void stopHibernation(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 ownerId) =0;
+		virtual void stopHibernation(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 ownerId) =0;
 		// Session mananger report that a character has been kicked by the web
-		virtual void characterKicked(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 charId) =0;
+		virtual void characterKicked(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 charId) =0;
 		// Session mananger report that a character has been unkicked by the web
-		virtual void characterUnkicked(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 charId) =0;
+		virtual void characterUnkicked(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 charId) =0;
 		// Ask to teleport on character to another (the 2 characters must be in the same season)
 		// The character must arrived in the season
-		virtual void teleportOneCharacterToAnother(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 sourceCharId, uint32 destCharId) =0;
+		virtual void teleportOneCharacterToAnother(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 sourceCharId, uint32 destCharId) =0;
 		// Ask to hibernate a session
-		virtual void hibernateSession(NLNET::IModuleProxy *sender, TSessionId sessionId) =0;
+		virtual void hibernateSession(NLNET::TModuleProxyPtr sender, TSessionId sessionId) =0;
 		// Set the start position of a session (eg while your are uploading an animation session)
-		virtual void setSessionStartParams(NLNET::IModuleProxy *sender, uint32 charId, TSessionId sessionId, const std::string &initialIslandLocation, const std::string &initialEntryPointLocation, const std::string &initialSeason) =0;
+		virtual void setSessionStartParams(NLNET::TModuleProxyPtr sender, uint32 charId, TSessionId sessionId, const std::string &initialIslandLocation, const std::string &initialEntryPointLocation, const std::string &initialSeason) =0;
 
 
 	};

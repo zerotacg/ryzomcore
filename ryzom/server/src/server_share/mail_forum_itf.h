@@ -77,9 +77,9 @@ namespace MFS
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void notifyMail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void notifyMail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void notifyForumMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void notifyForumMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -92,10 +92,10 @@ namespace MFS
 		/////////////////////////////////////////////////////////////////
 
 		// A character have received a mail
-		virtual void notifyMail(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void notifyMail(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// A new message have been posted in a guild forum
 		// the notifier client send a notification for each member character
-		virtual void notifyForumMessage(NLNET::IModuleProxy *sender, uint32 charId, uint32 guildId, uint32 threadId) =0;
+		virtual void notifyForumMessage(NLNET::TModuleProxyPtr sender, uint32 charId, uint32 guildId, uint32 threadId) =0;
 
 
 	};

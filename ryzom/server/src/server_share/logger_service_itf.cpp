@@ -70,7 +70,7 @@ namespace LGS
 	}
 
 
-	void CLoggerServiceSkel::registerClient_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CLoggerServiceSkel::registerClient_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CLoggerServiceSkel_registerClient_RC);
 		uint32	shardId;
@@ -80,7 +80,7 @@ namespace LGS
 		registerClient(sender, shardId, logDef);
 	}
 
-	void CLoggerServiceSkel::reportLog_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CLoggerServiceSkel::reportLog_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CLoggerServiceSkel_reportLog_LG);
 		std::vector < TLogInfo >	logInfos;
@@ -95,7 +95,7 @@ namespace LGS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->registerClient(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), shardId, logDef);
+			_LocalModuleSkel->registerClient(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, logDef);
 		}
 		else
 		{
@@ -113,7 +113,7 @@ namespace LGS
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->reportLog(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), logInfos);
+			_LocalModuleSkel->reportLog(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), logInfos);
 		}
 		else
 		{

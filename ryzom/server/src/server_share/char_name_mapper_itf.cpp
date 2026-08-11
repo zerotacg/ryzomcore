@@ -66,7 +66,7 @@ namespace CNM
 	}
 
 
-	void CCharNameMapperSkel::mapCharNames_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharNameMapperSkel::mapCharNames_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharNameMapperSkel_mapCharNames_MCN);
 		std::vector < TCharNameInfo >	charNameInfos;
@@ -79,7 +79,7 @@ namespace CNM
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->mapCharNames(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charNameInfos);
+			_LocalModuleSkel->mapCharNames(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charNameInfos);
 		}
 		else
 		{
@@ -143,7 +143,7 @@ namespace CNM
 	}
 
 
-	void CCharNameMapperClientSkel::charNamesMapped_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CCharNameMapperClientSkel::charNamesMapped_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharNameMapperClientSkel_charNamesMapped_MCN);
 		std::vector < TCharMappedInfo >	charMappedInfos;
@@ -156,7 +156,7 @@ namespace CNM
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charNamesMapped(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charMappedInfos);
+			_LocalModuleSkel->charNamesMapped(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charMappedInfos);
 		}
 		else
 		{

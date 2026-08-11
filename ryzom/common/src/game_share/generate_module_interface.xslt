@@ -212,7 +212,7 @@ namespace <xsl:value-of select="@name"/>
 		<xsl:for-each select="method">
 <xsl:choose>
 <xsl:when test="not(return)">
-		void <xsl:value-of select="@name"/>_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;__message);
+		void <xsl:value-of select="@name"/>_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;__message);
 </xsl:when>
 <xsl:when test="return">
 		void <xsl:value-of select="@name"/>_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;__message);
@@ -235,12 +235,12 @@ namespace <xsl:value-of select="@name"/>
 <xsl:choose>
 <xsl:when test="not(return)">
 		<xsl:call-template name="makeMethodDoc"/>
-<xsl:text>		</xsl:text>virtual void <xsl:value-of select="@name"/>(NLNET::IModuleProxy *sender<xsl:call-template name="makeParamList"/>)<xsl:text> =0;
+<xsl:text>		</xsl:text>virtual void <xsl:value-of select="@name"/>(NLNET::TModuleProxyPtr sender<xsl:call-template name="makeParamList"/>)<xsl:text> =0;
 </xsl:text>
 </xsl:when>
 <xsl:when test="return">
 		<xsl:call-template name="makeMethodDoc"/>
-<xsl:text>		</xsl:text>virtual <xsl:value-of select="return/@type"/><xsl:text> </xsl:text><xsl:value-of select="@name"/>(NLNET::IModuleProxy *sender<xsl:call-template name="makeParamList"/>)<xsl:text> =0;
+<xsl:text>		</xsl:text>virtual <xsl:value-of select="return/@type"/><xsl:text> </xsl:text><xsl:value-of select="@name"/>(NLNET::TModuleProxyPtr sender<xsl:call-template name="makeParamList"/>)<xsl:text> =0;
 </xsl:text>
 </xsl:when>
 </xsl:choose>
@@ -388,7 +388,7 @@ namespace <xsl:value-of select="@name"/>
 <xsl:for-each select="method">
 <xsl:choose>
 <xsl:when test="not(return)">
-	void <xsl:value-of select="$skelName"/>::<xsl:value-of select="@name"/>_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;<xsl:choose>
+	void <xsl:value-of select="$skelName"/>::<xsl:value-of select="@name"/>_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;<xsl:choose>
 	<xsl:when test="not(param)">/* __message */</xsl:when><xsl:otherwise>__message</xsl:otherwise></xsl:choose>)
 	{
 		H_AUTO(<xsl:value-of select="$skelName"/>_<xsl:value-of select="@name"/>_<xsl:value-of select="@msg"/>);
@@ -404,7 +404,7 @@ namespace <xsl:value-of select="@name"/>
 </xsl:text>
 </xsl:when>
 <xsl:when test="return">
-	void <xsl:value-of select="$skelName"/>::<xsl:value-of select="@name"/>_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &amp;__message)
+	void <xsl:value-of select="$skelName"/>::<xsl:value-of select="@name"/>_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &amp;__message)
 	{
 		H_AUTO(<xsl:value-of select="$skelName"/>_<xsl:value-of select="@name"/>_<xsl:value-of select="@msg"/>);
 <xsl:for-each select="param">
@@ -438,7 +438,7 @@ namespace <xsl:value-of select="@name"/>
 		if (_LocalModuleSkel &amp;&amp; _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel-><xsl:value-of select="@name"/>(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get()<xsl:for-each select="param">, <xsl:value-of select="@name"/></xsl:for-each>);
+			_LocalModuleSkel-><xsl:value-of select="@name"/>(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender)<xsl:for-each select="param">, <xsl:value-of select="@name"/></xsl:for-each>);
 		}
 		else
 		{

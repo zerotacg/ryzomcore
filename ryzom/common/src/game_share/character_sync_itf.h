@@ -756,23 +756,23 @@ namespace CHARSYNC
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void addCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void addCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void deleteCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void deleteCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharRespawnPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharRespawnPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharsBestLevel_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharsBestLevel_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharNewbieFlag_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharNewbieFlag_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharAllegiance_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharAllegiance_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateCharHomeMainlandSessionId_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateCharHomeMainlandSessionId_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void syncUserChars_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void syncUserChars_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -785,27 +785,27 @@ namespace CHARSYNC
 		/////////////////////////////////////////////////////////////////
 
 		// A new character have been create by a client
-		virtual void addCharacter(NLNET::IModuleProxy *sender, const TCharInfo &charInfo) =0;
+		virtual void addCharacter(NLNET::TModuleProxyPtr sender, const TCharInfo &charInfo) =0;
 		// A character have been deleted
-		virtual void deleteCharacter(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void deleteCharacter(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// A character guild have changed
-		virtual void updateCharGuild(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, uint32 guildId) =0;
+		virtual void updateCharGuild(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, uint32 guildId) =0;
 		// Update the respawn points count of a character
-		virtual void updateCharRespawnPoints(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, const CONTINENT::TRespawnPointCounters &respawnPoints) =0;
+		virtual void updateCharRespawnPoints(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, const CONTINENT::TRespawnPointCounters &respawnPoints) =0;
 		// Update the best level for a set of characters
-		virtual void updateCharsBestLevel(NLNET::IModuleProxy *sender, const std::vector < TCharBestLevelInfo > &charLevelInfos) =0;
+		virtual void updateCharsBestLevel(NLNET::TModuleProxyPtr sender, const std::vector < TCharBestLevelInfo > &charLevelInfos) =0;
 		// Update the newbie flag of a characters
-		virtual void updateCharNewbieFlag(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, bool newbie) =0;
+		virtual void updateCharNewbieFlag(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, bool newbie) =0;
 		// Update the allegiance of a characters
-		virtual void updateCharAllegiance(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, TCivilisation civilisation, TCult cult) =0;
+		virtual void updateCharAllegiance(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, TCivilisation civilisation, TCult cult) =0;
 		// The home mainland has changed (used when converting a character file from an old version)
-		virtual void updateCharHomeMainlandSessionId(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, TSessionId homeMainlandSessionId) =0;
+		virtual void updateCharHomeMainlandSessionId(NLNET::TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, TSessionId homeMainlandSessionId) =0;
 		// The characters for a player have been loaded
 		// EGS send the full list to SU to make
 		// sure any divergence in the database is cleared
 		// SU send back the list of character with there
 		// unified names and home session ID
-		virtual void syncUserChars(NLNET::IModuleProxy *sender, uint32 userId, const std::vector < TCharInfo > &charInfos) =0;
+		virtual void syncUserChars(NLNET::TModuleProxyPtr sender, uint32 userId, const std::vector < TCharInfo > &charInfos) =0;
 
 
 	};
@@ -1237,21 +1237,21 @@ namespace CHARSYNC
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void registerNameUnifierClient_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerNameUnifierClient_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void validateCharacterName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void validateCharacterName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void assignNameToCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void assignNameToCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void renameCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void renameCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void registerLoadedGuildNames_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerLoadedGuildNames_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void validateGuildName_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void validateGuildName_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void addGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void addGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void removeGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void removeGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1265,30 +1265,30 @@ namespace CHARSYNC
 
 		// EGS register it's name unifier in order to receive
 		// an updated eid to name translation table
-		virtual void registerNameUnifierClient(NLNET::IModuleProxy *sender) =0;
+		virtual void registerNameUnifierClient(NLNET::TModuleProxyPtr sender) =0;
 		// EGS ask to validate a character name
 		// If the NU valide the name, it temporary
 		// lock it to the associated player.
 		// This function is called before character creation.
-		virtual void validateCharacterName(NLNET::IModuleProxy *sender, uint32 userId, uint8 charIndex, const std::string &name, uint32 homeMainlandSessionId) =0;
+		virtual void validateCharacterName(NLNET::TModuleProxyPtr sender, uint32 userId, uint8 charIndex, const std::string &name, uint32 homeMainlandSessionId) =0;
 		// EGS ask to assign a name to a character
 		// This function is called during character creation
-		virtual void assignNameToCharacter(NLNET::IModuleProxy *sender, uint32 charId, const std::string &name, uint32 homeSessionId) =0;
+		virtual void assignNameToCharacter(NLNET::TModuleProxyPtr sender, uint32 charId, const std::string &name, uint32 homeSessionId) =0;
 		// EGS ask to rename a character.
 		// Renaming consist of assigning a default ramdomly generated name to the character
-		virtual void renameCharacter(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void renameCharacter(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// EGS send info about the list of loaded guild.
 		// The name unifier will update is internal name table if needed
 		// and rename any guild having a conflicting name.
 		// If any guild is renamed, then the name unifier send back
 		// a guildRenamed message to EGS.
-		virtual void registerLoadedGuildNames(NLNET::IModuleProxy *sender, uint32 chardId, const std::vector < CGuildInfo > &guildInfos) =0;
+		virtual void registerLoadedGuildNames(NLNET::TModuleProxyPtr sender, uint32 chardId, const std::vector < CGuildInfo > &guildInfos) =0;
 		// EGS ask to the name unifier to validate a new guild name
-		virtual void validateGuildName(NLNET::IModuleProxy *sender, uint32 guildId, const ucstring &guildName) =0;
+		virtual void validateGuildName(NLNET::TModuleProxyPtr sender, uint32 guildId, const ucstring &guildName) =0;
 		// EGS add newly created guild info
-		virtual void addGuild(NLNET::IModuleProxy *sender, uint32 shardId, uint32 guildId, const ucstring &guildName) =0;
+		virtual void addGuild(NLNET::TModuleProxyPtr sender, uint32 shardId, uint32 guildId, const ucstring &guildName) =0;
 		// EGS remove deleted guild info
-		virtual void removeGuild(NLNET::IModuleProxy *sender, uint32 shardId, uint32 guildId) =0;
+		virtual void removeGuild(NLNET::TModuleProxyPtr sender, uint32 shardId, uint32 guildId) =0;
 
 
 	};
@@ -1668,25 +1668,25 @@ namespace CHARSYNC
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void initEIdTranslator_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void initEIdTranslator_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateEIdTranslator_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateEIdTranslator_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void validateCharacterNameResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void validateCharacterNameResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void assignCharacterNameResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void assignCharacterNameResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void characterRenamed_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void characterRenamed_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void userCharUpdatedAndValidated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void userCharUpdatedAndValidated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void userCharSyncFailed_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void userCharSyncFailed_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void guildRenamed_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void guildRenamed_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void validateGuildNameResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void validateGuildNameResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void removeCharFromGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void removeCharFromGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1701,39 +1701,39 @@ namespace CHARSYNC
 		// The name unifier send the initial content for the Eid translator.
 		// EGS need to wait until it receive this message before continuing
 		// it's startup sequence in order to have coherent name in guild.
-		virtual void initEIdTranslator(NLNET::IModuleProxy *sender, bool firstPacket, bool lastPacket, const std::vector < TNameEntry > &nameEntries) =0;
+		virtual void initEIdTranslator(NLNET::TModuleProxyPtr sender, bool firstPacket, bool lastPacket, const std::vector < TNameEntry > &nameEntries) =0;
 		// The name unifier send an update for the EID translator.
 		// releasedNames contains a list of charId whose names have been released
 		// changedNames contains a list of add or update entries
-		virtual void updateEIdTranslator(NLNET::IModuleProxy *sender, const std::vector < uint32 > &releasedNames, const std::vector < TNameEntry > &changedNames) =0;
+		virtual void updateEIdTranslator(NLNET::TModuleProxyPtr sender, const std::vector < uint32 > &releasedNames, const std::vector < TNameEntry > &changedNames) =0;
 		// The name unifier send the result for validation
 		// of a character name before creation.
-		virtual void validateCharacterNameResult(NLNET::IModuleProxy *sender, const CValidateNameResult &nameResult) =0;
+		virtual void validateCharacterNameResult(NLNET::TModuleProxyPtr sender, const CValidateNameResult &nameResult) =0;
 		// The name unifier send the result for name assignment
 		// of a new character name during creation.
-		virtual void assignCharacterNameResult(NLNET::IModuleProxy *sender, const CValidateNameResult &nameResult) =0;
+		virtual void assignCharacterNameResult(NLNET::TModuleProxyPtr sender, const CValidateNameResult &nameResult) =0;
 		// The name unifier has renamed a character
 		// EGS must do what it need to take the new name into account
-		virtual void characterRenamed(NLNET::IModuleProxy *sender, uint32 charId, const std::string &newName, bool sendSummary) =0;
+		virtual void characterRenamed(NLNET::TModuleProxyPtr sender, uint32 charId, const std::string &newName, bool sendSummary) =0;
 		// The name unifier has updated/validated/eventualy renamed
 		// all the characters send by EGS for a user.
 		// EGS can proceed to send the characters summary to client
 		// The result message contains the list of all characters
 		// with their unified name and home session id from the
 		// ring database
-		virtual void userCharUpdatedAndValidated(NLNET::IModuleProxy *sender, uint32 userId, const std::vector < TCharSyncResultEntry > &charInfos) =0;
+		virtual void userCharUpdatedAndValidated(NLNET::TModuleProxyPtr sender, uint32 userId, const std::vector < TCharSyncResultEntry > &charInfos) =0;
 		// The name unifier has failed tp updated/validated/eventualy renamed
 		// all the characters send by EGS for a user.
 		// EGS can proceed to send the characters summary to client
 		// but the character names are perhaps not good ?
-		virtual void userCharSyncFailed(NLNET::IModuleProxy *sender, uint32 userId) =0;
+		virtual void userCharSyncFailed(NLNET::TModuleProxyPtr sender, uint32 userId) =0;
 		// The name unifier has renamed a guild to resolve a name conflict
-		virtual void guildRenamed(NLNET::IModuleProxy *sender, uint32 guildId, const ucstring &newName) =0;
+		virtual void guildRenamed(NLNET::TModuleProxyPtr sender, uint32 guildId, const ucstring &newName) =0;
 		// The name unifier respond to EGS about guild name validation request
-		virtual void validateGuildNameResult(NLNET::IModuleProxy *sender, uint32 guildId, const ucstring &guildName, TCharacterNameResult result) =0;
+		virtual void validateGuildNameResult(NLNET::TModuleProxyPtr sender, uint32 guildId, const ucstring &guildName, TCharacterNameResult result) =0;
 		// The unifier has detected an invalid guild/character association
 		// and ask to the EGS to remove the character from the guild
-		virtual void removeCharFromGuild(NLNET::IModuleProxy *sender, uint32 charId, uint32 guildId) =0;
+		virtual void removeCharFromGuild(NLNET::TModuleProxyPtr sender, uint32 charId, uint32 guildId) =0;
 
 
 	};

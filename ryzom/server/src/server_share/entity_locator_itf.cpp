@@ -82,7 +82,7 @@ namespace ENTITYLOC
 	}
 
 
-	void CEntityLocatorSkel::initState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::initState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_initState_EL_IS);
 		std::vector < uint32 >	connectedUsers;
@@ -92,7 +92,7 @@ namespace ENTITYLOC
 		initState(sender, connectedUsers, connectedChars);
 	}
 
-	void CEntityLocatorSkel::playerConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::playerConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_playerConnected_EL_PC);
 		uint32	userId;
@@ -100,7 +100,7 @@ namespace ENTITYLOC
 		playerConnected(sender, userId);
 	}
 
-	void CEntityLocatorSkel::playerDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::playerDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_playerDisconnected_EL_PD);
 		uint32	userId;
@@ -108,7 +108,7 @@ namespace ENTITYLOC
 		playerDisconnected(sender, userId);
 	}
 
-	void CEntityLocatorSkel::charConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::charConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_charConnected_EL_CC);
 		NLMISC::CEntityId	charEId;
@@ -118,7 +118,7 @@ namespace ENTITYLOC
 		charConnected(sender, charEId, lastDisconnectionDate);
 	}
 
-	void CEntityLocatorSkel::charDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorSkel::charDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorSkel_charDisconnected_EL_CD);
 		NLMISC::CEntityId	charEId;
@@ -131,7 +131,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->initState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), connectedUsers, connectedChars);
+			_LocalModuleSkel->initState(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), connectedUsers, connectedChars);
 		}
 		else
 		{
@@ -149,7 +149,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->playerConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId);
+			_LocalModuleSkel->playerConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
 		}
 		else
 		{
@@ -167,7 +167,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->playerDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), userId);
+			_LocalModuleSkel->playerDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
 		}
 		else
 		{
@@ -185,7 +185,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId, lastDisconnectionDate);
+			_LocalModuleSkel->charConnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId, lastDisconnectionDate);
 		}
 		else
 		{
@@ -203,7 +203,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->charDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charEId);
+			_LocalModuleSkel->charDisconnected(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charEId);
 		}
 		else
 		{
@@ -309,7 +309,7 @@ namespace ENTITYLOC
 	}
 
 
-	void CEntityLocatorClientSkel::connectionEvents_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CEntityLocatorClientSkel::connectionEvents_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CEntityLocatorClientSkel_connectionEvents_ELC_CE);
 		std::vector < TCharConnectionEvent >	events;
@@ -322,7 +322,7 @@ namespace ENTITYLOC
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->connectionEvents(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), events);
+			_LocalModuleSkel->connectionEvents(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), events);
 		}
 		else
 		{

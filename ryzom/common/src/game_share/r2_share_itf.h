@@ -575,17 +575,17 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void connectAnimationModePlay_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void connectAnimationModePlay_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void askMissionItemsDescription_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void askMissionItemsDescription_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void askActPositionDescriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void askActPositionDescriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void askUserTriggerDescriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void askUserTriggerDescriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onUserTriggerTriggered_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onUserTriggerTriggered_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onDssTarget_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onDssTarget_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -598,17 +598,17 @@ namespace R2
 		/////////////////////////////////////////////////////////////////
 
 		// request the connection to play mode in an animation session
-		virtual void connectAnimationModePlay(NLNET::IModuleProxy *sender) =0;
+		virtual void connectAnimationModePlay(NLNET::TModuleProxyPtr sender) =0;
 		// A client Message to register mission item of a scenario
-		virtual void askMissionItemsDescription(NLNET::IModuleProxy *sender) =0;
+		virtual void askMissionItemsDescription(NLNET::TModuleProxyPtr sender) =0;
 		// A client Message to update client Act Position Description
-		virtual void askActPositionDescriptions(NLNET::IModuleProxy *sender) =0;
+		virtual void askActPositionDescriptions(NLNET::TModuleProxyPtr sender) =0;
 		// A client Message to update client User Trigger Description
-		virtual void askUserTriggerDescriptions(NLNET::IModuleProxy *sender) =0;
+		virtual void askUserTriggerDescriptions(NLNET::TModuleProxyPtr sender) =0;
 		// client wants to trigger an user trigger
-		virtual void onUserTriggerTriggered(NLNET::IModuleProxy *sender, uint32 actId, uint32 triggerId) =0;
+		virtual void onUserTriggerTriggered(NLNET::TModuleProxyPtr sender, uint32 actId, uint32 triggerId) =0;
 		// client wants to execute a dm action on its target
-		virtual void onDssTarget(NLNET::IModuleProxy *sender, const std::vector<std::string> &args) =0;
+		virtual void onDssTarget(NLNET::TModuleProxyPtr sender, const std::vector<std::string> &args) =0;
 
 
 	};
@@ -733,57 +733,57 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void startingScenario_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void startingScenario_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void startScenario_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void startScenario_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void advConnACK_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void advConnACK_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onUserComponentRegistered_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onUserComponentRegistered_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onUserComponentDownloading_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onUserComponentDownloading_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onScenarioUploadAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onScenarioUploadAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeSetAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeSetAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeInsertAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeInsertAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeEraseAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeEraseAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeMoveAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeMoveAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onMapConnectionAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onMapConnectionAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onCharModeUpdateAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onCharModeUpdateAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onTpPositionAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onTpPositionAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void tpToEntryPoint_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void tpToEntryPoint_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void setStartingAct_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void setStartingAct_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onScenarioRingAccessUpdated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onScenarioRingAccessUpdated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void saveScenarioFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void saveScenarioFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void loadScenarioFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void loadScenarioFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void saveUserComponentFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void saveUserComponentFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void loadUserComponentFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void loadUserComponentFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void teleportWhileUploadingScenario_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void teleportWhileUploadingScenario_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void multiPartMsgHead_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void multiPartMsgHead_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void multiPartMsgBody_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void multiPartMsgBody_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void multiPartMsgFoot_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void multiPartMsgFoot_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void forwardToDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void forwardToDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -795,57 +795,57 @@ namespace R2
 		// WARNING : this is a generated file, don't change it !
 		/////////////////////////////////////////////////////////////////
 
-		virtual void startingScenario(NLNET::IModuleProxy *sender) =0;
+		virtual void startingScenario(NLNET::TModuleProxyPtr sender) =0;
 		// Request the start of a test scenario
-		virtual void startScenario(NLNET::IModuleProxy *sender, bool ok, const TScenarioHeaderSerializer &header, const CObjectSerializerServer &data, uint32 startingAct) =0;
+		virtual void startScenario(NLNET::TModuleProxyPtr sender, bool ok, const TScenarioHeaderSerializer &header, const CObjectSerializerServer &data, uint32 startingAct) =0;
 		// Client has received the ADV_CONN message
-		virtual void advConnACK(NLNET::IModuleProxy *sender) =0;
+		virtual void advConnACK(NLNET::TModuleProxyPtr sender) =0;
 		// The client announce to the server that he has registered a component.
-		virtual void onUserComponentRegistered(NLNET::IModuleProxy *sender, const NLMISC::CHashKeyMD5 &md5) =0;
+		virtual void onUserComponentRegistered(NLNET::TModuleProxyPtr sender, const NLMISC::CHashKeyMD5 &md5) =0;
 		// The client announce to the server that he need a componennt so the server must uploading it.
-		virtual void onUserComponentDownloading(NLNET::IModuleProxy *sender, const NLMISC::CHashKeyMD5 &md5) =0;
+		virtual void onUserComponentDownloading(NLNET::TModuleProxyPtr sender, const NLMISC::CHashKeyMD5 &md5) =0;
 		// Upload the high level scenario.
-		virtual void onScenarioUploadAsked(NLNET::IModuleProxy *sender, uint32 msgId, const CObjectSerializerServer &hlScenario, bool mustBrodcast) =0;
+		virtual void onScenarioUploadAsked(NLNET::TModuleProxyPtr sender, uint32 msgId, const CObjectSerializerServer &hlScenario, bool mustBrodcast) =0;
 		// The client request to set a node on a hl scenario.
-		virtual void onNodeSetAsked(NLNET::IModuleProxy *sender, uint32 msgId, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerServer &value) =0;
+		virtual void onNodeSetAsked(NLNET::TModuleProxyPtr sender, uint32 msgId, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerServer &value) =0;
 		// The client request to insert a node on a hl scenario.
-		virtual void onNodeInsertAsked(NLNET::IModuleProxy *sender, uint32 msgId, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerServer &value) =0;
+		virtual void onNodeInsertAsked(NLNET::TModuleProxyPtr sender, uint32 msgId, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerServer &value) =0;
 		// The client request to erase a node on a hl scenario.
-		virtual void onNodeEraseAsked(NLNET::IModuleProxy *sender, uint32 msgId, const std::string &instanceId, const std::string &attrName, sint32 position) =0;
+		virtual void onNodeEraseAsked(NLNET::TModuleProxyPtr sender, uint32 msgId, const std::string &instanceId, const std::string &attrName, sint32 position) =0;
 		// The client request to move a node on a hl scenario.
-		virtual void onNodeMoveAsked(NLNET::IModuleProxy *sender, uint32 msgId, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2) =0;
+		virtual void onNodeMoveAsked(NLNET::TModuleProxyPtr sender, uint32 msgId, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2) =0;
 		// Call by the client in order to download its current scenario (and tp).
-		virtual void onMapConnectionAsked(NLNET::IModuleProxy *sender, TSessionId scenarioId, bool updateHighLevel, bool mustTp, R2::TUserRole role) =0;
+		virtual void onMapConnectionAsked(NLNET::TModuleProxyPtr sender, TSessionId scenarioId, bool updateHighLevel, bool mustTp, R2::TUserRole role) =0;
 		// Call by the client when he change its mode (Dm, Tester, Player)
-		virtual void onCharModeUpdateAsked(NLNET::IModuleProxy *sender, R2::TCharMode mode) =0;
+		virtual void onCharModeUpdateAsked(NLNET::TModuleProxyPtr sender, R2::TCharMode mode) =0;
 		// client wants to tp at a specific position (clicking in map)
-		virtual void onTpPositionAsked(NLNET::IModuleProxy *sender, float x, float y, float z) =0;
+		virtual void onTpPositionAsked(NLNET::TModuleProxyPtr sender, float x, float y, float z) =0;
 		// Update the mode of the pioneer (DM/TEST).
-		virtual void tpToEntryPoint(NLNET::IModuleProxy *sender, uint32 actIndex) =0;
+		virtual void tpToEntryPoint(NLNET::TModuleProxyPtr sender, uint32 actIndex) =0;
 		// Set the starting act of the scenario
-		virtual void setStartingAct(NLNET::IModuleProxy *sender, uint32 actIndex) =0;
+		virtual void setStartingAct(NLNET::TModuleProxyPtr sender, uint32 actIndex) =0;
 		// Update the ring access of a scenario.
-		virtual void onScenarioRingAccessUpdated(NLNET::IModuleProxy *sender, bool ok, const std::string &ringAccess, const std::string &errMsg) =0;
+		virtual void onScenarioRingAccessUpdated(NLNET::TModuleProxyPtr sender, bool ok, const std::string &ringAccess, const std::string &errMsg) =0;
 		// a message to validate a file waiting to be saved
-		virtual void saveScenarioFile(NLNET::IModuleProxy *sender, const std::string &md5, const R2::TScenarioHeaderSerializer &header) =0;
+		virtual void saveScenarioFile(NLNET::TModuleProxyPtr sender, const std::string &md5, const R2::TScenarioHeaderSerializer &header) =0;
 		// a message to validate a file waiting to be loaded
-		virtual void loadScenarioFile(NLNET::IModuleProxy *sender, const std::string &md5, const std::string &signature) =0;
+		virtual void loadScenarioFile(NLNET::TModuleProxyPtr sender, const std::string &md5, const std::string &signature) =0;
 		// a message to validate a user component file waiting to be saved
-		virtual void saveUserComponentFile(NLNET::IModuleProxy *sender, const std::string &md5, const R2::TScenarioHeaderSerializer &header) =0;
+		virtual void saveUserComponentFile(NLNET::TModuleProxyPtr sender, const std::string &md5, const R2::TScenarioHeaderSerializer &header) =0;
 		// a message to validate a user component file waiting to be loaded
-		virtual void loadUserComponentFile(NLNET::IModuleProxy *sender, const std::string &md5, const std::string &signature) =0;
+		virtual void loadUserComponentFile(NLNET::TModuleProxyPtr sender, const std::string &md5, const std::string &signature) =0;
 		// a message to ask the dss to teleport a character to another character
-		virtual void teleportOneCharacterToAnother(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 sourceId, uint32 destId) =0;
+		virtual void teleportOneCharacterToAnother(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 sourceId, uint32 destId) =0;
 		// teleport the player while uploading the scenario
-		virtual void teleportWhileUploadingScenario(NLNET::IModuleProxy *sender, const std::string &island, const std::string &entryPoint, const std::string &season) =0;
+		virtual void teleportWhileUploadingScenario(NLNET::TModuleProxyPtr sender, const std::string &island, const std::string &entryPoint, const std::string &season) =0;
 		// send the header of a multi-part message
-		virtual void multiPartMsgHead(NLNET::IModuleProxy *sender, uint32 charId, const std::string &msgName, uint32 nbPacket, uint32 size) =0;
+		virtual void multiPartMsgHead(NLNET::TModuleProxyPtr sender, uint32 charId, const std::string &msgName, uint32 nbPacket, uint32 size) =0;
 		// send a part of a multi-part message
-		virtual void multiPartMsgBody(NLNET::IModuleProxy *sender, uint32 charId, uint32 partId, const std::vector<uint8> &data) =0;
+		virtual void multiPartMsgBody(NLNET::TModuleProxyPtr sender, uint32 charId, uint32 partId, const std::vector<uint8> &data) =0;
 		// send the footer of a multi-part message
-		virtual void multiPartMsgFoot(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void multiPartMsgFoot(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// simulate the forward of a message (to dss)
-		virtual void forwardToDss(NLNET::IModuleProxy *sender, uint32 charId, const NLNET::CMessage &msg) =0;
+		virtual void forwardToDss(NLNET::TModuleProxyPtr sender, uint32 charId, const NLNET::CMessage &msg) =0;
 
 
 	};
@@ -1069,73 +1069,73 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void startingScenario_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void startingScenario_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void startScenario_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void startScenario_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onUserComponentRegistered_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onUserComponentRegistered_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onUserComponentUploading_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onUserComponentUploading_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onScenarioUploaded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onScenarioUploaded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeSet_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeSet_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeInserted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeInserted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeErased_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeErased_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onNodeMoved_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onNodeMoved_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onQuotaUpdated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onQuotaUpdated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onCharModeUpdated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onCharModeUpdated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onTestModeDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onTestModeDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onTpPositionSimulated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onTpPositionSimulated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onDisconnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onDisconnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void scheduleStartAct_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void scheduleStartAct_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onAnimationModePlayConnected_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onAnimationModePlayConnected_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateScenarioHeader_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateScenarioHeader_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateMissionItemsDescription_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateMissionItemsDescription_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateActPositionDescriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateActPositionDescriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateUserTriggerDescriptions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateUserTriggerDescriptions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onCurrentActIndexUpdated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onCurrentActIndexUpdated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateTalkingAsList_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateTalkingAsList_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateIncarningList_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void updateIncarningList_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void systemMsg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void systemMsg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void onRingAccessUpdated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void onRingAccessUpdated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void saveScenarioFileAccepted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void saveScenarioFileAccepted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void loadScenarioFileAccepted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void loadScenarioFileAccepted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void saveUserComponentFileAccepted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void saveUserComponentFileAccepted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void loadUserComponentFileAccepted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void loadUserComponentFileAccepted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void multiPartMsgHead_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void multiPartMsgHead_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void multiPartMsgBody_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void multiPartMsgBody_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void multiPartMsgFoot_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void multiPartMsgFoot_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void ackMsg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void ackMsg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1148,73 +1148,73 @@ namespace R2
 		/////////////////////////////////////////////////////////////////
 
 		// The start of a test has been requested
-		virtual void startingScenario(NLNET::IModuleProxy *sender, uint32 charId) =0;
+		virtual void startingScenario(NLNET::TModuleProxyPtr sender, uint32 charId) =0;
 		// A Scenario has started
-		virtual void startScenario(NLNET::IModuleProxy *sender, bool ok, uint32 startingAct, const std::string &errorMsg) =0;
+		virtual void startScenario(NLNET::TModuleProxyPtr sender, bool ok, uint32 startingAct, const std::string &errorMsg) =0;
 		// A User component has been registered
-		virtual void onUserComponentRegistered(NLNET::IModuleProxy *sender, const NLMISC::CHashKeyMD5 &md5) =0;
+		virtual void onUserComponentRegistered(NLNET::TModuleProxyPtr sender, const NLMISC::CHashKeyMD5 &md5) =0;
 		// Request the upload of a component
-		virtual void onUserComponentUploading(NLNET::IModuleProxy *sender, const NLMISC::CHashKeyMD5 &md5) =0;
+		virtual void onUserComponentUploading(NLNET::TModuleProxyPtr sender, const NLMISC::CHashKeyMD5 &md5) =0;
 		// The client request to upload an hl ata.
-		virtual void onScenarioUploaded(NLNET::IModuleProxy *sender, const R2::CObjectSerializerClient &hlScenario) =0;
+		virtual void onScenarioUploaded(NLNET::TModuleProxyPtr sender, const R2::CObjectSerializerClient &hlScenario) =0;
 		// The client request to set a node on a hl scenario.
-		virtual void onNodeSet(NLNET::IModuleProxy *sender, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerClient &value) =0;
+		virtual void onNodeSet(NLNET::TModuleProxyPtr sender, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerClient &value) =0;
 		// The ServerEditionMode inserts a node on a hl scenario.
-		virtual void onNodeInserted(NLNET::IModuleProxy *sender, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerClient &value) =0;
+		virtual void onNodeInserted(NLNET::TModuleProxyPtr sender, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerClient &value) =0;
 		// The ServerEditionMode erases a node on a hl scenario.
-		virtual void onNodeErased(NLNET::IModuleProxy *sender, const std::string &instanceId, const std::string &attrName, sint32 position) =0;
+		virtual void onNodeErased(NLNET::TModuleProxyPtr sender, const std::string &instanceId, const std::string &attrName, sint32 position) =0;
 		// The ServerEditionMode a move node on a hl scenario.
-		virtual void onNodeMoved(NLNET::IModuleProxy *sender, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2) =0;
+		virtual void onNodeMoved(NLNET::TModuleProxyPtr sender, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2) =0;
 		// Updates the client quota
-		virtual void onQuotaUpdated(NLNET::IModuleProxy *sender, uint32 maxNpcs, uint32 maxStaticObjects) =0;
+		virtual void onQuotaUpdated(NLNET::TModuleProxyPtr sender, uint32 maxNpcs, uint32 maxStaticObjects) =0;
 		// Updates the client Mode (tester, dm, editor, player) be the speed
-		virtual void onCharModeUpdated(NLNET::IModuleProxy *sender, R2::TCharMode mode) =0;
+		virtual void onCharModeUpdated(NLNET::TModuleProxyPtr sender, R2::TCharMode mode) =0;
 		// Indicates to the client that an animation has stop (animation, play, test)
-		virtual void onTestModeDisconnected(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 lastActIndex, R2::TScenarioSessionType animationType) =0;
+		virtual void onTestModeDisconnected(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint32 lastActIndex, R2::TScenarioSessionType animationType) =0;
 		// A DSS Message to make a local client tp (because egs can not do it)/
-		virtual void onTpPositionSimulated(NLNET::IModuleProxy *sender, TSessionId sessionId, uint64 characterId64, sint32 x, sint32 y, sint32 z, uint8 scenarioSeason) =0;
+		virtual void onTpPositionSimulated(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint64 characterId64, sint32 x, sint32 y, sint32 z, uint8 scenarioSeason) =0;
 		// A DSS Message to indicates that the client will be disconnect in secondes./
-		virtual void onKicked(NLNET::IModuleProxy *sender, uint32 timeBeforeDisconnection, bool mustKick) =0;
+		virtual void onKicked(NLNET::TModuleProxyPtr sender, uint32 timeBeforeDisconnection, bool mustKick) =0;
 		// A DSS Message to make to disconnect the client./
-		virtual void onDisconnected(NLNET::IModuleProxy *sender) =0;
+		virtual void onDisconnected(NLNET::TModuleProxyPtr sender) =0;
 		// Tell to the client that an act begin in nbSeconds
-		virtual void scheduleStartAct(NLNET::IModuleProxy *sender, uint32 errorId, uint32 actId, uint32 nbSeconds) =0;
+		virtual void scheduleStartAct(NLNET::TModuleProxyPtr sender, uint32 errorId, uint32 actId, uint32 nbSeconds) =0;
 		// Tell to the client that he is connected in play mode in an animation session
-		virtual void onAnimationModePlayConnected(NLNET::IModuleProxy *sender) =0;
+		virtual void onAnimationModePlayConnected(NLNET::TModuleProxyPtr sender) =0;
 		// A DSS Message to update the scenario Header
-		virtual void updateScenarioHeader(NLNET::IModuleProxy *sender, const R2::TScenarioHeaderSerializer &scenarioHeader) =0;
+		virtual void updateScenarioHeader(NLNET::TModuleProxyPtr sender, const R2::TScenarioHeaderSerializer &scenarioHeader) =0;
 		// A DSS Message to update discription mission item of a scenario
-		virtual void updateMissionItemsDescription(NLNET::IModuleProxy *sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItem) =0;
+		virtual void updateMissionItemsDescription(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItem) =0;
 		// A DSS Message to update the discription of acts (name and positions)
-		virtual void updateActPositionDescriptions(NLNET::IModuleProxy *sender, const R2::TActPositionDescriptions &actPositionDescriptions) =0;
+		virtual void updateActPositionDescriptions(NLNET::TModuleProxyPtr sender, const R2::TActPositionDescriptions &actPositionDescriptions) =0;
 		// A DSS Message to update the discription of acts (name and positions)
-		virtual void updateUserTriggerDescriptions(NLNET::IModuleProxy *sender, const R2::TUserTriggerDescriptions &userTriggerDescriptions) =0;
+		virtual void updateUserTriggerDescriptions(NLNET::TModuleProxyPtr sender, const R2::TUserTriggerDescriptions &userTriggerDescriptions) =0;
 		// A DSS Message to update the discription of acts (name and positions)
-		virtual void onCurrentActIndexUpdated(NLNET::IModuleProxy *sender, uint32 actIndex) =0;
+		virtual void onCurrentActIndexUpdated(NLNET::TModuleProxyPtr sender, uint32 actIndex) =0;
 		// Update the Talking as list.
-		virtual void updateTalkingAsList(NLNET::IModuleProxy *sender, const std::vector<uint32> &botsId) =0;
+		virtual void updateTalkingAsList(NLNET::TModuleProxyPtr sender, const std::vector<uint32> &botsId) =0;
 		// Update the Incarning list.
-		virtual void updateIncarningList(NLNET::IModuleProxy *sender, const std::vector<uint32> &botsId) =0;
+		virtual void updateIncarningList(NLNET::TModuleProxyPtr sender, const std::vector<uint32> &botsId) =0;
 		// A message that will be printed an client
-		virtual void systemMsg(NLNET::IModuleProxy *sender, const std::string &msgType, const std::string &who, const std::string &msg) =0;
+		virtual void systemMsg(NLNET::TModuleProxyPtr sender, const std::string &msgType, const std::string &who, const std::string &msg) =0;
 		// Update the ring access of the client
-		virtual void onRingAccessUpdated(NLNET::IModuleProxy *sender, const std::string &ringAccess) =0;
+		virtual void onRingAccessUpdated(NLNET::TModuleProxyPtr sender, const std::string &ringAccess) =0;
 		// a message to validate a file waiting to be saved
-		virtual void saveScenarioFileAccepted(NLNET::IModuleProxy *sender, const std::string &md5, const std::string &signature, bool isAccepted) =0;
+		virtual void saveScenarioFileAccepted(NLNET::TModuleProxyPtr sender, const std::string &md5, const std::string &signature, bool isAccepted) =0;
 		// a message to validate a file waiting to be loaded
-		virtual void loadScenarioFileAccepted(NLNET::IModuleProxy *sender, const std::string &md5, bool ok) =0;
+		virtual void loadScenarioFileAccepted(NLNET::TModuleProxyPtr sender, const std::string &md5, bool ok) =0;
 		// a message to validate a user component file waiting to be saved
-		virtual void saveUserComponentFileAccepted(NLNET::IModuleProxy *sender, const std::string &md5, const std::string &signature, bool isAccepted) =0;
+		virtual void saveUserComponentFileAccepted(NLNET::TModuleProxyPtr sender, const std::string &md5, const std::string &signature, bool isAccepted) =0;
 		// a message to validate a user component file waiting to be loaded
-		virtual void loadUserComponentFileAccepted(NLNET::IModuleProxy *sender, const std::string &md5, bool ok) =0;
+		virtual void loadUserComponentFileAccepted(NLNET::TModuleProxyPtr sender, const std::string &md5, bool ok) =0;
 		// send the header of a multi-part message
-		virtual void multiPartMsgHead(NLNET::IModuleProxy *sender, const std::string &msgName, uint32 nbPacket, uint32 size) =0;
+		virtual void multiPartMsgHead(NLNET::TModuleProxyPtr sender, const std::string &msgName, uint32 nbPacket, uint32 size) =0;
 		// send a part of a multi-part message
-		virtual void multiPartMsgBody(NLNET::IModuleProxy *sender, uint32 partId, uint32 packetSize) =0;
+		virtual void multiPartMsgBody(NLNET::TModuleProxyPtr sender, uint32 partId, uint32 packetSize) =0;
 		// send the footer of a multi-part message
-		virtual void multiPartMsgFoot(NLNET::IModuleProxy *sender) =0;
+		virtual void multiPartMsgFoot(NLNET::TModuleProxyPtr sender) =0;
 		// send an ack messag to the client
-		virtual void ackMsg(NLNET::IModuleProxy *sender, uint32 msgId, bool ok) =0;
+		virtual void ackMsg(NLNET::TModuleProxyPtr sender, uint32 msgId, bool ok) =0;
 
 
 	};
@@ -1751,7 +1751,7 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void storeItemNamesForAIInstance_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void storeItemNamesForAIInstance_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1764,7 +1764,7 @@ namespace R2
 		/////////////////////////////////////////////////////////////////
 
 		// DSS send a list of ring names user item with a AI instance
-		virtual void storeItemNamesForAIInstance(NLNET::IModuleProxy *sender, uint32 aiInstance, const std::vector < TCharMappedInfo > &itemInfos) =0;
+		virtual void storeItemNamesForAIInstance(NLNET::TModuleProxyPtr sender, uint32 aiInstance, const std::vector < TCharMappedInfo > &itemInfos) =0;
 
 
 	};
