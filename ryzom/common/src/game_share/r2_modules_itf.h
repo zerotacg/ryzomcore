@@ -71,9 +71,9 @@ namespace R2
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr  /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -175,9 +175,9 @@ namespace R2
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr  /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -189,29 +189,29 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void getStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void getStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void askSetUserCharActPosition_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void askSetUserCharActPosition_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void activateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void activateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void dssMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void dssMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void setScenarioPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void setScenarioPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void startScenarioTiming_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void startScenarioTiming_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void endScenarioTiming_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void endScenarioTiming_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void deactivateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void deactivateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void onEasterEggLooted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void onEasterEggLooted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void onCharTargetReceived_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void onCharTargetReceived_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void teleportCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void teleportCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void characterReady_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void characterReady_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -393,9 +393,9 @@ namespace R2
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr  /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -407,57 +407,57 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void setUserCharStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void setUserCharStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void charJoinAnimSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void charJoinAnimSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void charLeaveAnimSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void charLeaveAnimSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void setUserCharActPosition_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void setUserCharActPosition_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void animSessionStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void animSessionStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void animSessionEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void animSessionEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void sendItemDescription_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void sendItemDescription_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void activateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void activateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void deactivateEasterEgg_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void deactivateEasterEgg_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void deactivateEasterEggs_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void deactivateEasterEggs_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void sendCharTargetToDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void sendCharTargetToDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void onTpPositionAsked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void onTpPositionAsked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void disconnectChar_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void disconnectChar_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void returnToPreviousSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void returnToPreviousSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void setPioneerRight_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void setPioneerRight_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void teleportCharacterToNpc_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void teleportCharacterToNpc_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void setUserCharCurrentSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void setUserCharCurrentSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportLinkedSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportLinkedSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportUnlinkedSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportUnlinkedSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void giveRewardMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void giveRewardMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportNpcControl_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportNpcControl_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportStopNpcControl_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportStopNpcControl_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void subscribeCharacterInRingUniverse_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void subscribeCharacterInRingUniverse_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void unsubscribeCharacterInRingUniverse_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void unsubscribeCharacterInRingUniverse_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -739,9 +739,9 @@ namespace R2
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr  /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -837,11 +837,9 @@ namespace R2
 
 		void setSessionId(TSessionId value)
 		{
-
 				_SessionId = value;
-
 		}
-			// the date of last disconnection of the last character
+		// the date of last disconnection of the last character
 		uint32 getDateEmpty() const
 		{
 			return _DateEmpty;
@@ -849,9 +847,7 @@ namespace R2
 
 		void setDateEmpty(uint32 value)
 		{
-
 				_DateEmpty = value;
-
 		}
 
 		bool operator == (const TR2SbmSessionInfo &other) const
@@ -864,14 +860,12 @@ namespace R2
 		// constructor
 		TR2SbmSessionInfo()
 		{
-
 		}
 
 		void serial(NLMISC::IStream &s)
 		{
 			s.serial(_SessionId);
 			s.serial(_DateEmpty);
-
 		}
 
 
@@ -907,9 +901,9 @@ namespace R2
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr  /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -921,13 +915,13 @@ namespace R2
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void reportDeletedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportDeletedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportHibernatedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportHibernatedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportSavedSessions_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void reportSavedSessions_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void registerDss_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void registerDss_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;

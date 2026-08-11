@@ -19,6 +19,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "stdpch.h"
+
 #include "admin_modules_itf.h"
 
 namespace ADMIN
@@ -27,7 +28,7 @@ namespace ADMIN
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CAdminServiceSkel::TMessageHandlerMap &CAdminServiceSkel::getMessageHandlers() const
 	{
@@ -37,27 +38,27 @@ namespace ADMIN
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("USU"), &CAdminServiceSkel::upServiceUpdate_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("GU"), &CAdminServiceSkel::graphUpdate_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("HRGU"), &CAdminServiceSkel::highRezGraphUpdate_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CR"), &CAdminServiceSkel::commandResult_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CAdminServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
@@ -76,32 +77,32 @@ namespace ADMIN
 		return true;
 	}
 
-	
-	void CAdminServiceSkel::upServiceUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CAdminServiceSkel::upServiceUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_upServiceUpdate_USU);
 		std::vector < TServiceStatus >	serviceStatus;
 			nlRead(__message, serialCont, serviceStatus);
-		upServiceUpdate(sender.get(), serviceStatus);
+		upServiceUpdate(sender, serviceStatus);
 	}
 
-	void CAdminServiceSkel::graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_graphUpdate_GU);
 		TGraphDatas	graphDatas;
 			nlRead(__message, serial, graphDatas);
-		graphUpdate(sender.get(), graphDatas);
+		graphUpdate(sender, graphDatas);
 	}
 
-	void CAdminServiceSkel::highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_highRezGraphUpdate_HRGU);
 		THighRezDatas	graphDatas;
 			nlRead(__message, serial, graphDatas);
-		highRezGraphUpdate(sender.get(), graphDatas);
+		highRezGraphUpdate(sender, graphDatas);
 	}
 
-	void CAdminServiceSkel::commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminServiceSkel::commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminServiceSkel_commandResult_CR);
 		uint32	commandId;
@@ -110,7 +111,7 @@ namespace ADMIN
 			nlRead(__message, serial, serviceAlias);
 		std::string	result;
 			nlRead(__message, serial, result);
-		commandResult(sender.get(), commandId, serviceAlias, result);
+		commandResult(sender, commandId, serviceAlias, result);
 	}
 		// An AES send an update of the list of service up
 	void CAdminServiceProxy::upServiceUpdate(NLNET::IModule *sender, const std::vector < TServiceStatus > &serviceStatus)
@@ -122,9 +123,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_upServiceUpdate(__message, serviceStatus);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -140,9 +141,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_graphUpdate(__message, graphDatas);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -158,9 +159,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_highRezGraphUpdate(__message, graphDatas);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -176,9 +177,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_commandResult(__message, commandId, serviceAlias, result);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -230,7 +231,7 @@ namespace ADMIN
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CAdminExecutorServiceSkel::TMessageHandlerMap &CAdminExecutorServiceSkel::getMessageHandlers() const
 	{
@@ -240,43 +241,43 @@ namespace ADMIN
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("SCO"), &CAdminExecutorServiceSkel::setShardOrders_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SDS"), &CAdminExecutorServiceSkel::shutdownShard_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CC"), &CAdminExecutorServiceSkel::controlCmd_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SCMD"), &CAdminExecutorServiceSkel::serviceCmd_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CR"), &CAdminExecutorServiceSkel::commandResult_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("GU"), &CAdminExecutorServiceSkel::graphUpdate_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("HRGU"), &CAdminExecutorServiceSkel::highRezGraphUpdate_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SSU"), &CAdminExecutorServiceSkel::serviceStatusUpdate_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CAdminExecutorServiceSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
@@ -295,28 +296,28 @@ namespace ADMIN
 		return true;
 	}
 
-	
-	void CAdminExecutorServiceSkel::setShardOrders_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CAdminExecutorServiceSkel::setShardOrders_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_setShardOrders_SCO);
 		std::string	shardName;
 			nlRead(__message, serial, shardName);
 		TShardOrders	shardOrders;
 			nlRead(__message, serial, shardOrders);
-		setShardOrders(sender.get(), shardName, shardOrders);
+		setShardOrders(sender, shardName, shardOrders);
 	}
 
-	void CAdminExecutorServiceSkel::shutdownShard_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::shutdownShard_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_shutdownShard_SDS);
 		std::string	shardName;
 			nlRead(__message, serial, shardName);
 		uint32	delay;
 			nlRead(__message, serial, delay);
-		shutdownShard(sender.get(), shardName, delay);
+		shutdownShard(sender, shardName, delay);
 	}
 
-	void CAdminExecutorServiceSkel::controlCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::controlCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_controlCmd_CC);
 		uint32	commandId;
@@ -328,7 +329,7 @@ namespace ADMIN
 		controlCmd(sender, commandId, serviceAlias, command);
 	}
 
-	void CAdminExecutorServiceSkel::serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_serviceCmd_SCMD);
 		uint32	commandId;
@@ -340,7 +341,7 @@ namespace ADMIN
 		serviceCmd(sender, commandId, serviceAlias, command);
 	}
 
-	void CAdminExecutorServiceSkel::commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_commandResult_CR);
 		uint32	commandId;
@@ -349,31 +350,31 @@ namespace ADMIN
 			nlRead(__message, serial, serviceAlias);
 		std::string	result;
 			nlRead(__message, serial, result);
-		commandResult(sender.get(), commandId, serviceAlias, result);
+		commandResult(sender, commandId, serviceAlias, result);
 	}
 
-	void CAdminExecutorServiceSkel::graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_graphUpdate_GU);
 		TGraphDatas	graphDatas;
 			nlRead(__message, serial, graphDatas);
-		graphUpdate(sender.get(), graphDatas);
+		graphUpdate(sender, graphDatas);
 	}
 
-	void CAdminExecutorServiceSkel::highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_highRezGraphUpdate_HRGU);
 		THighRezDatas	graphDatas;
 			nlRead(__message, serial, graphDatas);
-		highRezGraphUpdate(sender.get(), graphDatas);
+		highRezGraphUpdate(sender, graphDatas);
 	}
 
-	void CAdminExecutorServiceSkel::serviceStatusUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceSkel::serviceStatusUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceSkel_serviceStatusUpdate_SSU);
 		std::string	status;
 			nlRead(__message, serial, status);
-		serviceStatusUpdate(sender.get(), status);
+		serviceStatusUpdate(sender, status);
 	}
 		// AS send orders for a shard
 	void CAdminExecutorServiceProxy::setShardOrders(NLNET::IModule *sender, const std::string &shardName, const TShardOrders &shardOrders)
@@ -385,9 +386,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_setShardOrders(__message, shardName, shardOrders);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -403,9 +404,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_shutdownShard(__message, shardName, delay);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -417,13 +418,13 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->controlCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, serviceAlias, command);
+			_LocalModuleSkel->controlCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, serviceAlias, command);
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_controlCmd(__message, commandId, serviceAlias, command);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -435,13 +436,13 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, serviceAlias, command);
+			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, serviceAlias, command);
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_serviceCmd(__message, commandId, serviceAlias, command);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -457,9 +458,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_commandResult(__message, commandId, serviceAlias, result);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -475,9 +476,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_graphUpdate(__message, graphDatas);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -493,9 +494,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_highRezGraphUpdate(__message, graphDatas);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -511,9 +512,9 @@ namespace ADMIN
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_serviceStatusUpdate(__message, status);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -611,7 +612,7 @@ namespace ADMIN
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CAdminExecutorServiceClientSkel::TMessageHandlerMap &CAdminExecutorServiceClientSkel::getMessageHandlers() const
 	{
@@ -621,25 +622,25 @@ namespace ADMIN
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("SCMD"), &CAdminExecutorServiceClientSkel::serviceCmd_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SCMDNR"), &CAdminExecutorServiceClientSkel::serviceCmdNoReturn_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CAdminExecutorServiceClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		auto it(mh.find(message.getName()));
+		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -652,8 +653,8 @@ namespace ADMIN
 		return true;
 	}
 
-	
-	void CAdminExecutorServiceClientSkel::serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CAdminExecutorServiceClientSkel::serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceClientSkel_serviceCmd_SCMD);
 		uint32	commandId;
@@ -663,7 +664,7 @@ namespace ADMIN
 		serviceCmd(sender, commandId, command);
 	}
 
-	void CAdminExecutorServiceClientSkel::serviceCmdNoReturn_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CAdminExecutorServiceClientSkel::serviceCmdNoReturn_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CAdminExecutorServiceClientSkel_serviceCmdNoReturn_SCMDNR);
 		std::string	command;
@@ -676,13 +677,13 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), commandId, command);
+			_LocalModuleSkel->serviceCmd(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), commandId, command);
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_serviceCmd(__message, commandId, command);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -694,13 +695,13 @@ namespace ADMIN
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->serviceCmdNoReturn(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), command);
+			_LocalModuleSkel->serviceCmdNoReturn(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), command);
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_serviceCmdNoReturn(__message, command);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);

@@ -1,9 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2023  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -53,7 +50,7 @@ namespace ADMIN
 	// This is the interface used by PHP to call methods
 	// on the Admin service module
 
-	class CAdminServiceWebItf
+	class CAdminServiceWebItf 
 	{
 	protected:
 
@@ -100,9 +97,9 @@ namespace ADMIN
 		 *	become owner of the adaptor (and it will be released with the
 		 *	interface).
 		 */
-		CAdminServiceWebItf(ICallbackServerAdaptor *replacementAdaptor = NULL)
+		CAdminServiceWebItf(ICallbackServerAdaptor *replacementAdaptor = nullptr)
 		{
-			if (replacementAdaptor == NULL)
+			if (replacementAdaptor == nullptr)
 			{
 				// use default callback server
 				_CallbackServer = CUniquePtr<ICallbackServerAdaptor>(new CNelCallbackServerAdaptor(this));
@@ -176,7 +173,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 			std::string	command;
 			nlRead(message, serial, command);
@@ -201,7 +198,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 			std::string	serviceAlias;
 			std::string	command;
@@ -228,7 +225,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 			std::string	serviceAlias;
 			std::string	command;
@@ -255,7 +252,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 
 
@@ -286,7 +283,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 
 
@@ -317,7 +314,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 			std::string	varAddr;
 			nlRead(message, serial, varAddr);
@@ -350,7 +347,7 @@ namespace ADMIN
 
 			CAdminServiceWebItf *callback = (CAdminServiceWebItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 			std::string	varAddr;
 			uint32	startDate;
@@ -392,7 +389,7 @@ namespace ADMIN
 		// serviceCmdResult.
 		virtual void on_globalCmd(NLNET::TSockId from, const std::string &command) =0;
 
-		// Send a service related command to the executor
+		// Send a service related command to the executor 
 		// (not to the controled service)
 		// The result is returned by the return message
 		// controlCmdResult.
@@ -437,12 +434,12 @@ namespace ADMIN
 	 *	Derive from this class to invoke method on the callback server
 	 */
 
-	class CAdminServiceWebClientItf
+	class CAdminServiceWebClientItf 
 	{
 	protected:
 
 		/// the callback client adaptor
-		CUniquePtr < ICallbackClientAdaptor >	_CallbackClient;
+		CUniquePtr<ICallbackClientAdaptor>	_CallbackClient;
 
 
 		void getCallbakArray(NLNET::TCallbackItem *&arrayPtr, uint32 &arraySize)
@@ -491,17 +488,17 @@ namespace ADMIN
 
 		}
 
-		CAdminServiceWebClientItf(ICallbackClientAdaptor *adaptorReplacement = NULL)
+		CAdminServiceWebClientItf(ICallbackClientAdaptor *adaptorReplacement = nullptr)
 		{
-			if (adaptorReplacement == NULL)
+			if (adaptorReplacement == nullptr)
 			{
 				// use the default Nel adaptor
-				_CallbackClient = CUniquePtr < ICallbackClientAdaptor >(new CNelCallbackClientAdaptor(this));
+				_CallbackClient = CUniquePtr<ICallbackClientAdaptor>(new CNelCallbackClientAdaptor(this));
 			}
 			else
 			{
 				// use the replacement one
-				_CallbackClient = CUniquePtr < ICallbackClientAdaptor >(adaptorReplacement);
+				_CallbackClient = CUniquePtr<ICallbackClientAdaptor>(adaptorReplacement);
 			}
 		}
 
@@ -556,7 +553,7 @@ namespace ADMIN
 
 			_CallbackClient->send(message);
 		}
-		// Send a service related command to the executor
+		// Send a service related command to the executor 
 		// (not to the controled service)
 		// The result is returned by the return message
 		// controlCmdResult.
@@ -659,7 +656,7 @@ namespace ADMIN
 
 			CAdminServiceWebClientItf *callback = (CAdminServiceWebClientItf *)adaptor->getContainerClass();
 
-			if (callback  == NULL)
+			if (callback  == nullptr)
 				return;
 			std::string	serviceAlias;
 			std::string	result;
@@ -708,16 +705,11 @@ namespace ADMIN
 			return _ServiceAlias;
 		}
 
-
 		void setServiceAlias(const std::string &value)
 		{
-
-
 				_ServiceAlias = value;
-
-
 		}
-			//
+		//
 		const std::string &getVarName() const
 		{
 			return _VarName;
@@ -728,16 +720,11 @@ namespace ADMIN
 			return _VarName;
 		}
 
-
 		void setVarName(const std::string &value)
 		{
-
-
 				_VarName = value;
-
-
 		}
-			//
+		//
 		uint32 getSamplePeriod() const
 		{
 			return _SamplePeriod;
@@ -745,11 +732,9 @@ namespace ADMIN
 
 		void setSamplePeriod(uint32 value)
 		{
-
 				_SamplePeriod = value;
-
 		}
-			//
+		//
 		double getValue() const
 		{
 			return _Value;
@@ -757,9 +742,7 @@ namespace ADMIN
 
 		void setValue(double value)
 		{
-
 				_Value = value;
-
 		}
 
 		bool operator == (const TGraphData &other) const
@@ -774,7 +757,6 @@ namespace ADMIN
 		// constructor
 		TGraphData()
 		{
-
 		}
 
 		void serial(NLMISC::IStream &s)
@@ -783,7 +765,6 @@ namespace ADMIN
 			s.serial(_VarName);
 			s.serial(_SamplePeriod);
 			s.serial(_Value);
-
 		}
 
 
@@ -793,7 +774,7 @@ namespace ADMIN
 	};
 
 
-		/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
 	class TGraphDatas
@@ -812,11 +793,9 @@ namespace ADMIN
 
 		void setCurrentTime(uint32 value)
 		{
-
 				_CurrentTime = value;
-
 		}
-			//
+		//
 		const std::vector < TGraphData > &getDatas() const
 		{
 			return _Datas;
@@ -827,14 +806,9 @@ namespace ADMIN
 			return _Datas;
 		}
 
-
 		void setDatas(const std::vector < TGraphData > &value)
 		{
-
-
 				_Datas = value;
-
-
 		}
 
 		bool operator == (const TGraphDatas &other) const
@@ -847,14 +821,12 @@ namespace ADMIN
 		// constructor
 		TGraphDatas()
 		{
-
 		}
 
 		void serial(NLMISC::IStream &s)
 		{
 			s.serial(_CurrentTime);
 			s.serialCont(_Datas);
-
 		}
 
 
@@ -864,7 +836,7 @@ namespace ADMIN
 	};
 
 
-		/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
 	class THighRezData
@@ -883,11 +855,9 @@ namespace ADMIN
 
 		void setSampleTick(NLMISC::TTime value)
 		{
-
 				_SampleTick = value;
-
 		}
-			//
+		//
 		double getValue() const
 		{
 			return _Value;
@@ -895,9 +865,7 @@ namespace ADMIN
 
 		void setValue(double value)
 		{
-
 				_Value = value;
-
 		}
 
 		bool operator == (const THighRezData &other) const
@@ -910,14 +878,12 @@ namespace ADMIN
 		// constructor
 		THighRezData()
 		{
-
 		}
 
 		void serial(NLMISC::IStream &s)
 		{
 			s.serial(_SampleTick);
 			s.serial(_Value);
-
 		}
 
 
@@ -927,7 +893,7 @@ namespace ADMIN
 	};
 
 
-		/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
 	class THighRezDatas
@@ -953,16 +919,11 @@ namespace ADMIN
 			return _ServiceAlias;
 		}
 
-
 		void setServiceAlias(const std::string &value)
 		{
-
-
 				_ServiceAlias = value;
-
-
 		}
-			//
+		//
 		const std::string &getVarName() const
 		{
 			return _VarName;
@@ -973,16 +934,11 @@ namespace ADMIN
 			return _VarName;
 		}
 
-
 		void setVarName(const std::string &value)
 		{
-
-
 				_VarName = value;
-
-
 		}
-			//
+		//
 		uint32 getCurrentTime() const
 		{
 			return _CurrentTime;
@@ -990,11 +946,9 @@ namespace ADMIN
 
 		void setCurrentTime(uint32 value)
 		{
-
 				_CurrentTime = value;
-
 		}
-			//
+		//
 		const std::vector < THighRezData > &getDatas() const
 		{
 			return _Datas;
@@ -1005,14 +959,9 @@ namespace ADMIN
 			return _Datas;
 		}
 
-
 		void setDatas(const std::vector < THighRezData > &value)
 		{
-
-
 				_Datas = value;
-
-
 		}
 
 		bool operator == (const THighRezDatas &other) const
@@ -1027,7 +976,6 @@ namespace ADMIN
 		// constructor
 		THighRezDatas()
 		{
-
 		}
 
 		void serial(NLMISC::IStream &s)
@@ -1036,7 +984,6 @@ namespace ADMIN
 			s.serial(_VarName);
 			s.serial(_CurrentTime);
 			s.serialCont(_Datas);
-
 		}
 
 
@@ -1599,7 +1546,7 @@ namespace ADMIN
 		}
 
 	};
-		/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
 	class TServiceStatus
@@ -1633,16 +1580,11 @@ namespace ADMIN
 			return _ShardName;
 		}
 
-
 		void setShardName(const std::string &value)
 		{
-
-
 				_ShardName = value;
-
-
 		}
-			//
+		//
 		const std::string &getServiceLongName() const
 		{
 			return _ServiceLongName;
@@ -1653,16 +1595,11 @@ namespace ADMIN
 			return _ServiceLongName;
 		}
 
-
 		void setServiceLongName(const std::string &value)
 		{
-
-
 				_ServiceLongName = value;
-
-
 		}
-			//
+		//
 		const std::string &getServiceShortName() const
 		{
 			return _ServiceShortName;
@@ -1673,16 +1610,11 @@ namespace ADMIN
 			return _ServiceShortName;
 		}
 
-
 		void setServiceShortName(const std::string &value)
 		{
-
-
 				_ServiceShortName = value;
-
-
 		}
-			//
+		//
 		const std::string &getServiceAliasName() const
 		{
 			return _ServiceAliasName;
@@ -1693,16 +1625,11 @@ namespace ADMIN
 			return _ServiceAliasName;
 		}
 
-
 		void setServiceAliasName(const std::string &value)
 		{
-
-
 				_ServiceAliasName = value;
-
-
 		}
-			//
+		//
 		TRunningState getRunningState() const
 		{
 			return _RunningState;
@@ -1710,11 +1637,9 @@ namespace ADMIN
 
 		void setRunningState(TRunningState value)
 		{
-
 				_RunningState = value;
-
 		}
-			//
+		//
 		TRunningOrders getRunningOrders() const
 		{
 			return _RunningOrders;
@@ -1722,11 +1647,9 @@ namespace ADMIN
 
 		void setRunningOrders(TRunningOrders value)
 		{
-
 				_RunningOrders = value;
-
 		}
-			//
+		//
 		const std::set < TRunningTag > &getRunningTags() const
 		{
 			return _RunningTags;
@@ -1737,16 +1660,11 @@ namespace ADMIN
 			return _RunningTags;
 		}
 
-
 		void setRunningTags(const std::set < TRunningTag > &value)
 		{
-
-
 				_RunningTags = value;
-
-
 		}
-			//
+		//
 		const std::string &getStatus() const
 		{
 			return _Status;
@@ -1757,14 +1675,9 @@ namespace ADMIN
 			return _Status;
 		}
 
-
 		void setStatus(const std::string &value)
 		{
-
-
 				_Status = value;
-
-
 		}
 
 		bool operator == (const TServiceStatus &other) const
@@ -1783,7 +1696,6 @@ namespace ADMIN
 		// constructor
 		TServiceStatus()
 		{
-
 		}
 
 		void serial(NLMISC::IStream &s)
@@ -1796,7 +1708,6 @@ namespace ADMIN
 			s.serial(_RunningOrders);
 			s.serialCont(_RunningTags);
 			s.serial(_Status);
-
 		}
 
 
@@ -1832,9 +1743,9 @@ namespace ADMIN
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -1846,13 +1757,13 @@ namespace ADMIN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void upServiceUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void upServiceUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -1901,7 +1812,7 @@ namespace ADMIN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				CAdminServiceSkel::TInterceptor *interceptor = NULL;
+				CAdminServiceSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
@@ -1909,7 +1820,7 @@ namespace ADMIN
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else
-				_LocalModuleSkel = 0;
+				_LocalModuleSkel = nullptr;
 
 		}
 		virtual ~CAdminServiceProxy()
@@ -1972,9 +1883,9 @@ namespace ADMIN
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -1986,21 +1897,21 @@ namespace ADMIN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void setShardOrders_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void setShardOrders_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void shutdownShard_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void shutdownShard_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void controlCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void controlCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void commandResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void commandResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void graphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void graphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void highRezGraphUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void highRezGraphUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void serviceStatusUpdate_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void serviceStatusUpdate_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2017,9 +1928,9 @@ namespace ADMIN
 		// AS send a command to shutdown a shard with a delay
 		virtual void shutdownShard(NLNET::IModuleProxy *sender, const std::string &shardName, uint32 delay) =0;
 		// AS send a control command to this AES
-		virtual void controlCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
+		virtual void controlCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
 		// Send a command to a service.
-		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
+		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &command) =0;
 		// AES client send back the result of execution of a command
 		virtual void commandResult(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) =0;
 		// A service send graph data update
@@ -2057,7 +1968,7 @@ namespace ADMIN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				CAdminExecutorServiceSkel::TInterceptor *interceptor = NULL;
+				CAdminExecutorServiceSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
@@ -2065,7 +1976,7 @@ namespace ADMIN
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else
-				_LocalModuleSkel = 0;
+				_LocalModuleSkel = nullptr;
 
 		}
 		virtual ~CAdminExecutorServiceProxy()
@@ -2106,9 +2017,7 @@ namespace ADMIN
 
 			for (; first != last; ++first)
 			{
-				auto proxy = *first;
-
-				proxy->sendModuleMessage(sender, message);
+				(*first)->sendModuleMessage(sender, message);
 			}
 
 		}
@@ -2125,9 +2034,7 @@ namespace ADMIN
 
 			for (; first != last; ++first)
 			{
-				auto proxy = *first;
-
-				proxy->sendModuleMessage(sender, message);
+				(*first)->sendModuleMessage(sender, message);
 			}
 
 		}
@@ -2144,9 +2051,7 @@ namespace ADMIN
 
 			for (; first != last; ++first)
 			{
-				NLNET::IModuleProxy *proxy = *first;
-
-				proxy->sendModuleMessage(sender, message);
+				(*first)->sendModuleMessage(sender, message);
 			}
 
 		}
@@ -2205,9 +2110,9 @@ namespace ADMIN
 
 		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
-		void				fwdOnModuleUp(NLNET::TModuleProxyPtr moduleProxy)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr moduleProxy) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {}
+		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
 
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
@@ -2219,9 +2124,9 @@ namespace ADMIN
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 
-		void serviceCmd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void serviceCmd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void serviceCmdNoReturn_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+		void serviceCmdNoReturn_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -2234,9 +2139,9 @@ namespace ADMIN
 		/////////////////////////////////////////////////////////////////
 
 		// execute a command and return the result.
-		virtual void serviceCmd(NLNET::TModuleProxyPtr sender, uint32 commandId, const std::string &command) =0;
+		virtual void serviceCmd(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &command) =0;
 		// Send a command to a service without waiting for the return value.
-		virtual void serviceCmdNoReturn(NLNET::TModuleProxyPtr sender, const std::string &command) =0;
+		virtual void serviceCmdNoReturn(NLNET::IModuleProxy *sender, const std::string &command) =0;
 
 
 	};
@@ -2266,7 +2171,7 @@ namespace ADMIN
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				CAdminExecutorServiceClientSkel::TInterceptor *interceptor = NULL;
+				CAdminExecutorServiceClientSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
 				nlassert(interceptor != NULL);
 
@@ -2274,7 +2179,7 @@ namespace ADMIN
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else
-				_LocalModuleSkel = 0;
+				_LocalModuleSkel = nullptr;
 
 		}
 		virtual ~CAdminExecutorServiceClientProxy()

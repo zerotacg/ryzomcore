@@ -1,4 +1,3 @@
-
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
@@ -20,7 +19,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "stdpch.h"
-	
+
 #include "ring_session_manager_itf.h"
 
 namespace RSMGR
@@ -29,7 +28,7 @@ namespace RSMGR
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CRingSessionManagerSkel::TMessageHandlerMap &CRingSessionManagerSkel::getMessageHandlers() const
 	{
@@ -39,31 +38,31 @@ namespace RSMGR
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("RDSS"), &CRingSessionManagerSkel::registerDSS_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SSC"), &CRingSessionManagerSkel::sessionCreated_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("RSE"), &CRingSessionManagerSkel::reportSessionEvent_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SCS"), &CRingSessionManagerSkel::scenarioStarted_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("RCK"), &CRingSessionManagerSkel::reportCharacterKicked_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SCE"), &CRingSessionManagerSkel::scenarioEnded_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
@@ -86,26 +85,26 @@ namespace RSMGR
 		return true;
 	}
 
-	
-	void CRingSessionManagerSkel::registerDSS_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CRingSessionManagerSkel::registerDSS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_registerDSS_RDSS);
 		uint32	shardId;
 			nlRead(__message, serial, shardId);
 		std::vector < TRunningSessionInfo >	runningSessions;
 			nlRead(__message, serialCont, runningSessions);
-		registerDSS(sender.get(), shardId, runningSessions);
+		registerDSS(sender, shardId, runningSessions);
 	}
 
-	void CRingSessionManagerSkel::sessionCreated_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::sessionCreated_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_sessionCreated_SSC);
 		RSMGR::TRunningSessionInfo	sessionInfo;
 			nlRead(__message, serial, sessionInfo);
-		sessionCreated(sender.get(), sessionInfo);
+		sessionCreated(sender, sessionInfo);
 	}
 
-	void CRingSessionManagerSkel::reportSessionEvent_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::reportSessionEvent_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_reportSessionEvent_RSE);
 		RSMGR::TSessionEvent	event;
@@ -114,30 +113,30 @@ namespace RSMGR
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		reportSessionEvent(sender.get(), event, sessionId, charId);
+		reportSessionEvent(sender, event, sessionId, charId);
 	}
 
-	void CRingSessionManagerSkel::scenarioStarted_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::scenarioStarted_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_scenarioStarted_SCS);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		R2::TRunningScenarioInfo	scenarioInfo;
 			nlRead(__message, serial, scenarioInfo);
-		scenarioStarted(sender.get(), sessionId, scenarioInfo);
+		scenarioStarted(sender, sessionId, scenarioInfo);
 	}
 
-	void CRingSessionManagerSkel::reportCharacterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::reportCharacterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_reportCharacterKicked_RCK);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		reportCharacterKicked(sender.get(), sessionId, charId);
+		reportCharacterKicked(sender, sessionId, charId);
 	}
 
-	void CRingSessionManagerSkel::scenarioEnded_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerSkel::scenarioEnded_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerSkel_scenarioEnded_SCE);
 		TSessionId	sessionId;
@@ -152,7 +151,7 @@ namespace RSMGR
 			nlRead(__message, serial, timeTaken);
 		std::vector < uint32 >	participants;
 			nlRead(__message, serialCont, participants);
-		scenarioEnded(sender.get(), sessionId, scenarioInfo, rrpScored, scenarioPointScored, timeTaken, participants);
+		scenarioEnded(sender, sessionId, scenarioInfo, rrpScored, scenarioPointScored, timeTaken, participants);
 	}
 		// A edition or animation server module register in the session manager
 		// It send the list of session hosted in the server
@@ -340,7 +339,7 @@ namespace RSMGR
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CRingSessionManagerClientSkel::TMessageHandlerMap &CRingSessionManagerClientSkel::getMessageHandlers() const
 	{
@@ -350,43 +349,43 @@ namespace RSMGR
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("CSS"), &CRingSessionManagerClientSkel::createSession_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("AHC"), &CRingSessionManagerClientSkel::addCharacterInSession_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CLSDSS"), &CRingSessionManagerClientSkel::closeSession_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SH"), &CRingSessionManagerClientSkel::stopHibernation_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CK"), &CRingSessionManagerClientSkel::characterKicked_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CUK"), &CRingSessionManagerClientSkel::characterUnkicked_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("STOCTA"), &CRingSessionManagerClientSkel::teleportOneCharacterToAnother_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SHSA"), &CRingSessionManagerClientSkel::hibernateSession_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("SSSP"), &CRingSessionManagerClientSkel::setSessionStartParams_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
@@ -409,8 +408,8 @@ namespace RSMGR
 		return true;
 	}
 
-	
-	void CRingSessionManagerClientSkel::createSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CRingSessionManagerClientSkel::createSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_createSession_CSS);
 		uint32	ownerCharId;
@@ -419,10 +418,10 @@ namespace RSMGR
 			nlRead(__message, serial, sessionId);
 		RSMGR::TSessionType	type;
 			nlRead(__message, serial, type);
-		createSession(sender.get(), ownerCharId, sessionId, type);
+		createSession(sender, ownerCharId, sessionId, type);
 	}
 
-	void CRingSessionManagerClientSkel::addCharacterInSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::addCharacterInSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_addCharacterInSession_AHC);
 		TSessionId	sessionId;
@@ -435,48 +434,48 @@ namespace RSMGR
 			nlRead(__message, serial, ringAccess);
 		bool	newcomer;
 			nlRead(__message, serial, newcomer);
-		addCharacterInSession(sender.get(), sessionId, charId, enterAs, ringAccess, newcomer);
+		addCharacterInSession(sender, sessionId, charId, enterAs, ringAccess, newcomer);
 	}
 
-	void CRingSessionManagerClientSkel::closeSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::closeSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_closeSession_CLSDSS);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		closeSession(sender.get(), sessionId);
+		closeSession(sender, sessionId);
 	}
 
-	void CRingSessionManagerClientSkel::stopHibernation_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::stopHibernation_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_stopHibernation_SH);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	ownerId;
 			nlRead(__message, serial, ownerId);
-		stopHibernation(sender.get(), sessionId, ownerId);
+		stopHibernation(sender, sessionId, ownerId);
 	}
 
-	void CRingSessionManagerClientSkel::characterKicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::characterKicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_characterKicked_CK);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		characterKicked(sender.get(), sessionId, charId);
+		characterKicked(sender, sessionId, charId);
 	}
 
-	void CRingSessionManagerClientSkel::characterUnkicked_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::characterUnkicked_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_characterUnkicked_CUK);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		characterUnkicked(sender.get(), sessionId, charId);
+		characterUnkicked(sender, sessionId, charId);
 	}
 
-	void CRingSessionManagerClientSkel::teleportOneCharacterToAnother_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::teleportOneCharacterToAnother_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_teleportOneCharacterToAnother_STOCTA);
 		TSessionId	sessionId;
@@ -485,18 +484,18 @@ namespace RSMGR
 			nlRead(__message, serial, sourceCharId);
 		uint32	destCharId;
 			nlRead(__message, serial, destCharId);
-		teleportOneCharacterToAnother(sender.get(), sessionId, sourceCharId, destCharId);
+		teleportOneCharacterToAnother(sender, sessionId, sourceCharId, destCharId);
 	}
 
-	void CRingSessionManagerClientSkel::hibernateSession_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::hibernateSession_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_hibernateSession_SHSA);
 		TSessionId	sessionId;
 			nlRead(__message, serial, sessionId);
-		hibernateSession(sender.get(), sessionId);
+		hibernateSession(sender, sessionId);
 	}
 
-	void CRingSessionManagerClientSkel::setSessionStartParams_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CRingSessionManagerClientSkel::setSessionStartParams_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CRingSessionManagerClientSkel_setSessionStartParams_SSSP);
 		uint32	charId;
@@ -509,7 +508,7 @@ namespace RSMGR
 			nlRead(__message, serial, initialEntryPointLocation);
 		std::string	initialSeason;
 			nlRead(__message, serial, initialSeason);
-		setSessionStartParams(sender.get(), charId, sessionId, initialIslandLocation, initialEntryPointLocation, initialSeason);
+		setSessionStartParams(sender, charId, sessionId, initialIslandLocation, initialEntryPointLocation, initialSeason);
 	}
 		// Ask the client to create a new session modules
 	void CRingSessionManagerClientProxy::createSession(NLNET::IModule *sender, uint32 ownerCharId, TSessionId sessionId, const RSMGR::TSessionType &type)

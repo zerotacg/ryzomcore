@@ -84,7 +84,7 @@ namespace CHARSYNC
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		auto it(mh.find(message.getName()));
+		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -92,13 +92,13 @@ namespace CHARSYNC
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender.get(), message);
+		(this->*cmd)(sender, message);
 
 		return true;
 	}
 
 
-	void CCharacterSyncSkel::addCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::addCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_addCharacter_CS_ACH);
 		TCharInfo	charInfo;
@@ -106,7 +106,7 @@ namespace CHARSYNC
 		addCharacter(sender, charInfo);
 	}
 
-	void CCharacterSyncSkel::deleteCharacter_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::deleteCharacter_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_deleteCharacter_CS_DCH);
 		uint32	charId;
@@ -114,7 +114,7 @@ namespace CHARSYNC
 		deleteCharacter(sender, charId);
 	}
 
-	void CCharacterSyncSkel::updateCharGuild_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharGuild_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharGuild_CS_UPDCG);
 		NLMISC::CEntityId	charEId;
@@ -124,7 +124,7 @@ namespace CHARSYNC
 		updateCharGuild(sender, charEId, guildId);
 	}
 
-	void CCharacterSyncSkel::updateCharRespawnPoints_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharRespawnPoints_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharRespawnPoints_CS_UPDCR);
 		NLMISC::CEntityId	charEId;
@@ -134,7 +134,7 @@ namespace CHARSYNC
 		updateCharRespawnPoints(sender, charEId, respawnPoints);
 	}
 
-	void CCharacterSyncSkel::updateCharsBestLevel_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharsBestLevel_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharsBestLevel_CS_UPDCL);
 		std::vector < TCharBestLevelInfo >	charLevelInfos;
@@ -142,7 +142,7 @@ namespace CHARSYNC
 		updateCharsBestLevel(sender, charLevelInfos);
 	}
 
-	void CCharacterSyncSkel::updateCharNewbieFlag_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharNewbieFlag_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharNewbieFlag_CS_UPCNF);
 		NLMISC::CEntityId	charEId;
@@ -152,7 +152,7 @@ namespace CHARSYNC
 		updateCharNewbieFlag(sender, charEId, newbie);
 	}
 
-	void CCharacterSyncSkel::updateCharAllegiance_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharAllegiance_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharAllegiance_CS_UPDCA);
 		NLMISC::CEntityId	charEId;
@@ -164,7 +164,7 @@ namespace CHARSYNC
 		updateCharAllegiance(sender, charEId, civilisation, cult);
 	}
 
-	void CCharacterSyncSkel::updateCharHomeMainlandSessionId_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::updateCharHomeMainlandSessionId_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_updateCharHomeMainlandSessionId_CS_UPDCHMSI);
 		NLMISC::CEntityId	charEId;
@@ -174,7 +174,7 @@ namespace CHARSYNC
 		updateCharHomeMainlandSessionId(sender, charEId, homeMainlandSessionId);
 	}
 
-	void CCharacterSyncSkel::syncUserChars_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CCharacterSyncSkel::syncUserChars_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharacterSyncSkel_syncUserChars_CS_UPDCS);
 		uint32	userId;
@@ -510,7 +510,7 @@ namespace CHARSYNC
 		}
 
 		TMessageHandler cmd = it->second;
-		(this->*cmd)(sender.get(), message);
+		(this->*cmd)(sender, message);
 
 		return true;
 	}

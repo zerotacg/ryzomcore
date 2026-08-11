@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "stdpch.h"
-	
+
 #include "chat_unifier_itf.h"
 
 namespace CHATUNI
@@ -28,7 +28,7 @@ namespace CHATUNI
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CChatUnifierSkel::TMessageHandlerMap &CChatUnifierSkel::getMessageHandlers() const
 	{
@@ -38,15 +38,15 @@ namespace CHATUNI
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("CUSFT"), &CChatUnifierSkel::sendFarTell_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CChatUnifierSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
@@ -65,8 +65,8 @@ namespace CHATUNI
 		return true;
 	}
 
-	
-	void CChatUnifierSkel::sendFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CChatUnifierSkel::sendFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierSkel_sendFarTell_CUSFT);
 		NLMISC::CEntityId	senderCharId;
@@ -77,7 +77,7 @@ namespace CHATUNI
 			nlRead(__message, serial, destName);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		sendFarTell(sender.get(), senderCharId, havePrivilege, destName, text);
+		sendFarTell(sender, senderCharId, havePrivilege, destName, text);
 	}
 		// IOS forward a tell message to the unifier
 		// If IOS can't find the player localy, it forward
@@ -91,9 +91,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_sendFarTell(__message, senderCharId, havePrivilege, destName, text);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -116,7 +116,7 @@ namespace CHATUNI
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CChatUnifierClientSkel::TMessageHandlerMap &CChatUnifierClientSkel::getMessageHandlers() const
 	{
@@ -126,43 +126,43 @@ namespace CHATUNI
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURFTF"), &CChatUnifierClientSkel::recvFarTellFail_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURFT"), &CChatUnifierClientSkel::recvFarTell_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURFGC"), &CChatUnifierClientSkel::farGuildChat_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURFGC2"), &CChatUnifierClientSkel::farGuildChat2_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURFGC2E"), &CChatUnifierClientSkel::farGuildChat2Ex_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURUB"), &CChatUnifierClientSkel::universeBroadcast_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CUDCB"), &CChatUnifierClientSkel::dynChanBroadcast_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("CURBM"), &CChatUnifierClientSkel::recvBroadcastMessage_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CChatUnifierClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
@@ -181,8 +181,8 @@ namespace CHATUNI
 		return true;
 	}
 
-	
-	void CChatUnifierClientSkel::recvFarTellFail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CChatUnifierClientSkel::recvFarTellFail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvFarTellFail_CURFTF);
 		NLMISC::CEntityId	senderCharId;
@@ -191,10 +191,10 @@ namespace CHATUNI
 			nlRead(__message, serial, destName);
 		TFailInfo	failInfo;
 			nlRead(__message, serial, failInfo);
-		recvFarTellFail(sender.get(), senderCharId, destName, failInfo);
+		recvFarTellFail(sender, senderCharId, destName, failInfo);
 	}
 
-	void CChatUnifierClientSkel::recvFarTell_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvFarTell_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvFarTell_CURFT);
 		NLMISC::CEntityId	senderCharId;
@@ -207,10 +207,10 @@ namespace CHATUNI
 			nlRead(__message, serial, destName);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		recvFarTell(sender.get(), senderCharId, senderName, havePrivilege, destName, text);
+		recvFarTell(sender, senderCharId, senderName, havePrivilege, destName, text);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat_CURFGC);
 		ucstring	senderName;
@@ -219,10 +219,10 @@ namespace CHATUNI
 			nlRead(__message, serial, guildId);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		farGuildChat(sender.get(), senderName, guildId, text);
+		farGuildChat(sender, senderName, guildId, text);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat2_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat2_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat2_CURFGC2);
 		ucstring	senderName;
@@ -231,10 +231,10 @@ namespace CHATUNI
 			nlRead(__message, serial, guildId);
 		ucstring	phraseName;
 			nlRead(__message, serial, phraseName);
-		farGuildChat2(sender.get(), senderName, guildId, phraseName);
+		farGuildChat2(sender, senderName, guildId, phraseName);
 	}
 
-	void CChatUnifierClientSkel::farGuildChat2Ex_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::farGuildChat2Ex_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_farGuildChat2Ex_CURFGC2E);
 		ucstring	senderName;
@@ -243,10 +243,10 @@ namespace CHATUNI
 			nlRead(__message, serial, guildId);
 		uint32	phraseId;
 			nlRead(__message, serial, phraseId);
-		farGuildChat2Ex(sender.get(), senderName, guildId, phraseId);
+		farGuildChat2Ex(sender, senderName, guildId, phraseId);
 	}
 
-	void CChatUnifierClientSkel::universeBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::universeBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_universeBroadcast_CURUB);
 		ucstring	senderName;
@@ -255,10 +255,10 @@ namespace CHATUNI
 			nlRead(__message, serial, senderHomeSession);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		universeBroadcast(sender.get(), senderName, senderHomeSession, text);
+		universeBroadcast(sender, senderName, senderHomeSession, text);
 	}
 
-	void CChatUnifierClientSkel::dynChanBroadcast_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::dynChanBroadcast_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_dynChanBroadcast_CUDCB);
 		NLMISC::CEntityId	chanId;
@@ -267,15 +267,15 @@ namespace CHATUNI
 			nlRead(__message, serial, senderName);
 		ucstring	text;
 			nlRead(__message, serial, text);
-		dynChanBroadcast(sender.get(), chanId, senderName, text);
+		dynChanBroadcast(sender, chanId, senderName, text);
 	}
 
-	void CChatUnifierClientSkel::recvBroadcastMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CChatUnifierClientSkel::recvBroadcastMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CChatUnifierClientSkel_recvBroadcastMessage_CURBM);
 		ucstring	message;
 			nlRead(__message, serial, message);
-		recvBroadcastMessage(sender.get(), message);
+		recvBroadcastMessage(sender, message);
 	}
 		// SU send a far tell failure to IOS. This mean that the player is offline or unknow
 	void CChatUnifierClientProxy::recvFarTellFail(NLNET::IModule *sender, const NLMISC::CEntityId &senderCharId, const ucstring &destName, TFailInfo failInfo)
@@ -287,9 +287,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_recvFarTellFail(__message, senderCharId, destName, failInfo);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -305,9 +305,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_recvFarTell(__message, senderCharId, senderName, havePrivilege, destName, text);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -323,9 +323,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_farGuildChat(__message, senderName, guildId, text);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -341,9 +341,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_farGuildChat2(__message, senderName, guildId, phraseName);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -359,9 +359,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_farGuildChat2Ex(__message, senderName, guildId, phraseId);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -377,9 +377,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_universeBroadcast(__message, senderName, senderHomeSession, text);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -395,9 +395,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_dynChanBroadcast(__message, chanId, senderName, text);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -413,9 +413,9 @@ namespace CHATUNI
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_recvBroadcastMessage(__message, message);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);

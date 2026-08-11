@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "stdpch.h"
-	
+
 #include "char_name_mapper_itf.h"
 
 namespace CNM
@@ -28,7 +28,7 @@ namespace CNM
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CCharNameMapperSkel::TMessageHandlerMap &CCharNameMapperSkel::getMessageHandlers() const
 	{
@@ -38,15 +38,15 @@ namespace CNM
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("MCN"), &CCharNameMapperSkel::mapCharNames_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CCharNameMapperSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
@@ -65,8 +65,8 @@ namespace CNM
 		return true;
 	}
 
-	
-	void CCharNameMapperSkel::mapCharNames_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CCharNameMapperSkel::mapCharNames_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharNameMapperSkel_mapCharNames_MCN);
 		std::vector < TCharNameInfo >	charNameInfos;
@@ -79,13 +79,13 @@ namespace CNM
 		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 		{
 			// immediate local synchronous dispatching
-			_LocalModuleSkel->mapCharNames(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charNameInfos);
+			_LocalModuleSkel->mapCharNames(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender).get(), charNameInfos);
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_mapCharNames(__message, charNameInfos);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -105,7 +105,7 @@ namespace CNM
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CCharNameMapperClientSkel::TMessageHandlerMap &CCharNameMapperClientSkel::getMessageHandlers() const
 	{
@@ -115,21 +115,21 @@ namespace CNM
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("MCN"), &CCharNameMapperClientSkel::charNamesMapped_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CCharNameMapperClientSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
-		auto it(mh.find(message.getName()));
+		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
 
 		if (it == mh.end())
 		{
@@ -142,13 +142,13 @@ namespace CNM
 		return true;
 	}
 
-	
-	void CCharNameMapperClientSkel::charNamesMapped_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CCharNameMapperClientSkel::charNamesMapped_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CCharNameMapperClientSkel_charNamesMapped_MCN);
 		std::vector < TCharMappedInfo >	charMappedInfos;
 			nlRead(__message, serialCont, charMappedInfos);
-		charNamesMapped(sender.get(), charMappedInfos);
+		charNamesMapped(sender, charMappedInfos);
 	}
 		// 
 	void CCharNameMapperClientProxy::charNamesMapped(NLNET::IModule *sender, const std::vector < TCharMappedInfo > &charMappedInfos)
@@ -160,9 +160,9 @@ namespace CNM
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_charNamesMapped(__message, charMappedInfos);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);

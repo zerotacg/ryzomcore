@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "stdpch.h"
-	
+
 #include "mail_forum_itf.h"
 
 namespace MFS
@@ -28,7 +28,7 @@ namespace MFS
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	
+
 
 	const CMailForumNotifierSkel::TMessageHandlerMap &CMailForumNotifierSkel::getMessageHandlers() const
 	{
@@ -38,19 +38,19 @@ namespace MFS
 		if (!init)
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
-			
+
 			res = handlers.insert(std::make_pair(std::string("MFS_NM"), &CMailForumNotifierSkel::notifyMail_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			res = handlers.insert(std::make_pair(std::string("MFS_NFM"), &CMailForumNotifierSkel::notifyForumMessage_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
-			
+
 			init = true;
 		}
 
-		return handlers;			
+		return handlers;
 	}
 	bool CMailForumNotifierSkel::fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 	{
@@ -69,16 +69,16 @@ namespace MFS
 		return true;
 	}
 
-	
-	void CMailForumNotifierSkel::notifyMail_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+
+	void CMailForumNotifierSkel::notifyMail_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CMailForumNotifierSkel_notifyMail_MFS_NM);
 		uint32	charId;
 			nlRead(__message, serial, charId);
-		notifyMail(sender.get(), charId);
+		notifyMail(sender, charId);
 	}
 
-	void CMailForumNotifierSkel::notifyForumMessage_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
+	void CMailForumNotifierSkel::notifyForumMessage_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CMailForumNotifierSkel_notifyForumMessage_MFS_NFM);
 		uint32	charId;
@@ -87,7 +87,7 @@ namespace MFS
 			nlRead(__message, serial, guildId);
 		uint32	threadId;
 			nlRead(__message, serial, threadId);
-		notifyForumMessage(sender.get(), charId, guildId, threadId);
+		notifyForumMessage(sender, charId, guildId, threadId);
 	}
 		// A character have received a mail
 	void CMailForumNotifierProxy::notifyMail(NLNET::IModule *sender, uint32 charId)
@@ -99,9 +99,9 @@ namespace MFS
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_notifyMail(__message, charId);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
@@ -118,9 +118,9 @@ namespace MFS
 		}
 		else
 		{
-			// send the message for remote dispatching and execution or local queing 
+			// send the message for remote dispatching and execution or local queing
 			NLNET::CMessage __message;
-			
+
 			buildMessageFor_notifyForumMessage(__message, charId, guildId, threadId);
 
 			_ModuleProxy->sendModuleMessage(sender, __message);
