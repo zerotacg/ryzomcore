@@ -91,11 +91,11 @@ public:
 	//		nlassert(false);
 	//	}
 
-	void noParam(NLNET::IModuleProxy *sender)
+	void noParam(TModuleProxyPtr sender)
 	{
 	}
 
-	uint32 twoWayInvoke(NLNET::IModuleProxy *sender, uint32 value1, uint32 value2)
+	uint32 twoWayInvoke(TModuleProxyPtr sender, uint32 value1, uint32 value2)
 	{
 		return value1 + value2;
 	}
@@ -123,7 +123,7 @@ public:
 		NLNET_START_MODULE_TASK(CModuleClient, taskFunc);
 	}
 
-	void onModuleUp(IModuleProxy *proxy)
+	void onModuleUp(TModuleProxyPtr proxy)
 	{
 		if (proxy->getModuleClassName() == "ModuleServant")
 		{
@@ -131,7 +131,7 @@ public:
 		}
 	}
 
-	void onModuleDown(IModuleProxy *proxy)
+	void onModuleDown(TModuleProxyPtr proxy)
 	{
 		if (proxy == Servant)
 			Servant = nullptr;

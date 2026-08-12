@@ -92,7 +92,7 @@ namespace PATCHMAN
 		}
 	}
 
-	void CFileRepository::onModuleDown(IModuleProxy *module)
+	void CFileRepository::onModuleDown(TModuleProxyPtr module)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -101,7 +101,7 @@ namespace PATCHMAN
 		onFileRepositoryModuleDown(module);
 	}
 
-	void CFileRepository::onFileRepositoryModuleDown(IModuleProxy *module)
+	void CFileRepository::onFileRepositoryModuleDown(TModuleProxyPtr module)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -396,7 +396,7 @@ namespace PATCHMAN
 		_Subscribers[subscriptionString]= sender;
 	}
 
-	void CFileRepository::unsubscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec)
+	void CFileRepository::unsubscribe(TModuleProxyPtr sender, const NLMISC::CSString &fileSpec)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -414,7 +414,7 @@ namespace PATCHMAN
 		_Subscribers.erase(subscriptionString);
 	}
 
-	void CFileRepository::unsubscribeAll(NLNET::IModuleProxy *sender)
+	void CFileRepository::unsubscribeAll(TModuleProxyPtr sender)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -432,10 +432,10 @@ namespace PATCHMAN
 			++it;
 
 			// see if the last element needs to be erased
-			if (last->second.get()==sender)
+			if (last->second==sender)
 			{
 				// delegate to standard 'unsubscribe' to do the work
-				unsubscribe(sender,last->first.splitFrom('@').strip());
+				unsubscribe(sender, last->first.splitFrom('@').strip());
 			}
 		}
 	}
@@ -447,7 +447,7 @@ namespace PATCHMAN
 
 		_AdministeredModuleWrapper.registerProgress("getInfo "+sender->getModuleName()+" "+fileSpec);
 		subscribe(sender, fileSpec);
-		unsubscribe(sender.get(),fileSpec);
+		unsubscribe(sender, fileSpec);
 	}
 
 	void CFileRepository::cbFileInfoUpdate(const SFileInfo& fileInfo)

@@ -356,7 +356,7 @@ namespace RSMGR
 		}
 
 
-		void onModuleUpdate()
+		void onModuleUpdate() NL_OVERRIDE
 		{
 			H_AUTO(CRingSessionManager_onModuleUpdate);
 
@@ -393,7 +393,7 @@ namespace RSMGR
 		}
 
 
-		void onModuleDown(IModuleProxy *proxy)
+		void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_onModuleUpdate);
 			TSessionServers::iterator it(_SessionServers.find(proxy));
@@ -682,7 +682,7 @@ namespace RSMGR
 		/////////////////////////////////////////////////////////////
 
 		// A edition or animation server module register in the session manager
-		virtual void registerDSS(NLNET::IModuleProxy *sender, uint32 shardId, const std::vector < TRunningSessionInfo > &runningSessions)
+		virtual void registerDSS(TModuleProxyPtr sender, uint32 shardId, const std::vector<TRunningSessionInfo> &runningSessions) NL_OVERRIDE
 		{
 			nldebug("RSM : receive DSS registration from '%s'",
 				sender->getModuleName().c_str());
@@ -800,7 +800,7 @@ restartLoop:
 		}
 
 		// The session server report a session creation.
-		virtual void sessionCreated(NLNET::IModuleProxy *sender, const RSMGR::TRunningSessionInfo &sessionInfo)
+		virtual void sessionCreated(TModuleProxyPtr sender, const RSMGR::TRunningSessionInfo &sessionInfo) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_sessionCreated);
 
@@ -884,7 +884,7 @@ restartLoop:
 
 		// The session report an event.
 		// char id is used only when the event is about a character.
-		virtual void reportSessionEvent(NLNET::IModuleProxy *sender, RSMGR::TSessionEvent event, TSessionId sessionId, uint32 charId)
+		virtual void reportSessionEvent(TModuleProxyPtr sender, RSMGR::TSessionEvent event, TSessionId sessionId, uint32 charId) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_reportSessionEvent);
 
@@ -973,7 +973,7 @@ restartLoop:
 
 		// The DSS report that an animation scenario has just started
 		// this allow SU to create the session log and scenario info record if needed.
-		virtual void scenarioStarted(NLNET::IModuleProxy *sender, TSessionId sessionId, const R2::TRunningScenarioInfo &scenarioInfo)
+		virtual void scenarioStarted(TModuleProxyPtr sender, TSessionId sessionId, const R2::TRunningScenarioInfo &scenarioInfo) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_scenarioStarted);
 
@@ -1057,7 +1057,7 @@ restartLoop:
 		}
 
 
-		void reportCharacterKicked(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 charId)
+		void reportCharacterKicked(TModuleProxyPtr sender, TSessionId sessionId, uint32 charId) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_reportCharacterKicked);
 
@@ -1098,13 +1098,13 @@ restartLoop:
 		// provides a bunch of data about the session life.
 		// The DSS report the end of an animation session and
 		// provides a bunch of data about the session life.
-		virtual void scenarioEnded(NLNET::IModuleProxy *sender,
-			TSessionId sessionId,
-			const R2::TRunningScenarioInfo &scenarioInfo,
-			uint32 rrpScored,
-			uint32 scenarioPointScored,
-			uint32 timeTaken,
-			const std::vector < uint32 > &participants)
+		virtual void scenarioEnded(TModuleProxyPtr sender,
+	        TSessionId sessionId,
+	        const R2::TRunningScenarioInfo &scenarioInfo,
+	        uint32 rrpScored,
+	        uint32 scenarioPointScored,
+	        uint32 timeTaken,
+	        const std::vector<uint32> &participants) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_scenarioEnded);
 
@@ -1257,7 +1257,7 @@ restartLoop:
 		/////////////////////////////////////////////////////////////
 
 		// Register the welcome service in the ring session manager
-		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId, uint32 fixedSessionId, bool isOnline)
+		virtual void registerWS(TModuleProxyPtr sender, uint32 shardId, uint32 fixedSessionId, bool isOnline) NL_OVERRIDE
 		{
 			nlinfo("Adding WelcomeServer '%s' for ShardId %u", sender->getModuleName().c_str(), shardId);
 			// store the module proxy pointer
@@ -1315,7 +1315,7 @@ restartLoop:
 		}
 
 		// WS report it's current open state
-		virtual void reportWSOpenState(NLNET::IModuleProxy *sender, bool isOnline)
+		virtual void reportWSOpenState(TModuleProxyPtr sender, bool isOnline) NL_OVERRIDE
 		{
 			nlinfo("Welcome service '%s' report online status '%s'", sender->getModuleName().c_str(), isOnline ? "true" : "false");
 
@@ -1350,7 +1350,7 @@ restartLoop:
 		}
 
 		// return for welcome user
-		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
+		virtual void welcomeUserResult(TModuleProxyPtr sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_welcomeUserResult);
 
@@ -1504,7 +1504,7 @@ endOfWelcomeUserResult:
 		}
 
 		// transmits the current player counts
-		virtual void updateConnectedPlayerCount(NLNET::IModuleProxy *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
+		virtual void updateConnectedPlayerCount(TModuleProxyPtr sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers) NL_OVERRIDE
 		{
 			H_AUTO(SessionManager_updateConnectedPlayerCount);
 
@@ -1525,12 +1525,12 @@ endOfWelcomeUserResult:
 		/////////////////////////////////////////////////////////////
 
 		/// Connection callback : a new interface client connect
-		virtual void on_CRingSessionManagerWeb_Connection(NLNET::TSockId from)
+		virtual void on_CRingSessionManagerWeb_Connection(NLNET::TSockId from) NL_OVERRIDE
 		{
 			nldebug("RSM : connection on web interface from %s", from->getTcpSock()->remoteAddr().asString().c_str());
 		}
 
-		virtual void on_CRingSessionManagerWeb_Disconnection(NLNET::TSockId from)
+		virtual void on_CRingSessionManagerWeb_Disconnection(NLNET::TSockId from) NL_OVERRIDE
 		{
 			nldebug("RSM : disconnection on web interface from %s", from->getTcpSock()->remoteAddr().asString().c_str());
 			// we have lost a browser connection
@@ -1563,7 +1563,7 @@ endOfWelcomeUserResult:
 		}
 
 		virtual void on_setSessionStartParams(NLNET::TSockId from,
-			uint32 charId, TSessionId sessionId, const std::string &initialIslandLocation, const std::string &initialEntryPointLocation, const std::string &initialSeason)
+			uint32 charId, TSessionId sessionId, const std::string &initialIslandLocation, const std::string &initialEntryPointLocation, const std::string &initialSeason) NL_OVERRIDE
 		{
 			CSessionPtr session = CSession::load(_RingDb, sessionId.asInt(), __FILE__, __LINE__);
 
@@ -1598,7 +1598,7 @@ endOfWelcomeUserResult:
 			const std::string &language,
 			const TSessionOrientation &orientation,
 			bool subscriptionClosed,
-			bool autoInvite)
+			bool autoInvite) NL_OVERRIDE
 		{
 			nldebug("RSM : web schedule a new '%s' session for char %u", sessionType.toString().c_str(), charId);
 
@@ -1712,7 +1712,7 @@ endOfWelcomeUserResult:
 			scheduleSessionResult(from, charId, TSessionId(session->getObjectId()), 0, "");
 		}
 
-		virtual void on_getSessionInfo(NLNET::TSockId from, uint32 charId, TSessionId sessionId)
+		virtual void on_getSessionInfo(NLNET::TSockId from, uint32 charId, TSessionId sessionId) NL_OVERRIDE
 		{
 			nldebug("RSM : getSessionInfo for session %u with char %u", sessionId.asInt(), charId);
 
@@ -1764,7 +1764,7 @@ endOfWelcomeUserResult:
 			bool subscriptionClosed,
 			bool autoInvite,
 			const std::string &language,
-			const TSessionOrientation &orientation)
+			const TSessionOrientation &orientation) NL_OVERRIDE
 		{
 			nldebug("RSM : updateSessionInfo for session %u with char %u", sessionId.asInt(), charId);
 
@@ -1843,7 +1843,7 @@ endOfWelcomeUserResult:
 		//                         2 : unknown session
 		//						   3 : char don't own the session
 		//						   4 : session not in planned state
-		virtual void on_cancelSession(NLNET::TSockId from, uint32 charId, TSessionId sessionId)
+		virtual void on_cancelSession(NLNET::TSockId from, uint32 charId, TSessionId sessionId) NL_OVERRIDE
 		{
 			nldebug("RSM : web cancel planned session %u with char %u", sessionId.asInt(), charId);
 
@@ -1893,7 +1893,7 @@ endOfWelcomeUserResult:
 		//                         4 : user already has a runnning session of this type
 		//                         5 : database/internal failure
 		//                         6 : nel user not found
-		virtual void on_startSession(NLNET::TSockId from, uint32 charId, TSessionId sessionId)
+		virtual void on_startSession(NLNET::TSockId from, uint32 charId, TSessionId sessionId) NL_OVERRIDE
 		{
 			nldebug("RSM : web start session %u with char %u", sessionId.asInt(), charId);
 
@@ -2054,7 +2054,7 @@ endOfWelcomeUserResult:
 		//                         2 : char don't own the session
 		//						   3 : session not open
 		//						   4 : failed to close the session, internal error
-		virtual void on_closeSession(NLNET::TSockId from, uint32 charId, TSessionId sessionId)
+		virtual void on_closeSession(NLNET::TSockId from, uint32 charId, TSessionId sessionId) NL_OVERRIDE
 		{
 			nldebug("RSM : web close session %u with char %u", sessionId.asInt(), charId);
 
@@ -2104,7 +2104,7 @@ endOfWelcomeUserResult:
 		// Return 'invokeResult' : 0 : ok, session closed (or about to close)
 		//                         1 : char not found
 		//                         2 : failed to close the session, internal error
-		virtual void on_closeEditSession(NLNET::TSockId from, uint32 charId)
+		virtual void on_closeEditSession(NLNET::TSockId from, uint32 charId) NL_OVERRIDE
 		{
 			nldebug("RSM : web close edit session of char %u", charId);
 
@@ -2177,7 +2177,7 @@ endOfWelcomeUserResult:
 		// Return 'invokeResult' : 0 : ok,
 		//                         1 : not ok
 		//:TODO: change the name to Cloase or hibernate previous sessions
-		virtual void on_hibernateEditSession(NLNET::TSockId from, uint32 charId)
+		virtual void on_hibernateEditSession(NLNET::TSockId from, uint32 charId) NL_OVERRIDE
 		{
 
 			nldebug("RSM: client %s ask to hibernate the edit session for char %u",

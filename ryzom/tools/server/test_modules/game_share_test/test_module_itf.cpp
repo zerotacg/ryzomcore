@@ -59,7 +59,7 @@ namespace TST_MOD_ITF
 		noParam(sender);
 	}
 
-	void CTestModuleInterfaceSkel::twoWayInvoke_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CTestModuleInterfaceSkel::twoWayInvoke_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 	{
 		H_AUTO(CTestModuleInterfaceSkel_twoWayInvoke_TMI_TWI);
 		uint32	value1;
@@ -109,7 +109,7 @@ namespace TST_MOD_ITF
 			buildMessageFor_twoWayInvoke(__message, value1, value2);
 
 			NLNET::CMessage __retMsg;
-			sender->invokeModuleOperation(_ModuleProxy, __message, __retMsg);
+			sender->invokeModuleOperation(_ModuleProxy.get(), __message, __retMsg);
 
 			// check the return message type
 			if (__retMsg.getName() != "R_TMI_TWI")

@@ -34,7 +34,7 @@ namespace ENTITYLOC
 		virtual void onUserConnection(NLNET::IModuleProxy *locatorHost, uint32 userId) =0;
 		virtual void onUserDisconnection(NLNET::IModuleProxy *locatorHost, uint32 userId) =0;
 
-		virtual void onCharacterConnection(NLNET::IModuleProxy *locatorHost, uint32 charId, uint32 lastDisconnectionDate) =0;
+		virtual void onCharacterConnection(NLNET::TModuleProxyPtr locatorHost, uint32 charId, uint32 lastDisconnectionDate) =0;
 		virtual void onCharacterDisconnection(NLNET::IModuleProxy *locatorHost, uint32 charId) =0;
 
 	};
@@ -53,12 +53,12 @@ namespace ENTITYLOC
 		/** Return the proxy on the locator module that claims to host the character
 		 *	Return NULL if the character is not currently online.
 		 */
-		virtual NLNET::IModuleProxy *getLocatorModuleForChar(uint32 charId) =0;
+		virtual NLNET::TModuleProxyPtr getLocatorModuleForChar(uint32 charId) = 0;
 
 		/** Return the proxy on the locator module that claims to host the character
 		 *	Return NULL if the character is not currently online.
 		 */
-		virtual NLNET::IModuleProxy *getLocatorModuleForChar(const ucstring &charName) =0;
+		virtual NLNET::TModuleProxyPtr getLocatorModuleForChar(const ucstring &charName) = 0;
 
 		/** Return the shard Id of the shard hosting the character (or 0 if not online)
 		 */
@@ -67,7 +67,7 @@ namespace ENTITYLOC
 		/** Return the module for a given shard id
 		 *	return NULL if no module available for the specified shard id
 		*/
-		virtual NLNET::IModuleProxy *getLocatorModuleForShard(uint32 shardId)=0;
+		virtual NLNET::TModuleProxyPtr getLocatorModuleForShard(uint32 shardId) = 0;
 
 	};	
 

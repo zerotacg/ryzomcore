@@ -110,7 +110,7 @@ public:
 	 * Receiving messages from the server animation module
 	 */
 	// This message is send by dss when player go from test mode to animation mode
-	virtual void setUserCharCurrentSession(NLNET::IModuleProxy *sender, uint32 charId, TSessionId oldSessionId, const CFarPosition &respawnPoint, R2::TUserRole role ) NL_OVERRIDE
+	virtual void setUserCharCurrentSession(TModuleProxyPtr sender, uint32 charId, TSessionId oldSessionId, const CFarPosition &respawnPoint, R2::TUserRole role) NL_OVERRIDE
 	{
 		ICharacter * cItf = ICharacter::getInterface( charId, false );
 		DROP_IF(!cItf, NLMISC::toString("User ( userId:%u characterId=%u) no more connected", charId >> 4, charId & 0x0f), return);
@@ -131,7 +131,7 @@ public:
 	}
 	
 	// The reply of CServerAnimationItf::getStartParams
-	virtual void setUserCharStartParams(NLNET::IModuleProxy *sender, uint32 charId, const CFarPosition &farPosConst, bool reloadPos, uint8 scenarioSeason, R2::TUserRole role ) NL_OVERRIDE
+	virtual void setUserCharStartParams(TModuleProxyPtr sender, uint32 charId, const CFarPosition &farPosConst, bool reloadPos, uint8 scenarioSeason, R2::TUserRole role) NL_OVERRIDE
 	{
 		nlassert( IsRingShard );
 
@@ -183,14 +183,14 @@ public:
 	}
 
 	// A character enter an anim session as player
-	virtual void charJoinAnimSession(NLNET::IModuleProxy *sender, uint32 charId, uint32 sessionId) NL_OVERRIDE
+	virtual void charJoinAnimSession(TModuleProxyPtr sender, uint32 charId, uint32 sessionId) NL_OVERRIDE
 	{
 		if (IAnimSessionMgr::isInitialized())
 			IAnimSessionMgr::getInstance()->characterEnterAnimSession(sessionId, charId);
 	}
 
 	// A character leave an anim session as player
-	virtual void charLeaveAnimSession(NLNET::IModuleProxy *sender, uint32 charId, uint32 sessionId) NL_OVERRIDE
+	virtual void charLeaveAnimSession(TModuleProxyPtr sender, uint32 charId, uint32 sessionId) NL_OVERRIDE
 	{
 		if (IAnimSessionMgr::isInitialized())
 			IAnimSessionMgr::getInstance()->characterLeaveAnimSession(sessionId, charId);
@@ -200,7 +200,7 @@ public:
 	// earned during the session because the character
 	// has leave an animation session.
 	// The reply of CServerAnimationItf::startAct telling to teleport user
-	virtual void setUserCharActPosition(NLNET::IModuleProxy *sender, uint32 charId, const CFarPosition &farPos, uint8 season) NL_OVERRIDE
+	virtual void setUserCharActPosition(TModuleProxyPtr sender, uint32 charId, const CFarPosition &farPos, uint8 season) NL_OVERRIDE
 	{
 		nlassert( IsRingShard );
 
@@ -256,14 +256,14 @@ public:
 	}
 
 	// A DSS to EGS signal that an anim session is started
-	virtual void animSessionStarted(NLNET::IModuleProxy *sender, TSessionId sessionId, const TRunningScenarioInfo &scenarioInfo) NL_OVERRIDE
+	virtual void animSessionStarted(TModuleProxyPtr sender, TSessionId sessionId, const TRunningScenarioInfo &scenarioInfo) NL_OVERRIDE
 	{
 		if (IAnimSessionMgr::isInitialized())
 			IAnimSessionMgr::getInstance()->animSessionStarted(sessionId, scenarioInfo);
 	}
 
 		// A DSS to EGS signal that an anim session is ended
-	virtual void animSessionEnded(NLNET::IModuleProxy *sender, TSessionId sessionId, uint32 scenarioScore, NLMISC::TTime timeTaken) NL_OVERRIDE
+	virtual void animSessionEnded(TModuleProxyPtr sender, TSessionId sessionId, uint32 scenarioScore, NLMISC::TTime timeTaken) NL_OVERRIDE
 	{
 		if (IAnimSessionMgr::isInitialized())
 			IAnimSessionMgr::getInstance()->animSessionEnded(sessionId, scenarioScore, timeTaken);
@@ -286,7 +286,7 @@ public:
 	}
 
 	// From dss
-	virtual void sendItemDescription( NLNET::IModuleProxy *sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItems) NL_OVERRIDE		
+	virtual void sendItemDescription(TModuleProxyPtr sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItems) NL_OVERRIDE
 	{
 		TSessionId scenarioId=getSessionId(sessionId);
 		sendItemDescription(scenarioId, missionItems);
@@ -325,7 +325,7 @@ public:
 		}			
 	}
 	
-	virtual void scenarioEnded( NLNET::IModuleProxy *sender,  TSessionId sessionId) NL_OVERRIDE
+	virtual void scenarioEnded(TModuleProxyPtr sender, TSessionId sessionId) NL_OVERRIDE
 	{
 		TSessionId scenarioId=getSessionId(sessionId);
 		scenarioEnded(scenarioId);
@@ -356,19 +356,19 @@ public:
 		CR2EasterEgg::getInstance().deactivateEasterEgg(easterEggId, scenarioId);
 	}
 
-	virtual void activateEasterEgg( NLNET::IModuleProxy *sender, uint32 easterEggId, TSessionId sessionId, uint32 aiInstanceId, const std::vector< R2::TItemAndQuantity > &items, const CFarPosition &pos, const std::string& name, const std::string &look) NL_OVERRIDE
+	virtual void activateEasterEgg(TModuleProxyPtr sender, uint32 easterEggId, TSessionId sessionId, uint32 aiInstanceId, const std::vector<R2::TItemAndQuantity> &items, const CFarPosition &pos, const std::string &name, const std::string &look) NL_OVERRIDE
 	{
 		TSessionId scenarioId=getSessionId(sessionId);
 		activateEasterEgg(easterEggId, scenarioId, aiInstanceId, items, pos, name, look);
 	}		
 	
-	virtual void deactivateEasterEgg( NLNET::IModuleProxy *sender, uint32 easterEggId, TSessionId sessionId) NL_OVERRIDE
+	virtual void deactivateEasterEgg(TModuleProxyPtr sender, uint32 easterEggId, TSessionId sessionId) NL_OVERRIDE
 	{	
 		TSessionId scenarioId=getSessionId(sessionId);
 		deactivateEasterEgg(easterEggId, scenarioId);
 	}
 
-	virtual void deactivateEasterEggs( NLNET::IModuleProxy *sender, const std::set<uint32> & easterEggIds, TSessionId sessionId) NL_OVERRIDE
+	virtual void deactivateEasterEggs(TModuleProxyPtr sender, const std::set<uint32> &easterEggIds, TSessionId sessionId) NL_OVERRIDE
 	{	
 		TSessionId scenarioId=getSessionId(sessionId);
 		std::set<uint32>::const_iterator first(easterEggIds.begin()), last(easterEggIds.end());
@@ -392,11 +392,11 @@ public:
 		saip.onEasterEggLooted( this, externalEasterEggId, scenarioId );
 	}
 	
-	virtual void giveRewardMessage(NLNET::IModuleProxy *sender, TDataSetRow characterRowId, TDataSetRow creatureRowId,
-								const std::string& rewardText,
-								const std::string& rareRewardText,
-								const std::string& inventoryFullText,
-								const std::string& notEnoughPointsText) NL_OVERRIDE
+	virtual void giveRewardMessage(TModuleProxyPtr sender, TDataSetRow characterRowId, TDataSetRow creatureRowId,
+	    const std::string &rewardText,
+	    const std::string &rareRewardText,
+	    const std::string &inventoryFullText,
+	    const std::string &notEnoughPointsText) NL_OVERRIDE
 	{
 		// retrieve the character that is rewarded
 		CEntityId charEId = TheDataset.getEntityId(characterRowId);
@@ -450,7 +450,7 @@ public:
 	the dss will performs operation depending on the target of the player (indicates to the player if the element can be targeted,
 	use dm command like kill)
 	*/
-	virtual void sendCharTargetToDss( NLNET::IModuleProxy *sender, const NLMISC::CEntityId & eid, const std::vector<std::string>& params) NL_OVERRIDE
+	virtual void sendCharTargetToDss(TModuleProxyPtr sender, const NLMISC::CEntityId &eid, const std::vector<std::string> &params) NL_OVERRIDE
 	{		
 
 		DROP_IF( !_ServerAnimationProxy, "Server animation module not present", return );
@@ -487,7 +487,7 @@ public:
 	}
 
 
-	virtual void onTpPositionAsked( NLNET::IModuleProxy *sender, const NLMISC::CEntityId & eid, float x, float y, float z, uint8 season, const R2::TR2TpInfos& tpInfos) NL_OVERRIDE
+	virtual void onTpPositionAsked(TModuleProxyPtr sender, const NLMISC::CEntityId &eid, float x, float y, float z, uint8 season, const R2::TR2TpInfos &tpInfos) NL_OVERRIDE
 	{
 		CCharacter *c = PlayerManager.getChar(eid); 
 		if (!c) { return; }
@@ -506,7 +506,7 @@ public:
 		c->teleportCharacter(sint32(1000.0f*x), sint32(1000.0f*y), sint32(1000.0f*z), true, false, 0.f, 0xFF, 0, season, tpInfos);
 	}
 
-	virtual void disconnectChar(NLNET::IModuleProxy *sender, uint32 charId) NL_OVERRIDE
+	virtual void disconnectChar(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 	{
 		uint32 playerId = charId >> 4;
 
@@ -527,7 +527,7 @@ public:
 		
 	}
 	
-	virtual void returnToPreviousSession(NLNET::IModuleProxy *sender, uint32 charId) NL_OVERRIDE
+	virtual void returnToPreviousSession(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 	{
 		ICharacter * cItf = ICharacter::getInterface( charId , true);
 		DROP_IF(!cItf, NLMISC::toString("User ( userId:%u characterId=%u) no more connected", charId >> 4, charId & 0x0f), return);
@@ -535,7 +535,7 @@ public:
 	}
 	
 
-	virtual void  setPioneerRight(NLNET::IModuleProxy *sender, uint32 charId, bool isDM) NL_OVERRIDE
+	virtual void  setPioneerRight(TModuleProxyPtr sender, uint32 charId, bool isDM) NL_OVERRIDE
 	{
 		nlinfo("Setting pioneer rights for character %u %s %s",charId,CEntityId((uint8)RYZOMID::player,charId).toString().c_str(),isDM?"(DM)":"");
 
@@ -589,7 +589,7 @@ public:
 		}
 	}
 
-	virtual void teleportOneCharacterToAnother(NLNET::IModuleProxy *sender, TCharId sourceCharId, TCharId destCharId, uint8 season ) NL_OVERRIDE
+	virtual void teleportOneCharacterToAnother(TModuleProxyPtr sender, TCharId sourceCharId, TCharId destCharId, uint8 season) NL_OVERRIDE
 	{
 		ICharacter * cItf1 = ICharacter::getInterface( sourceCharId, true );
 		DROP_IF(!cItf1, NLMISC::toString("User ( userId:%u characterId=%u) no more connected", sourceCharId >> 4, sourceCharId & 0x0f), return);
@@ -620,7 +620,7 @@ public:
 	}
 	
 
-	virtual void teleportCharacterToNpc(NLNET::IModuleProxy *sender, TCharId sourceCharId, const NLMISC::CEntityId & destId, uint8 season ) NL_OVERRIDE
+	virtual void teleportCharacterToNpc(TModuleProxyPtr sender, TCharId sourceCharId, const NLMISC::CEntityId &destId, uint8 season) NL_OVERRIDE
 	{
 		ICharacter * cItf1 = ICharacter::getInterface( sourceCharId, true );
 		DROP_IF(!cItf1, NLMISC::toString("User ( userId:%u characterId=%u) no more connected", sourceCharId >> 4, sourceCharId & 0x0f), return);		
@@ -644,12 +644,12 @@ public:
 
 	}
 
-	virtual void reportLinkedSession(NLNET::IModuleProxy *sender, TSessionId editSessionId, TSessionId animSessionId) NL_OVERRIDE
+	virtual void reportLinkedSession(TModuleProxyPtr sender, TSessionId editSessionId, TSessionId animSessionId) NL_OVERRIDE
 	{
 		_LinkedSessions[animSessionId] = editSessionId;
 	}
 
-	virtual void reportUnlinkedSession(NLNET::IModuleProxy *sender, TSessionId editSessionId, TSessionId animSessionId) NL_OVERRIDE
+	virtual void reportUnlinkedSession(TModuleProxyPtr sender, TSessionId editSessionId, TSessionId animSessionId) NL_OVERRIDE
 	{
 		std::map<TSessionId, TSessionId>::iterator toRemove = _LinkedSessions.find(animSessionId);
 		if (toRemove != _LinkedSessions.end())
@@ -673,7 +673,7 @@ public:
 		sam.characterReady(this, entityId);
 	}
 	
-	void reportNpcControl(NLNET::IModuleProxy *sender, const NLMISC::CEntityId& playerEid, const NLMISC::CEntityId&  botEid) NL_OVERRIDE
+	void reportNpcControl(TModuleProxyPtr sender, const NLMISC::CEntityId &playerEid, const NLMISC::CEntityId &botEid) NL_OVERRIDE
 	{
 		
 		ICharacter * cItf1 = ICharacter::getInterface( playerEid, true );
@@ -688,7 +688,7 @@ public:
 	}
 
 
-	void reportStopNpcControl(NLNET::IModuleProxy *sender, const NLMISC::CEntityId& playerEid, const NLMISC::CEntityId&  botEid) NL_OVERRIDE
+	void reportStopNpcControl(TModuleProxyPtr sender, const NLMISC::CEntityId &playerEid, const NLMISC::CEntityId &botEid) NL_OVERRIDE
 	{
 		
 		ICharacter * cItf1 = ICharacter::getInterface( playerEid, true );
@@ -703,7 +703,7 @@ public:
 		
 	// DSS ask to put a character in the ring universe channel
 	// This is for editors and animator characters only
-	virtual void subscribeCharacterInRingUniverse(NLNET::IModuleProxy *sender, uint32 charId) NL_OVERRIDE
+	virtual void subscribeCharacterInRingUniverse(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 	{
 		CEntityId eid(RYZOMID::player, charId, 0, 0);
 		TDataSetRow dsr = TheDataset.getDataSetRow(eid);
@@ -716,7 +716,7 @@ public:
 
 	// DSS ask to remove a character from the ring universe channel
 	// This is for editors and animator characters only
-	virtual void unsubscribeCharacterInRingUniverse(NLNET::IModuleProxy *sender, uint32 charId) NL_OVERRIDE
+	virtual void unsubscribeCharacterInRingUniverse(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 	{
 		CEntityId eid(RYZOMID::player, charId, 0, 0);
 		TDataSetRow dsr = TheDataset.getDataSetRow(eid);

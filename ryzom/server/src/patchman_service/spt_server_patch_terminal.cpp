@@ -144,8 +144,8 @@ public:
 	bool initModule(const TParsedCommandLine &initInfo) NL_OVERRIDE;
 	std::string buildModuleManifest() const NL_OVERRIDE;
 
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE;
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE;
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE;
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE;
 	void onModuleUpdate() NL_OVERRIDE;
 // 	void onProcessModuleMessage(IModuleProxy *sender, const CMessage &msg);
 
@@ -153,15 +153,15 @@ public:
 	bool isImmediateDispatchingSupported() const NL_OVERRIDE { return false; }
 
 	// CServerPatchTerminalSkel specialisation
-	void declareState(NLNET::IModuleProxy *sender, const NLMISC::CSString &moduleName, const NLMISC::CSString &state) NL_OVERRIDE;
-	void declareModuleDown(NLNET::IModuleProxy *sender, const NLMISC::CSString &moduleName) NL_OVERRIDE;
-	void declareVersionName(NLNET::IModuleProxy *sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion) NL_OVERRIDE;
-	void declareDomainInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 installVersion, uint32 launchVersion) NL_OVERRIDE;
-	void ackVersionChange(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, bool success, const NLMISC::CSString &comment) NL_OVERRIDE;
-	void setInstallVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE;
-	void setLaunchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE;
-	void executedCommandAck(NLNET::IModuleProxy *sender, const NLMISC::CSString &result) NL_OVERRIDE;
-	void executedCommandResult(NLNET::IModuleProxy *sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result) NL_OVERRIDE;
+	void declareState(TModuleProxyPtr sender, const NLMISC::CSString &moduleName, const NLMISC::CSString &state) NL_OVERRIDE;
+	void declareModuleDown(TModuleProxyPtr sender, const NLMISC::CSString &moduleName) NL_OVERRIDE;
+	void declareVersionName(TModuleProxyPtr sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion) NL_OVERRIDE;
+	void declareDomainInfo(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 installVersion, uint32 launchVersion) NL_OVERRIDE;
+	void ackVersionChange(TModuleProxyPtr sender, const NLMISC::CSString &domainName, bool success, const NLMISC::CSString &comment) NL_OVERRIDE;
+	void setInstallVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE;
+	void setLaunchVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE;
+	void executedCommandAck(TModuleProxyPtr sender, const NLMISC::CSString &result) NL_OVERRIDE;
+	void executedCommandResult(TModuleProxyPtr sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result) NL_OVERRIDE;
 
 private:
 	// private data
@@ -176,7 +176,7 @@ private:
 	CSString _CommandFileName;	// name of the command file (if there is one)
 
 	// A set of currently connected ServerPatchManager modules
-	typedef std::set<IModuleProxy*> TPatchManagers;
+	typedef std::set<TModuleProxyPtr> TPatchManagers;
 	TPatchManagers _PatchManagers;
 
 	// some macros for setting up the possiblity of having my own NLMISC_COMMAND scope
@@ -249,7 +249,7 @@ std::string CServerPatchTerminal::buildModuleManifest() const
 	return "";
 }
 
-void CServerPatchTerminal::onModuleUp(IModuleProxy *module)
+void CServerPatchTerminal::onModuleUp(TModuleProxyPtr module)
 {
 	// if the module coming up is an SPM module then we call it 'dad'
 	if (CSString(module->getModuleManifest()).contains(ManifestEntryIsAdministrator))
@@ -264,7 +264,7 @@ void CServerPatchTerminal::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CServerPatchTerminal::onModuleDown(IModuleProxy *module)
+void CServerPatchTerminal::onModuleDown(TModuleProxyPtr module)
 {
 	// if the module going down is an SPM module then remove it from our lists
 	if (_PatchManagers.find(module)!=_PatchManagers.end())
@@ -278,9 +278,9 @@ void CServerPatchTerminal::onModuleDown(IModuleProxy *module)
 	_ModuleStates.clear();
 
 	// request an update from connected managers
-	for (TPatchManagers::iterator it=_PatchManagers.begin();it!=_PatchManagers.end();++it)
+	for (const auto & it : _PatchManagers)
 	{
-		CServerPatchManagerProxy spm(*it);
+		CServerPatchManagerProxy spm(it);
 		spm.requestRefresh(this);
 	}
 }
@@ -340,32 +340,32 @@ void CServerPatchTerminal::onModuleUpdate()
 // CServerPatchTerminal message callbacks
 //-----------------------------------------------------------------------------
 
-void CServerPatchTerminal::declareState(NLNET::IModuleProxy *sender, const NLMISC::CSString &moduleName, const NLMISC::CSString &state)
+void CServerPatchTerminal::declareState(TModuleProxyPtr sender, const NLMISC::CSString &moduleName, const NLMISC::CSString &state)
 {
 	addSPTMessage(moduleName,state);
 	_ModuleStates[moduleName]= state;
 }
 
-void CServerPatchTerminal::declareModuleDown(NLNET::IModuleProxy *sender, const NLMISC::CSString &moduleName)
+void CServerPatchTerminal::declareModuleDown(TModuleProxyPtr sender, const NLMISC::CSString &moduleName)
 {
 	addSPTMessage(moduleName,"** module down **");
 	_ModuleStates.erase(moduleName);
 }
 
-void CServerPatchTerminal::declareVersionName(NLNET::IModuleProxy *sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion)
+void CServerPatchTerminal::declareVersionName(TModuleProxyPtr sender, const NLMISC::CSString &versionName, uint32 clientVersion, uint32 serverVersion)
 {
 	_NamedVersions[versionName].ServerVersion= serverVersion;
 	_NamedVersions[versionName].ClientVersion= clientVersion;
 }
 
-void CServerPatchTerminal::declareDomainInfo(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 installVersion, uint32 launchVersion)
+void CServerPatchTerminal::declareDomainInfo(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 installVersion, uint32 launchVersion)
 {
 	_Domains[domainName].InstallVersion= installVersion;
 	_Domains[domainName].LaunchVersion= launchVersion;
 	nlinfo("Domain %s: Install: %d, Launch: %d", domainName.c_str(), installVersion, launchVersion);
 }
 
-void CServerPatchTerminal::ackVersionChange(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, bool success, const NLMISC::CSString &comment)
+void CServerPatchTerminal::ackVersionChange(TModuleProxyPtr sender, const NLMISC::CSString &domainName, bool success, const NLMISC::CSString &comment)
 {
 	nlinfo("Received ack message for version change for domain %s: %s",domainName.c_str(),success?"SUCCESS":"FAILED");
 	CVectorSString lines;
@@ -376,19 +376,19 @@ void CServerPatchTerminal::ackVersionChange(NLNET::IModuleProxy *sender, const N
 	}
 }
 
-void CServerPatchTerminal::setInstallVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version)
+void CServerPatchTerminal::setInstallVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version)
 {
 	_Domains[domainName].InstallVersion= version;
 	nlinfo("Domain %s: Install: %d",domainName.c_str(),version);
 }
 
-void CServerPatchTerminal::setLaunchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString &domainName, uint32 version)
+void CServerPatchTerminal::setLaunchVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version)
 {
 	_Domains[domainName].LaunchVersion= version;
 	nlinfo("Domain %s: Launch: %d",domainName.c_str(),version);
 }
 
-void CServerPatchTerminal::executedCommandAck(NLNET::IModuleProxy *sender, const NLMISC::CSString &result)
+void CServerPatchTerminal::executedCommandAck(TModuleProxyPtr sender, const NLMISC::CSString &result)
 {
 	nlinfo("Ack Command Execution (from %s):",sender->getModuleName().c_str());
 	CVectorSString lines;
@@ -399,7 +399,7 @@ void CServerPatchTerminal::executedCommandAck(NLNET::IModuleProxy *sender, const
 	}
 }
 
-void CServerPatchTerminal::executedCommandResult(NLNET::IModuleProxy *sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result)
+void CServerPatchTerminal::executedCommandResult(TModuleProxyPtr sender, const NLMISC::CSString &originator, const NLMISC::CSString &commandline, const NLMISC::CSString &result)
 {
 	nlinfo("Command Execution Result: (from %s via %s)",originator.c_str(),sender->getModuleName().c_str());
 	CVectorSString lines;

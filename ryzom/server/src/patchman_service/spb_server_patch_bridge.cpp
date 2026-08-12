@@ -53,8 +53,8 @@ public:
 
 	// CModuleBase specialisation implementation
 	bool initModule(const TParsedCommandLine &initInfo) NL_OVERRIDE;
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE;
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE;
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE;
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE;
 //	void onProcessModuleMessage(IModuleProxy *sender, const CMessage &msg);
 	void onModuleUpdate() NL_OVERRIDE;
 	std::string buildModuleManifest() const NL_OVERRIDE;
@@ -69,11 +69,11 @@ protected:
 	// specialisations of overloadable callback methods
 	void cbFileDownloadSuccess(const NLMISC::CSString& fileName,const NLMISC::CMemStream& data) NL_OVERRIDE;
 	void cbRetryAfterFileDownloadFailure(const NLMISC::CSString& fileName) NL_OVERRIDE;
-	void cbFileInfo(NLNET::IModuleProxy *sender, const TFileInfoVector &changes) NL_OVERRIDE;
+	void cbFileInfo(TModuleProxyPtr sender, const TFileInfoVector &changes) NL_OVERRIDE;
 
 	// specialisation of overloadable methods from CFileRepository
 	void getFileInfo(const NLMISC::CSString& fileSpec,TFileInfoVector& result,const NLNET::IModuleProxy *sender) const NL_OVERRIDE;
-	void onFileRepositoryModuleDown(NLNET::IModuleProxy *module) NL_OVERRIDE;
+	void onFileRepositoryModuleDown(TModuleProxyPtr module) NL_OVERRIDE;
 
 
 private:
@@ -87,7 +87,7 @@ private:
 		uint32 StartOffset;
 		uint32 NumBytes;
 
-		SDelayedFileRequest(): Requestor(NULL), StartOffset(0), NumBytes(0) {}
+		SDelayedFileRequest(): Requestor(nullptr), StartOffset(0), NumBytes(0) {}
 	};
 	typedef vector<SDelayedFileRequest> TDelayedFileRequestVector;			// vector of requests pertaining to a single file
 	typedef map<CSString,TDelayedFileRequestVector> TDelayedFileRequests;	// map of file name to request vectors
@@ -152,7 +152,7 @@ bool CServerPatchBridge::initModule(const TParsedCommandLine &initInfo)
 	return true;
 }
 
-void CServerPatchBridge::onModuleUp(IModuleProxy *module)
+void CServerPatchBridge::onModuleUp(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleUp(module);
@@ -168,7 +168,7 @@ void CServerPatchBridge::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CServerPatchBridge::onModuleDown(IModuleProxy *module)
+void CServerPatchBridge::onModuleDown(TModuleProxyPtr module)
 {
 	// allow base classes to do their stuff
 	CAdministeredModuleBase::onModuleDown(module);
@@ -176,7 +176,7 @@ void CServerPatchBridge::onModuleDown(IModuleProxy *module)
 	CFileReceiver::onModuleDown(module);
 }
 
-void CServerPatchBridge::onFileRepositoryModuleDown(IModuleProxy *module)
+void CServerPatchBridge::onFileRepositoryModuleDown(TModuleProxyPtr module)
 {
 	// BEFORE CALLING CFileReceiver::onModuleDown - prepare to cleanup our file info lists...
 	// build a set of all of the files that I can access (including those via the proxy who's going away)
@@ -295,7 +295,7 @@ std::string CServerPatchBridge::buildModuleManifest() const
 	return _Manifest;
 }
 
-void CServerPatchBridge::cbFileInfo(NLNET::IModuleProxy *sender, const TFileInfoVector &changes)
+void CServerPatchBridge::cbFileInfo(TModuleProxyPtr sender, const TFileInfoVector &changes)
 {
 	// start by letting our base classes do their stuff...
 	CFileReceiver::cbFileInfo(sender, changes);
@@ -350,7 +350,7 @@ void CServerPatchBridge::requestFileData(TModuleProxyPtr sender, const NLMISC::C
 
 	// get local info (for the file in the local directory)
 	TFileInfoVector infoVect;
-	CFileRepository::getFileInfo(fileName,infoVect,sender);
+	CFileRepository::getFileInfo(fileName,infoVect, sender.get());
 
 	// lookup our connected emitters to get the most up to date file info
 	SFileInfo fileInfo;
@@ -370,7 +370,7 @@ void CServerPatchBridge::requestFileData(TModuleProxyPtr sender, const NLMISC::C
 	{
 		// iterate over a copy of the complete vector of file info looking for a match
 		TFileInfoVector allFileInfo;
-		CFileRepository::getFileInfo("*/*",allFileInfo,sender);
+		CFileRepository::getFileInfo("*/*",allFileInfo, sender.get());
 		for (TFileInfoVector::iterator it= allFileInfo.begin(); it!=allFileInfo.end(); ++it)
 		{
 			// test file size and checksum of the files
@@ -393,7 +393,7 @@ void CServerPatchBridge::requestFileData(TModuleProxyPtr sender, const NLMISC::C
 				// force our repository to update it's info concerning the file that we just copied and rebuild our info vector
 				CFileRepository::updateFile(fileName);
 				infoVect.clear();
-				CFileRepository::getFileInfo(fileName,infoVect,sender);
+				CFileRepository::getFileInfo(fileName,infoVect, sender.get());
 
 				// see if we have succeeded in creating a match
 				upToDate= ( (fileInfo.FileSize==infoVect[0].FileSize) && (fileInfo.Checksum==infoVect[0].Checksum) );

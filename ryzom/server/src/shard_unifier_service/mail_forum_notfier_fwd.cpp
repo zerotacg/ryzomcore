@@ -188,7 +188,7 @@ namespace MFS
 		virtual void onUserDisconnection(NLNET::IModuleProxy *locatorHost, uint32 userId)
 		{	/* nothing */	}
 
-		void onCharacterConnection(IModuleProxy *locatorHost, uint32 charId, uint32 lastDisconnectionDate)
+		void onCharacterConnection(TModuleProxyPtr locatorHost, uint32 charId, uint32 lastDisconnectionDate)
 		{
 			// a character has just connected, check his mail and forum guild
 			// to see if we need to send it a notification
@@ -274,9 +274,9 @@ namespace MFS
 			}
 
 			// get the host
-			IModuleProxy *proxy = el->getLocatorModuleForChar(charId);
+			auto proxy = el->getLocatorModuleForChar(charId);
 
-			if (proxy == NULL)
+			if (proxy == nullptr)
 			{
 				// this character not hosted now, just return
 				return;
@@ -316,7 +316,7 @@ namespace MFS
 					// ok, there is a member here
 
 					// get the host
-					IModuleProxy *proxy = el->getLocatorModuleForChar(member->getObjectId());
+					auto proxy = el->getLocatorModuleForChar(member->getObjectId());
 
 					if (proxy == NULL)
 					{
@@ -354,15 +354,15 @@ namespace MFS
 			log.displayNL("Simulating new mail notification for character %u", charId);
 
 			IEntityLocator *el = IEntityLocator::getInstance();
-			if (el == NULL)
+			if (el == nullptr)
 			{
 				log.displayNL("ERROR : No entity locator, notification can't be sent");
 				return true;
 			}
 
-			IModuleProxy *proxy = el->getLocatorModuleForChar(charId);
+			auto proxy = el->getLocatorModuleForChar(charId);
 
-			if (proxy == NULL)
+			if (proxy == nullptr)
 			{
 				log.displayNL("The character seam's to be offline, notification can't be sent");
 				return true;

@@ -57,7 +57,7 @@ namespace WS
 		virtual void welcomeUser(NLNET::TModuleProxyPtr sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId) NL_OVERRIDE;
 
 		// ask the welcome service to disconnect a user
-		virtual void disconnectUser(NLNET::IModuleProxy *sender, uint32 userId) NL_OVERRIDE
+		virtual void disconnectUser(NLNET::TModuleProxyPtr sender, uint32 userId) NL_OVERRIDE
 		{
 			disconnectClient(userId);
 		}
@@ -70,7 +70,7 @@ namespace WS
 
 		void reportWSOpenState(bool shardOpen)
 		{
-			if (_RingSessionManager == NULL) // skip if the RSM is offline
+			if (_RingSessionManager == nullptr) // skip if the RSM is offline
 				return;
 
 			CWelcomeServiceClientProxy wscp(_RingSessionManager);
@@ -88,7 +88,7 @@ namespace WS
 		// send the current number of players on this shard to the Ring Session Manager
 		void updateConnectedPlayerCount(uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
 		{
-			if (_RingSessionManager == NULL) // skip if the RSM is offline
+			if (_RingSessionManager == nullptr) // skip if the RSM is offline
 				return;
 
 			CWelcomeServiceClientProxy wscp(_RingSessionManager);

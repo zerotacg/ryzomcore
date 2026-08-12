@@ -59,9 +59,9 @@ namespace TST_MOD_ITF
 		const TMessageHandlerMap &getMessageHandlers() const;
 
 		
-		void noParam_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void noParam_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void twoWayInvoke_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void twoWayInvoke_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -73,8 +73,8 @@ namespace TST_MOD_ITF
 		// WARNING : this is a generated file, don't change it !
 		/////////////////////////////////////////////////////////////////
 
-		virtual void noParam(NLNET::IModuleProxy *sender) =0;
-		virtual uint32 twoWayInvoke(NLNET::IModuleProxy *sender, uint32 value1, uint32 value2) =0;
+		virtual void noParam(NLNET::TModuleProxyPtr sender) =0;
+		virtual uint32 twoWayInvoke(NLNET::TModuleProxyPtr sender, uint32 value1, uint32 value2) =0;
 
 
 	};
@@ -94,7 +94,7 @@ namespace TST_MOD_ITF
 
 
 	public:
-		CTestModuleInterfaceProxy(NLNET::IModuleProxy *proxy)
+		CTestModuleInterfaceProxy(NLNET::TModuleProxyPtr proxy)
 		{
 
 			_ModuleProxy = proxy;
@@ -103,13 +103,13 @@ namespace TST_MOD_ITF
 			if (proxy->getModuleDistance() == 0)
 			{
 				_LocalModule = proxy->getLocalModule();
-				nlassert(_LocalModule != NULL);
+				nlassert(_LocalModule != nullptr);
 				CTestModuleInterfaceSkel::TInterceptor *interceptor = nullptr;
 				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.get())->getInterceptor(interceptor);
-				nlassert(interceptor != NULL);
+				nlassert(interceptor != nullptr);
 
 				_LocalModuleSkel = interceptor->getParent();
-				nlassert(_LocalModuleSkel != NULL);
+				nlassert(_LocalModuleSkel != nullptr);
 			}
 			else
 				_LocalModuleSkel = nullptr;

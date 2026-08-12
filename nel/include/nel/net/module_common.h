@@ -37,6 +37,9 @@ namespace NLNET
 
 	class IModuleProxy;
 	typedef std::shared_ptr<IModuleProxy>		TModuleProxyPtr;
+	typedef std::weak_ptr<IModuleProxy>			TModuleProxyWeakPtr;
+
+	// inline IModuleProxy & operator*(const TModuleProxyWeakPtr & value) { return *value.lock(); }
 
 	class IModuleSocket;
 	class IModuleFactory;

@@ -1177,7 +1177,7 @@ retry_pending_command_loop:
 		///////////////////////////////////////////////////////////////////////
 
 		// AS send orders for a shard
-		virtual void setShardOrders(NLNET::IModuleProxy *sender, const std::string &shardName, const TShardOrders &shardOrders) NL_OVERRIDE
+		virtual void setShardOrders(TModuleProxyPtr sender, const std::string &shardName, const TShardOrders &shardOrders) NL_OVERRIDE
 		{
 			nlinfo("AS setShardOrders for shard '%s' to '%s'", shardName.c_str(), shardOrders.toString().c_str());
 
@@ -1195,7 +1195,7 @@ retry_pending_command_loop:
 		}
 
 		// AS send a command to shutdown a shard with a delay
-		virtual void shutdownShard(NLNET::IModuleProxy *sender, const std::string &shardName, uint32 delay) NL_OVERRIDE
+		virtual void shutdownShard(TModuleProxyPtr sender, const std::string &shardName, uint32 delay) NL_OVERRIDE
 		{
 			TStopingShardInfo ssi;
 			ssi.ShardName = shardName;
@@ -1286,7 +1286,7 @@ retry_pending_command_loop:
 		}
 
 		// AES client send back the result of execution of a command
-		virtual void commandResult(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) NL_OVERRIDE
+		virtual void commandResult(TModuleProxyPtr sender, uint32 commandId, const std::string &serviceAlias, const std::string &result) NL_OVERRIDE
 		{
 			// check for waiting commands
 			TPendingWebCommands::iterator it(_PendingWebCommands.find(commandId));
@@ -1313,7 +1313,7 @@ retry_pending_command_loop:
 
 
 		// An AES send graph data update
-		virtual void graphUpdate(NLNET::IModuleProxy *sender, const TGraphDatas &graphDatas) NL_OVERRIDE
+		virtual void graphUpdate(TModuleProxyPtr sender, const TGraphDatas &graphDatas) NL_OVERRIDE
 		{
 			if (_AdminService != NULL)
 			{ 
@@ -1323,7 +1323,7 @@ retry_pending_command_loop:
 		}
 
 		// A service high rez graph data update
-		virtual void highRezGraphUpdate(NLNET::IModuleProxy *sender, const THighRezDatas &graphDatas) NL_OVERRIDE
+		virtual void highRezGraphUpdate(TModuleProxyPtr sender, const THighRezDatas &graphDatas) NL_OVERRIDE
 		{
 			if (_AdminService != NULL)
 			{
@@ -1333,9 +1333,9 @@ retry_pending_command_loop:
 		}
 
 		// A service send an update of of it's status string
-		virtual void serviceStatusUpdate(NLNET::IModuleProxy *sender, const std::string &status) NL_OVERRIDE
+		virtual void serviceStatusUpdate(TModuleProxyPtr sender, const std::string &status) NL_OVERRIDE
 		{
-			auto it(std::find_if(_ConnectedServiceIndex.begin(), _ConnectedServiceIndex.end(), [sender](const auto &pair) { return pair.first.get() == sender; }));
+		    auto it(_ConnectedServiceIndex.find(sender));
 			if (it == _ConnectedServiceIndex.end())
 			{
 				nlwarning("serviceStatusUpdate : service '%s' send status but is unknown !", sender->getModuleName().c_str());

@@ -137,14 +137,14 @@ public:
 
 	// IModule specialisation implementation
 	bool initModule(const TParsedCommandLine &initInfo) NL_OVERRIDE;
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE;
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE;
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE;
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE;
 	void onModuleUpdate() NL_OVERRIDE;
 	std::string buildModuleManifest() const NL_OVERRIDE;
 
 	// CAdministeredModuleBase specialisation implementation
-	void installVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString& domainName, uint32 version) NL_OVERRIDE;
-	void launchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString& domainName, uint32 version) NL_OVERRIDE;
+	void installVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE;
+	void launchVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE;
 
 	// CDeploymentConfigurationSynchroniser specialisation implementation
 	void cbDeploymentConfigurationSynchronised(NLNET::IModuleProxy* sender) NL_OVERRIDE;
@@ -413,7 +413,7 @@ bool CServerPatchApplier::initModule(const TParsedCommandLine &initInfo)
 	return true;
 }
 
-void CServerPatchApplier::onModuleUp(IModuleProxy *module)
+void CServerPatchApplier::onModuleUp(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleUp(module);
@@ -429,7 +429,7 @@ void CServerPatchApplier::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CServerPatchApplier::onModuleDown(IModuleProxy *module)
+void CServerPatchApplier::onModuleDown(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleDown(module);
@@ -552,13 +552,13 @@ std::string CServerPatchApplier::buildModuleManifest() const
 // methods CServerPatchApplier - Message handler callbacks
 //-----------------------------------------------------------------------------
 
-void CServerPatchApplier::installVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString& domainName, uint32 version)
+void CServerPatchApplier::installVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version)
 {
 	_VersionToInstall[domainName]= version;
 	registerProgress(NLMISC::toString("Setting %s INSTALL=%d (for module %s)",domainName.c_str(),version,sender->getModuleName().c_str()));
 }
 
-void CServerPatchApplier::launchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString& domainName, uint32 version)
+void CServerPatchApplier::launchVersion(TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version)
 {
 	_VersionToLaunch[domainName]= version;
 	registerProgress(NLMISC::toString("Setting %s LAUNCH=%d (for module %s)",domainName.c_str(),version,sender->getModuleName().c_str()));

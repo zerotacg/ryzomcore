@@ -81,13 +81,13 @@ bool CServerPatchDownloader::initModule(const TParsedCommandLine &initInfo)
 	return ret;
 }
 
-void CServerPatchDownloader::onModuleUp(IModuleProxy *module)
+void CServerPatchDownloader::onModuleUp(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CFileReceiver::onModuleUp(module);
 }
 
-void CServerPatchDownloader::onModuleDown(IModuleProxy *module)
+void CServerPatchDownloader::onModuleDown(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CFileReceiver::onModuleDown(module);

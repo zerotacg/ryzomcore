@@ -73,8 +73,8 @@ public:
 
 	// IModule specialisation implementation
 	bool initModule(const TParsedCommandLine &initInfo) NL_OVERRIDE;
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE;
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE;
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE;
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE;
 	void onModuleUpdate() NL_OVERRIDE;
 	std::string buildModuleManifest() const NL_OVERRIDE;
 
@@ -145,7 +145,7 @@ bool CPatchmanAdminModule::initModule(const TParsedCommandLine &initInfo)
 	return true;
 }
 
-void CPatchmanAdminModule::onModuleUp(IModuleProxy *module)
+void CPatchmanAdminModule::onModuleUp(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleUp(module);
@@ -161,7 +161,7 @@ void CPatchmanAdminModule::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CPatchmanAdminModule::onModuleDown(IModuleProxy *module)
+void CPatchmanAdminModule::onModuleDown(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleDown(module);

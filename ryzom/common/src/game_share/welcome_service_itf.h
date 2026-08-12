@@ -1,3 +1,18 @@
+// Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
+// Copyright (C) 2010  Winch Gate Property Limited
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /////////////////////////////////////////////////////////////////
 // WARNING : this is a generated file, don't change it !
@@ -6,6 +21,7 @@
 #ifndef WELCOME_SERVICE_ITF
 #define WELCOME_SERVICE_ITF
 #include "nel/misc/types_nl.h"
+#include <memory>
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/string_conversion.h"
 #include "nel/net/message.h"
@@ -16,11 +32,9 @@
 
 #include "nel/net/login_cookie.h"
 
-#include <memory>
-
 namespace WS
 {
-	
+
 
 
 	struct TUserRole
@@ -36,11 +50,11 @@ namespace WS
 			end_of_enum,
 
 			invalid_val,
-			
+
 			/// Number of enumerated values
 			nb_enum_items = 3
 		};
-		
+
 		/// Index table to convert enum value to linear index table
 		const std::map<TValues, uint32> &getIndexTable() const
 		{
@@ -52,13 +66,13 @@ namespace WS
 				indexTable.insert(std::make_pair(ur_player, 0));
 				indexTable.insert(std::make_pair(ur_editor, 1));
 				indexTable.insert(std::make_pair(ur_animator, 2));
-			
+
 				init = true;
 			}
 
 			return indexTable;
 		}
-		
+
 
 		static const NLMISC::CStringConversion<TValues> &getConversionTable()
 		{
@@ -67,9 +81,9 @@ namespace WS
 				NL_STRING_CONVERSION_TABLE_ENTRY(ur_editor)
 				NL_STRING_CONVERSION_TABLE_ENTRY(ur_animator)
 				NL_STRING_CONVERSION_TABLE_ENTRY(invalid_val)
-			};                                                                                             
-			static NLMISC::CStringConversion<TValues>                                                                
-			conversionTable(TValues_nl_string_conversion_table, sizeof(TValues_nl_string_conversion_table)   
+			};
+			static NLMISC::CStringConversion<TValues>
+			conversionTable(TValues_nl_string_conversion_table, sizeof(TValues_nl_string_conversion_table)
 			/ sizeof(TValues_nl_string_conversion_table[0]),  invalid_val);
 
 			return conversionTable;
@@ -148,16 +162,16 @@ namespace WS
 			return getConversionTable().isValid(_Value);
 		}
 
-		
+
 		uint32 asIndex()
 		{
 			std::map<TValues, uint32>::const_iterator it(getIndexTable().find(_Value));
 			nlassert(it != getIndexTable().end());
 			return it->second;
 		}
-		
+
 	};
-	
+
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
@@ -181,12 +195,12 @@ namespace WS
 			_Interceptor.init(this, module);
 		}
 
-		// unused interceptors 
+		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
 		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
-	
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
+
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
@@ -196,7 +210,7 @@ namespace WS
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
-		
+
 		void welcomeUser_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		void disconnectUser_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
@@ -214,7 +228,7 @@ namespace WS
 		// ask the welcome service to welcome a character
 		virtual void welcomeUser(NLNET::TModuleProxyPtr sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId) =0;
 		// ask the welcome service to disconnect a user
-		virtual void disconnectUser(NLNET::IModuleProxy *sender, uint32 userId) =0;
+		virtual void disconnectUser(NLNET::TModuleProxyPtr sender, uint32 userId) =0;
 
 
 	};
@@ -271,10 +285,10 @@ namespace WS
 
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_welcomeUser(NLNET::CMessage &__message, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId);
-	
+
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_disconnectUser(NLNET::CMessage &__message, uint32 userId);
-	
+
 
 
 
@@ -303,12 +317,12 @@ namespace WS
 			_Interceptor.init(this, module);
 		}
 
-		// unused interceptors 
+		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
 		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
-	
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
+
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
@@ -318,8 +332,8 @@ namespace WS
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
-		
-		void pendingUserLost_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+
+		void pendingUserLost_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -332,7 +346,7 @@ namespace WS
 		/////////////////////////////////////////////////////////////////
 
 		// An awaited user did not connect before the allowed timeout expire
-		virtual void pendingUserLost(NLNET::IModuleProxy *sender, const NLNET::CLoginCookie &cookie) =0;
+		virtual void pendingUserLost(NLNET::TModuleProxyPtr sender, const NLNET::CLoginCookie &cookie) =0;
 
 
 	};
@@ -387,7 +401,7 @@ namespace WS
 
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_pendingUserLost(NLNET::CMessage &__message, const NLNET::CLoginCookie &cookie);
-	
+
 
 
 
@@ -416,12 +430,12 @@ namespace WS
 			_Interceptor.init(this, module);
 		}
 
-		// unused interceptors 
+		// unused interceptors
 		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
 		void				fwdOnModuleUp(NLNET::TModuleProxyPtr /* moduleProxy */)  {}
-		void				fwdOnModuleDown(NLNET::TModuleProxyPtr  /* moduleProxy */) {}
-		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy * /* moduleProxy */) {}
-	
+		void				fwdOnModuleDown(NLNET::TModuleProxyPtr /* moduleProxy */) {}
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy* /* moduleProxy */) {}
+
 		// process module message interceptor
 		bool fwdOnProcessModuleMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message);
 	private:
@@ -431,14 +445,14 @@ namespace WS
 
 		const TMessageHandlerMap &getMessageHandlers() const;
 
-		
-		void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void reportWSOpenState_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void registerWS_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void reportWSOpenState_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
-		void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		void welcomeUserResult_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
+
+		void updateConnectedPlayerCount_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
 		TInterceptor	_Interceptor;
@@ -452,13 +466,13 @@ namespace WS
 
 		// Register the welcome service in the ring session manager
 		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
-		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId, uint32 fixedSessionId, bool isOnline) =0;
+		virtual void registerWS(NLNET::TModuleProxyPtr sender, uint32 shardId, uint32 fixedSessionId, bool isOnline) =0;
 		// WS report it's current open state
-		virtual void reportWSOpenState(NLNET::IModuleProxy *sender, bool isOnline) =0;
+		virtual void reportWSOpenState(NLNET::TModuleProxyPtr sender, bool isOnline) =0;
 		// return for welcome user
-		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) =0;
+		virtual void welcomeUserResult(NLNET::TModuleProxyPtr sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) =0;
 		// transmits the current player counts
-		virtual void updateConnectedPlayerCount(NLNET::IModuleProxy *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers) =0;
+		virtual void updateConnectedPlayerCount(NLNET::TModuleProxyPtr sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers) =0;
 
 
 	};
@@ -520,21 +534,21 @@ namespace WS
 
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId, bool isOnline);
-	
+
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_reportWSOpenState(NLNET::CMessage &__message, bool isOnline);
-	
+
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_welcomeUserResult(NLNET::CMessage &__message, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg);
-	
+
 		// Message serializer. Return the message received in reference for easier integration
 		static const NLNET::CMessage &buildMessageFor_updateConnectedPlayerCount(NLNET::CMessage &__message, uint32 nbOnlinePlayers, uint32 nbPendingPlayers);
-	
+
 
 
 
 	};
 
 }
-	
+
 #endif

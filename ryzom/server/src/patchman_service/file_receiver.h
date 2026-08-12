@@ -57,7 +57,7 @@ namespace PATCHMAN
 
 		// CModuleBase specialisation implementation
 		void onModuleUp(NLNET::TModuleProxyPtr module);
-		void onModuleDown(NLNET::IModuleProxy *module);
+		void onModuleDown(NLNET::TModuleProxyPtr module);
 		void onModuleUpdate();
 		const std::string &getModuleManifest() const;
 
@@ -117,9 +117,9 @@ namespace PATCHMAN
 	protected:
 		// protected methods - for treating incoming messages ---------------------
 		void setupSubscriptions(NLNET::TModuleProxyPtr sender) NL_OVERRIDE;
-		void cbFileInfo(NLNET::IModuleProxy *sender, const TFileInfoVector &files) NL_OVERRIDE;
+		void cbFileInfo(NLNET::TModuleProxyPtr sender, const TFileInfoVector &files) NL_OVERRIDE;
 		void cbFileData(NLNET::TModuleProxyPtr sender, const std::string &fileName, uint32 startOffset, const NLNET::TBinBuffer &data) NL_OVERRIDE;
-		void cbFileDataFailure(NLNET::IModuleProxy *sender, const std::string &fileName) NL_OVERRIDE;
+		void cbFileDataFailure(NLNET::TModuleProxyPtr sender, const std::string &fileName) NL_OVERRIDE;
 
 	private:
 		// private data -----------------------------------------------------------

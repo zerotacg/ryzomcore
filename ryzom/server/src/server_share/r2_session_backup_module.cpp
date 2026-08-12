@@ -117,7 +117,7 @@ public:
 
 	virtual void onModuleUpdate() NL_OVERRIDE;
 	
-	virtual void registerDss(NLNET::IModuleProxy *moduleProxy, TShardId shardId) NL_OVERRIDE;
+	virtual void registerDss(NLNET::TModuleProxyPtr moduleProxy, TShardId shardId) NL_OVERRIDE;
 
 	virtual bool onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
 
@@ -131,11 +131,11 @@ public:
 	
 	// From Su
 	// The DSS delete the session_*, the DBM remove entries from index
-	virtual void reportDeletedSessions(NLNET::IModuleProxy *moduleProxy, const std::vector<TSessionId>& sessionId) NL_OVERRIDE;
+	virtual void reportDeletedSessions(NLNET::TModuleProxyPtr moduleProxy, const std::vector<TSessionId> &sessionId) NL_OVERRIDE;
 	// Same as reportSavedSessions but DSS remove local map
-	virtual void reportHibernatedSessions(NLNET::IModuleProxy *moduleProxy, const std::vector<TSessionId>& session) NL_OVERRIDE;
+	virtual void reportHibernatedSessions(NLNET::TModuleProxyPtr moduleProxy, const std::vector<TSessionId> &session) NL_OVERRIDE;
 	// Update local index
-	virtual void reportSavedSessions(NLNET::IModuleProxy *moduleProxy, const std::vector< TR2SbmSessionInfo > &sessionInfos) NL_OVERRIDE;
+	virtual void reportSavedSessions(NLNET::TModuleProxyPtr moduleProxy, const std::vector<TR2SbmSessionInfo> &sessionInfos) NL_OVERRIDE;
 
 	//implement private Callback CHibernatingSessionListCallback
 	void resetHibernatingSessionList(TSessionInfos&  sessions);
@@ -161,6 +161,10 @@ private:
 	std::string getOverrideRingAccessFilename() const;
 	// Proxy to dss
 
+	TShardIds::iterator findShard(NLNET::TModuleProxyPtr &moduleProxy)
+	{
+		return _ShardIds.find(moduleProxy);
+	}
 
 
 private:
@@ -456,7 +460,7 @@ public:
 };
 
 
-void CR2SessionBackupModule::registerDss(NLNET::IModuleProxy *moduleProxy, TShardId shardId)
+void CR2SessionBackupModule::registerDss(TModuleProxyPtr moduleProxy, TShardId shardId)
 {
 	nldebug("R2SBM : receive DSS registration from '%s'",  moduleProxy->getModuleName().c_str());
 
@@ -707,7 +711,7 @@ void CR2SessionBackupModule::notifyIfSavedFile(NLNET::IModuleProxy *moduleProxy,
 
 // From Su
 // The DSS delete the session_*, the DBM remove entries from index
-void CR2SessionBackupModule::reportDeletedSessions(NLNET::IModuleProxy *moduleProxy, const std::vector<TSessionId>& sessionIds)
+void CR2SessionBackupModule::reportDeletedSessions(TModuleProxyPtr moduleProxy, const std::vector<TSessionId> &sessionIds)
 {
 	if (_WaitingForBS) 
 	{
@@ -715,7 +719,7 @@ void CR2SessionBackupModule::reportDeletedSessions(NLNET::IModuleProxy *modulePr
 		return;
 	}
 
-	auto foundShard(std::find_if(_ShardIds.begin(), _ShardIds.end(), [moduleProxy](const auto& pair) { return pair.first.get() == moduleProxy; }));
+	auto foundShard(_ShardIds.find(moduleProxy));
 	if ( foundShard == _ShardIds.end())
 	{
 		nlwarning("R2SBM: Message from an unregistered proxy '%s', moduleProxy->getModuleName().c_str()");
@@ -746,7 +750,7 @@ void CR2SessionBackupModule::reportDeletedSessions(NLNET::IModuleProxy *modulePr
 
 
 // Same as reportSavedSessions but DSS remove local map
-void CR2SessionBackupModule::reportHibernatedSessions(NLNET::IModuleProxy *moduleProxy, const std::vector<TSessionId>& sessionIds)
+void CR2SessionBackupModule::reportHibernatedSessions(TModuleProxyPtr moduleProxy, const std::vector<TSessionId> &sessionIds)
 {
 	if (_WaitingForBS) 
 	{
@@ -754,7 +758,7 @@ void CR2SessionBackupModule::reportHibernatedSessions(NLNET::IModuleProxy *modul
 		return;
 	}
 
-	auto foundShard(std::find_if(_ShardIds.begin(), _ShardIds.end(), [moduleProxy](const auto& pair) { return pair.first.get() == moduleProxy; }));
+	auto foundShard(findShard(moduleProxy));
 	if ( foundShard == _ShardIds.end())
 	{
 		nlwarning("R2SBM: Message from an unregistered proxy '%s', moduleProxy->getModuleName().c_str()");
@@ -782,7 +786,7 @@ void CR2SessionBackupModule::reportHibernatedSessions(NLNET::IModuleProxy *modul
 }
 
 // Update local index
-void CR2SessionBackupModule::reportSavedSessions(NLNET::IModuleProxy *moduleProxy, const std::vector< TR2SbmSessionInfo > &sessionInfos)
+void CR2SessionBackupModule::reportSavedSessions(TModuleProxyPtr moduleProxy, const std::vector<TR2SbmSessionInfo> &sessionInfos)
 {
 	if (_WaitingForBS) 
 	{
@@ -790,7 +794,7 @@ void CR2SessionBackupModule::reportSavedSessions(NLNET::IModuleProxy *moduleProx
 		return;
 	}
 	
-	auto foundShard(std::find_if(_ShardIds.begin(), _ShardIds.end(), [moduleProxy](const auto& pair) { return pair.first.get() == moduleProxy; }));
+	auto foundShard(findShard(moduleProxy));
 	if ( foundShard == _ShardIds.end())
 	{
 		nlwarning("R2SBM: Message from an unregistered proxy '%s', moduleProxy->getModuleName().c_str()");

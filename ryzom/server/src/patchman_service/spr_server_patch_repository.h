@@ -48,8 +48,8 @@ namespace PATCHMAN
 
 		// CModuleBase specialisation implementation
 		bool initModule(const NLNET::TParsedCommandLine &initInfo) NL_OVERRIDE;
-		void onModuleUp(NLNET::IModuleProxy *module) NL_OVERRIDE;
-		void onModuleDown(NLNET::IModuleProxy *module) NL_OVERRIDE;
+		void onModuleUp(NLNET::TModuleProxyPtr module) NL_OVERRIDE;
+		void onModuleDown(NLNET::TModuleProxyPtr module) NL_OVERRIDE;
 //		void onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &msg);
 		void onModuleUpdate() NL_OVERRIDE;
 		std::string buildModuleManifest() const NL_OVERRIDE;

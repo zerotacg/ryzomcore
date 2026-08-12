@@ -160,7 +160,7 @@ public:
 	/******************************************/
 
 	// SU send a far tell failure to IOS. This mean that the player is offline or unknow
-	void recvFarTellFail(NLNET::IModuleProxy *sender, const CEntityId &senderCharId, const ucstring &destName, TFailInfo failInfo) NL_OVERRIDE
+	void recvFarTellFail(TModuleProxyPtr sender, const CEntityId &senderCharId, const ucstring &destName, TFailInfo failInfo) NL_OVERRIDE
 	{
 		nldebug("IOSCU: recvFarTellFail : receiving a far tell failure from %s to '%s'", senderCharId.toString().c_str(), destName.toUtf8().c_str());
 		// try to retrieve the sender char
@@ -203,7 +203,7 @@ public:
 	}
 
 	// SU send a far tell to the IOS hosting the addressee character
-	void recvFarTell(NLNET::IModuleProxy *sender, const CEntityId &senderCharId, const ucstring &senderName, bool havePrivilege, const ucstring &destName, const ucstring &text) NL_OVERRIDE
+	void recvFarTell(TModuleProxyPtr sender, const CEntityId &senderCharId, const ucstring &senderName, bool havePrivilege, const ucstring &destName, const ucstring &text) NL_OVERRIDE
 	{
 		nldebug("IOSCU: recvFarTell : receiving a far tell from %s to '%s'", senderCharId.toString().c_str(), destName.toUtf8().c_str());
 		CChatManager &cm = IOS->getChatManager();
@@ -211,7 +211,7 @@ public:
 	}
 
 	// SU forward a guild chat message to the IOS
-	void farGuildChat(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 guildId, const ucstring &text) NL_OVERRIDE
+	void farGuildChat(TModuleProxyPtr sender, const ucstring &senderName, uint32 guildId, const ucstring &text) NL_OVERRIDE
 	{
 		CChatManager &cm = IOS->getChatManager();
 
@@ -221,17 +221,17 @@ public:
 	}
 
 	// SU forward a guild chat message to the IOS
-	void farGuildChat2(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 guildId, const ucstring &phraseName) NL_OVERRIDE
+	void farGuildChat2(TModuleProxyPtr sender, const ucstring &senderName, uint32 guildId, const ucstring &phraseName) NL_OVERRIDE
 	{
 	}
 
 	// SU forward a guild chat message to the IOS
-	void farGuildChat2Ex(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 guildId, uint32 phraseId) NL_OVERRIDE
+	void farGuildChat2Ex(TModuleProxyPtr sender, const ucstring &senderName, uint32 guildId, uint32 phraseId) NL_OVERRIDE
 	{
 	}
 
 	// IOS forward a universe chat message to the IOS
-	virtual void universeBroadcast(NLNET::IModuleProxy *sender, const ucstring &senderName, uint32 senderHomeSession, const ucstring &text) NL_OVERRIDE
+	virtual void universeBroadcast(TModuleProxyPtr sender, const ucstring &senderName, uint32 senderHomeSession, const ucstring &text) NL_OVERRIDE
 	{
 		CChatManager &cm = IOS->getChatManager();
 
@@ -247,7 +247,7 @@ public:
 	}
 
 	// IOS forward a dyn chat chat message to the IOSs
-	virtual void dynChanBroadcast(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &chanId, const ucstring &senderName, const ucstring &text) NL_OVERRIDE
+	virtual void dynChanBroadcast(TModuleProxyPtr sender, const NLMISC::CEntityId &chanId, const ucstring &senderName, const ucstring &text) NL_OVERRIDE
 	{
 		CChatManager &cm = IOS->getChatManager();
 
@@ -270,7 +270,7 @@ public:
 	}
 
 	// SU send a broadcast message to the IOS
-	void recvBroadcastMessage(NLNET::IModuleProxy *sender, const ucstring &message) NL_OVERRIDE
+	void recvBroadcastMessage(TModuleProxyPtr sender, const ucstring &message) NL_OVERRIDE
 	{
 	}
 
@@ -292,12 +292,11 @@ public:
 		log.displayNL("  Chat Unifier client have %u known peer modules", 
 			_Peers.size());
 
-		set<TModuleProxyPtr>::iterator first(_Peers.begin()), last(_Peers.end());
-		for (; first != last; ++first)
+		for (auto &peer : _Peers)
 		{
 			log.displayNL("   + Peer module '%s' with manifest '%s'", 
-				(*first)->getModuleName().c_str(),
-				(*first)->getModuleManifest().c_str());
+				peer->getModuleName().c_str(),
+				peer->getModuleManifest().c_str());
 		}
 
 		return true;

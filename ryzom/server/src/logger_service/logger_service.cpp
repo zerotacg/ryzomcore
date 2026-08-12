@@ -641,7 +641,7 @@ public:
 	// A logger client register itself wy providing it's definition of 
 	// the log content. It is mandatory that ALL client share
 	// Exactly the same definition of log.
-	virtual void registerClient(NLNET::IModuleProxy *sender, uint32 shardId, const std::vector < TLogDefinition > &logDef) NL_OVERRIDE
+	virtual void registerClient(TModuleProxyPtr sender, uint32 shardId, const std::vector<TLogDefinition> &logDef) NL_OVERRIDE
 	{
 		CAutoMutex<CMutex> lock(_LogMutex);
 		// check that the client use the correct log format
@@ -685,11 +685,11 @@ public:
 	}
 
 	// A client send a log
-	virtual void reportLog(NLNET::IModuleProxy *sender, const std::vector < TLogInfo > &logInfos) NL_OVERRIDE
+	virtual void reportLog(TModuleProxyPtr sender, const std::vector<TLogInfo> &logInfos) NL_OVERRIDE
 	{
 		CAutoMutex<CMutex> lock(_LogMutex);
 		// 1st check that the client is allowed
-		auto it(std::find_if(_Clients.begin(), _Clients.end(), [sender](const auto &pair) { return pair.first.get() == sender; }));
+		auto it(_Clients.find(sender));
 		if (it == _Clients.end())
 		{
 			// ignoring log of unidentified or rejected client
@@ -1702,7 +1702,7 @@ endQuery:
 		}
 		
 		// register the client
-		registerClient( NULL, 101, logDefs);
+		registerClient(NULL, 101, logDefs);
 
 		// now, send some logs
 		{
@@ -1713,7 +1713,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(CEntityId(0, 0x5678)));
 			li.getParams().push_back(TParamValue(string("Ho mon bateau")));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			TLogInfo li;
@@ -1723,7 +1723,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(CEntityId(0, 0x2222)));
 			li.getParams().push_back(TParamValue(string("Titanic")));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			TLogInfo li;
@@ -1735,7 +1735,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(uint32(10)));
 			li.getParams().push_back(TParamValue(uint32(1)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			TLogInfo li;
@@ -1747,7 +1747,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(uint32(100)));
 			li.getParams().push_back(TParamValue(uint32(10)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 
 		// send log with variable params
@@ -1761,7 +1761,7 @@ endQuery:
 			for (uint i=0; i<10; ++i)
 				li.getListParams()[0].getParams().push_back(TParamValue(CEntityId(0, 0x4444+i)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			TLogInfo li;
@@ -1775,7 +1775,7 @@ endQuery:
 			for (uint i=0; i<5; ++i)
 				li.getListParams()[1].getParams().push_back(TParamValue(uint32(i)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 
 		// send some missformed logs
@@ -1788,7 +1788,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(TItemId(UINT64_CONSTANT(765432109876543210))));
 			li.getParams().push_back(TParamValue(CSheetId(3)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			// not enought list param
@@ -1798,7 +1798,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(CEntityId(0, 0x3333)));
 			li.getParams().push_back(TParamValue(string("Hello, this is a cool chat entry!")));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			// too many param
@@ -1813,7 +1813,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(uint32(100)));
 			li.getParams().push_back(TParamValue(uint32(10)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			// too many list param
@@ -1826,7 +1826,7 @@ endQuery:
 			for (uint i=0; i<10; ++i)
 				li.getListParams()[0].getParams().push_back(TParamValue(CEntityId(0, 0x4444+i)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			// unknow log
@@ -1839,7 +1839,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(uint32(100)));
 			li.getParams().push_back(TParamValue(uint32(10)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			// invalid param
@@ -1852,7 +1852,7 @@ endQuery:
 			li.getParams().push_back(TParamValue(CSheetId(7)));
 			li.getParams().push_back(TParamValue(uint32(10)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 		{
 			// invalid list param
@@ -1865,7 +1865,7 @@ endQuery:
 			for (uint i=0; i<10; ++i)
 				li.getListParams()[0].getParams().push_back(TParamValue(uint32(i)));
 
-			reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+			reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 		}
 
 		if (args.size() == 1 && args[0] == "many")
@@ -1882,7 +1882,7 @@ endQuery:
 				li.getParams().push_back(TParamValue(uint32(100+i)));
 				li.getParams().push_back(TParamValue(uint32(10)));
 
-				reportLog(NULL, vector<TLogInfo>(&li, &li+1));
+				reportLog(NULL, vector<TLogInfo>(&li, &li + 1));
 			}
 		}
 

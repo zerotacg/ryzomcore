@@ -534,36 +534,36 @@ public:
 		\param ok If false remove the action from the queue, if true execute the action hold in a buffer.
 		\param messageId The unique message id that enable to execute the buffered message.
 	*/
-	virtual void ackMsg(NLNET::IModuleProxy *sender, uint32 messageId, bool ok) NL_OVERRIDE;
+	virtual void ackMsg(NLNET::TModuleProxyPtr sender, uint32 messageId, bool ok) NL_OVERRIDE;
 	/*! Server answer from a requestUploadScenario \see requestUploadScenario.
 		Broadcast to all co-editor that a scenario has been uploaded.
 		\param hlScenario The edition scenario (compressed)
 	*/
-	virtual void onScenarioUploaded(NLNET::IModuleProxy *sender, const R2::CObjectSerializerClient &hlScenario) NL_OVERRIDE ;
+	virtual void onScenarioUploaded(NLNET::TModuleProxyPtr sender, const R2::CObjectSerializerClient &hlScenario) NL_OVERRIDE ;
 	/*! Server answer from a requestSetNode.
 		Broadcast to all co-editor when a node is set
 		Same options than requestSetNode
 		\see requestSetNode
 	*/
-	virtual void onNodeSet(NLNET::IModuleProxy *sender, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerClient &value) NL_OVERRIDE;
+	virtual void onNodeSet(NLNET::TModuleProxyPtr sender, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerClient &value) NL_OVERRIDE;
 	/*! Server answer from a requestInsertNode.
 		Broadcast to all co-editor when a node is insert
 		Same options than requestInsertNode
 		\see requestInsertNode
 	*/
-	virtual void onNodeInserted(NLNET::IModuleProxy *sender, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerClient &value) NL_OVERRIDE;
+	virtual void onNodeInserted(NLNET::TModuleProxyPtr sender, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerClient &value) NL_OVERRIDE;
 	/*! Server answer from a requestEraseNode
 		Broadcast to all co-editor when a node is erased
 		Same options than requestEraseNode
 		\see requestEraseNode
 	*/
-	virtual void onNodeErased(NLNET::IModuleProxy *sender, const std::string &instanceId, const std::string &attrName, sint32 position) NL_OVERRIDE;
+	virtual void onNodeErased(NLNET::TModuleProxyPtr sender, const std::string &instanceId, const std::string &attrName, sint32 position) NL_OVERRIDE;
 	/*! Server answer from a requestMoveNode
 		Broadcast to all co-editor when a node is moved
 		Same options than requestMoveNode
 		\see requestMoveNode
 	*/
-	virtual void onNodeMoved(NLNET::IModuleProxy *sender, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2) NL_OVERRIDE;
+	virtual void onNodeMoved(NLNET::TModuleProxyPtr sender, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2) NL_OVERRIDE;
 	//! }
 
 
@@ -583,7 +583,7 @@ public:
 		\param nbPacket The number of packet that will be send
 		\param size The size of the data that will be send.
 	*/
-	virtual void multiPartMsgHead(NLNET::IModuleProxy *sender,  const std::string& msgName, uint32 nbPacket, uint32 size) NL_OVERRIDE;
+	virtual void multiPartMsgHead(NLNET::TModuleProxyPtr sender, const std::string &msgName, uint32 nbPacket, uint32 size) NL_OVERRIDE;
 
 	/*! Answer from Dss to sendMsgToDss (this message always follow multiPartMsgHead)
 		This call back when each chunk of data is received.
@@ -593,7 +593,7 @@ public:
 		\see multiPartMsgHead
 		\see sendMsgToDss
 	*/
-	virtual void multiPartMsgBody(NLNET::IModuleProxy *sender, uint32 packetId, uint32 packetSize) NL_OVERRIDE;
+	virtual void multiPartMsgBody(NLNET::TModuleProxyPtr sender, uint32 packetId, uint32 packetSize) NL_OVERRIDE;
 
 	/*! Answer from Dss to sendMsgToDss (this message always follow multiPartMsgHead and multiPartMsgBody)
 		This call back when each chunk of data is received.
@@ -601,7 +601,7 @@ public:
 		\see multiPartMsgBody
 		\see sendMsgToDss
 	*/
-	virtual void multiPartMsgFoot(NLNET::IModuleProxy *sender) NL_OVERRIDE;
+	virtual void multiPartMsgFoot(NLNET::TModuleProxyPtr sender) NL_OVERRIDE;
 
 	/*! setMute Mode. When mute is true then client do not apply scenario update messages. It is not necessary when ther is only on editor
 	\param mute If true the client do not apply onNode(Set|Inset|Moved)
@@ -620,13 +620,13 @@ public:
 		\param startAct The start act. In edition we start test from the current Act.
 		\param errorReason If the session owner was unable to start the session ( error in translation) a description message is send.
 	*/
-	void startScenario(class NLNET::IModuleProxy * proxy, bool ok, uint32 startAct, const std::string & errorReason) NL_OVERRIDE;
+	void startScenario(NLNET::TModuleProxyPtr proxy, bool ok, uint32 startAct, const std::string &errorReason) NL_OVERRIDE;
 	/*! This message appears short after requestStartScenario: the main animator will upload data and the other will draw a waiting screen
 		When this message hapends the editor change is Gui. If the player is the session owner he will upload data.
 		\param charId The id of the player that has "clicked" on a go start button
 		\see requestStartScenario
 	*/
-	void startingScenario(class NLNET::IModuleProxy * proxy, uint32 charId) NL_OVERRIDE;
+	void startingScenario(NLNET::TModuleProxyPtr proxy, uint32 charId) NL_OVERRIDE;
 	//! The User ask the dss to start an animation/test scenario (the user click on the "Go Test" button)
 	bool requestStartScenario();
 	//!}
@@ -702,7 +702,7 @@ public:
 		This description is used to build the menu in the trigger selecter of DM anim bar.
 		\param userTriggerDescriptions The description of triggers that can be launched by clients
 	*/
-	virtual void updateUserTriggerDescriptions(NLNET::IModuleProxy *sender,  const TUserTriggerDescriptions &userTriggerDescriptions) NL_OVERRIDE;
+	virtual void updateUserTriggerDescriptions(NLNET::TModuleProxyPtr sender, const TUserTriggerDescriptions &userTriggerDescriptions) NL_OVERRIDE;
 
 	/*!
 		Returns the descriptions of differents User trigger that can be launch by DM
@@ -752,13 +752,13 @@ public:
 	This list is shown on the own left of the scenn near the DM Action bar.
 	\param botId The updated list of id of npc controlled
 	*/
-	void updateIncarningList(NLNET::IModuleProxy *sender, const std::vector<uint32> & botId) NL_OVERRIDE;
+	void updateIncarningList(NLNET::TModuleProxyPtr sender, const std::vector<uint32> &botId) NL_OVERRIDE;
 
 	/*! Called by Dss at start when a npc talk is controlled. It synchronized the list of controle bot.
 	This list is shown on the own left of the scenn near the DM Action bar.
 	\param botId The updated list of id of npc controlled
 	*/
-	void updateTalkingAsList(NLNET::IModuleProxy *sender, const std::vector<uint32> & botId) NL_OVERRIDE;
+	void updateTalkingAsList(NLNET::TModuleProxyPtr sender, const std::vector<uint32> &botId) NL_OVERRIDE;
 
 	/*! Gets the list of Incarning Bot (this list is updated by updateIncarningList called by server)
 	\see updateIncarningList
@@ -832,7 +832,7 @@ public:
 		\param md5 The md5 of the file that we wanted to load.
 		\param ok If true the server has allowed the loading of the file otherwise the server has refused ( maybe the file was manually changed).
 	*/
-	virtual void loadScenarioFileAccepted(NLNET::IModuleProxy *senderModuleProxy, const std::string& md5, bool ok) NL_OVERRIDE;
+	virtual void loadScenarioFileAccepted(NLNET::TModuleProxyPtr senderModuleProxy, const std::string &md5, bool ok) NL_OVERRIDE;
 
 
 	/*! DSS message that indicates if the save of the scenario was allowed or not by the server
@@ -840,7 +840,7 @@ public:
 		\param signature The signature of the file. This value must be added to the file in order to be sure that the file was not manually generated/
 		\param ok If true the server has allowed the save of the file otherwise the server has refused ( maybe try to save the scenario with LD specific options).
 	*/
-	virtual void saveScenarioFileAccepted(NLNET::IModuleProxy *senderModuleProxy, const std::string& md5, const std::string& signature, bool ok) NL_OVERRIDE;
+	virtual void saveScenarioFileAccepted(NLNET::TModuleProxyPtr senderModuleProxy, const std::string &md5, const std::string &signature, bool ok) NL_OVERRIDE;
 
 
 
@@ -848,8 +848,8 @@ public:
 		User Component load/save mehods
 	*/
 	virtual void addToUserComponentSaveList(const std::string& filename, const std::vector< std::pair < std::string, std::string> >& values, std::string &body);
-	virtual void saveUserComponentFileAccepted(NLNET::IModuleProxy *senderModuleProxy, const std::string& md5, const std::string& signature, bool ok) NL_OVERRIDE;
-	virtual void loadUserComponentFileAccepted(NLNET::IModuleProxy *senderModuleProxy, const std::string& md5, bool ok) NL_OVERRIDE;
+	virtual void saveUserComponentFileAccepted(NLNET::TModuleProxyPtr senderModuleProxy, const std::string &md5, const std::string &signature, bool ok) NL_OVERRIDE;
+	virtual void loadUserComponentFileAccepted(NLNET::TModuleProxyPtr senderModuleProxy, const std::string &md5, bool ok) NL_OVERRIDE;
 	virtual bool addToUserComponentLoadList( const std::string& filename, CUserComponentValidatorLoadSuccededCallback* cb=nullptr);
 	/*!
 	*/
@@ -866,7 +866,7 @@ public:
 	virtual bool onProcessModuleMessage(NLNET::TModuleProxyPtr senderModuleProxy, const NLNET::CMessage &message) NL_OVERRIDE;
 
 
-	virtual void scheduleStartAct(NLNET::IModuleProxy *sender, uint32 errorId, uint32 actId, uint32 nbSeconds) NL_OVERRIDE;
+	virtual void scheduleStartAct(NLNET::TModuleProxyPtr sender, uint32 errorId, uint32 actId, uint32 nbSeconds) NL_OVERRIDE;
 
 
 
@@ -880,7 +880,7 @@ public:
 
 	std::string getCharacterRingAccess() const;
 
-	virtual void onRingAccessUpdated(NLNET::IModuleProxy *sender, const std::string &ringAccess) NL_OVERRIDE ;
+	virtual void onRingAccessUpdated(NLNET::TModuleProxyPtr sender, const std::string &ringAccess) NL_OVERRIDE ;
 
 
 	void requestStopAct();
@@ -1019,11 +1019,11 @@ public:
 
 	CUserComponent* getUserComponentByFilename(const std::string& filename) const;
 
-	virtual void onUserComponentRegistered(NLNET::IModuleProxy *senderModuleProxy, const NLMISC::CHashKeyMD5 & md5) NL_OVERRIDE;
+	virtual void onUserComponentRegistered(NLNET::TModuleProxyPtr senderModuleProxy, const NLMISC::CHashKeyMD5 &md5) NL_OVERRIDE;
 
-	virtual void onUserComponentUploading(NLNET::IModuleProxy *senderModuleProxy, const NLMISC::CHashKeyMD5 & md5) NL_OVERRIDE;
+	virtual void onUserComponentUploading(NLNET::TModuleProxyPtr senderModuleProxy, const NLMISC::CHashKeyMD5 &md5) NL_OVERRIDE;
 
-	virtual void onUserComponentDownloaded(NLNET::IModuleProxy *senderModuleProxy, CUserComponent* component);
+	virtual void onUserComponentDownloaded(NLNET::TModuleProxyPtr senderModuleProxy, CUserComponent *component);
 
 	std::string getUserComponentExtension() const {  return ".lua"; }
 
@@ -1036,29 +1036,29 @@ public:
 
 // End of Test or Animation mode
 	// Reconnect if sessionType was Edition
-	void onTestModeDisconnected(NLNET::IModuleProxy *moduleProxy, TSessionId sessionId, uint32 lastAct, TScenarioSessionType sessionType) NL_OVERRIDE;
+	void onTestModeDisconnected(NLNET::TModuleProxyPtr moduleProxy, TSessionId sessionId, uint32 lastAct, TScenarioSessionType sessionType) NL_OVERRIDE;
 
 	// Update the user quota (static quota and dynamic quota)
-	virtual void onQuotaUpdated(NLNET::IModuleProxy *senderModuleProxy, uint32 maxNpcs, uint32 maxStaticObjects) NL_OVERRIDE;
+	virtual void onQuotaUpdated(NLNET::TModuleProxyPtr senderModuleProxy, uint32 maxNpcs, uint32 maxStaticObjects) NL_OVERRIDE;
 
 	// The player mode has changed (he must chagnge its speed)
-	virtual void onCharModeUpdated(NLNET::IModuleProxy *senderModuleProxy, R2::TCharMode mode) NL_OVERRIDE;
+	virtual void onCharModeUpdated(NLNET::TModuleProxyPtr senderModuleProxy, R2::TCharMode mode) NL_OVERRIDE;
 
-	virtual void onDisconnected(NLNET::IModuleProxy *sender) NL_OVERRIDE;
+	virtual void onDisconnected(NLNET::TModuleProxyPtr sender) NL_OVERRIDE;
 
-	virtual void onKicked(NLNET::IModuleProxy *sender, uint32 timeBeforeDisconnection, bool mustKick) NL_OVERRIDE;
+	virtual void onKicked(NLNET::TModuleProxyPtr sender, uint32 timeBeforeDisconnection, bool mustKick) NL_OVERRIDE;
 
-	virtual void onAnimationModePlayConnected(NLNET::IModuleProxy *senderModuleProxy) NL_OVERRIDE;
+	virtual void onAnimationModePlayConnected(NLNET::TModuleProxyPtr senderModuleProxy) NL_OVERRIDE;
 
-	virtual void updateMissionItemsDescription(NLNET::IModuleProxy *sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItem) NL_OVERRIDE;
+	virtual void updateMissionItemsDescription(NLNET::TModuleProxyPtr sender, TSessionId sessionId, const std::vector<R2::TMissionItem> &missionItem) NL_OVERRIDE;
 
-	virtual void updateActPositionDescriptions(NLNET::IModuleProxy *sender, const TActPositionDescriptions &actPositionDescriptions) NL_OVERRIDE;
+	virtual void updateActPositionDescriptions(NLNET::TModuleProxyPtr sender, const TActPositionDescriptions &actPositionDescriptions) NL_OVERRIDE;
 
 
 
-	virtual void updateScenarioHeader(NLNET::IModuleProxy *sender,  const TScenarioHeaderSerializer &scenarioHeader) NL_OVERRIDE;
+	virtual void updateScenarioHeader(NLNET::TModuleProxyPtr sender, const TScenarioHeaderSerializer &scenarioHeader) NL_OVERRIDE;
 
-	virtual void onCurrentActIndexUpdated(NLNET::IModuleProxy *sender,  uint32 currentActIndex) NL_OVERRIDE;
+	virtual void onCurrentActIndexUpdated(NLNET::TModuleProxyPtr sender, uint32 currentActIndex) NL_OVERRIDE;
 
 
 
@@ -1066,9 +1066,9 @@ public:
 	//// Divers
 	/////////////////////////////////////////////////////
 
-	virtual void systemMsg(NLNET::IModuleProxy *sender,  const std::string& msgType, const std::string& who, const std::string& msg) NL_OVERRIDE;
+	virtual void systemMsg(NLNET::TModuleProxyPtr sender, const std::string &msgType, const std::string &who, const std::string &msg) NL_OVERRIDE;
 	// Simulate local a tp
-	virtual void onTpPositionSimulated(NLNET::IModuleProxy *sender,  TSessionId sessionId, uint64 characterId64, sint32 x, sint32 y, sint32 z, uint8 scenarioSeason) NL_OVERRIDE;
+	virtual void onTpPositionSimulated(NLNET::TModuleProxyPtr sender, TSessionId sessionId, uint64 characterId64, sint32 x, sint32 y, sint32 z, uint8 scenarioSeason) NL_OVERRIDE;
 
 	// Verify if the "crypted" charId (xox on bit rotated) is the same user that the current user.
 	bool hasCharacterSameCharacterIdMd5(const std::string & charIdMd5) const;

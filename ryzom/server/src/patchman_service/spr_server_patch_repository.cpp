@@ -86,7 +86,7 @@ bool CServerPatchRepository::initModule(const TParsedCommandLine &initInfo)
 	return true;
 }
 
-void CServerPatchRepository::onModuleUp(IModuleProxy *module)
+void CServerPatchRepository::onModuleUp(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleUp(module);
@@ -101,7 +101,7 @@ void CServerPatchRepository::onModuleUp(IModuleProxy *module)
 	}
 }
 
-void CServerPatchRepository::onModuleDown(IModuleProxy *module)
+void CServerPatchRepository::onModuleDown(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleDown(module);

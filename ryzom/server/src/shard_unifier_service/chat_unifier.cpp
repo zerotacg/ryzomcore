@@ -57,7 +57,7 @@ namespace CHATUNI
 		TChatClients			_ChatClients;
 
 		// A vector of chat clients, ready for broadcast
-		vector<IModuleProxy*>	_ChatClientsForBroadcast;
+		vector<TModuleProxyPtr>	_ChatClientsForBroadcast;
 
 	public:
 
@@ -96,7 +96,7 @@ namespace CHATUNI
 			return ret;
 		}
 
-		void onModuleUp(IModuleProxy *proxy)
+		void onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 //			if (proxy->getModuleClassName() == "EntityLocator" && proxy->getModuleDistance() == 0)
 //				_EntityLocator = proxy->getLocalModule();
@@ -143,7 +143,7 @@ namespace CHATUNI
 			rebuildBroadcastList();
 		}
 
-		void onModuleDown(IModuleProxy *proxy)
+		void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 //			if (proxy->getModuleDistance() == 0 && proxy->getLocalModule() == _EntityLocator)
 //				_EntityLocator = NULL;
@@ -189,7 +189,7 @@ namespace CHATUNI
 		// IOS forward a tell message to the unifier
 		// If IOS can't find the player locally, it forward
 		// the tell to the unifier
-		void sendFarTell(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &senderCharId, bool havePrivilege, const ucstring &destName, const ucstring &text)
+		void sendFarTell(TModuleProxyPtr sender, const NLMISC::CEntityId &senderCharId, bool havePrivilege, const ucstring &destName, const ucstring &text)
 		{
 			nldebug("CU : sendFarTell : module '%s' send far tell '%s' from character %s to '%s'",
 				sender->getModuleName().c_str(),

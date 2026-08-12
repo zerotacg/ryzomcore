@@ -182,7 +182,7 @@ public:
 		}
 	}
 	 
-	void onModuleUp(NLNET::IModuleProxy *moduleProxy)
+	void onModuleUp(TModuleProxyPtr moduleProxy)
 	{
 		std::string moduleName = moduleProxy->getModuleClassName();
 		if (moduleName == "ServerEditionModule")
@@ -191,7 +191,7 @@ public:
 		}
 	}
 
-	void onModuleDown(NLNET::IModuleProxy *moduleProxy)
+	void onModuleDown(TModuleProxyPtr moduleProxy)
 	{
 		std::string moduleName = moduleProxy->getModuleClassName();
 		if (moduleName == "ServerEditionModule")

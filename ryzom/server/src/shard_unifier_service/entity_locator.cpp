@@ -122,7 +122,7 @@ namespace ENTITYLOC
 		};
 
 		typedef map<TModuleProxyPtr, TShardId>	TLocatorClient;
-		typedef map<TShardId, IModuleProxy*>	TLocatorIndex;
+		typedef map<TShardId, TModuleProxyPtr>	TLocatorIndex;
 
 		// List of entity locator client modules
 		TLocatorClient		_LocatorClients;
@@ -195,7 +195,7 @@ namespace ENTITYLOC
 			return true;
 		}
 
-		void onModuleUp(IModuleProxy *proxy)
+		void onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			// check if the module is the local char synchronizer
 			if (proxy->getModuleDistance() == 0
@@ -248,7 +248,7 @@ namespace ENTITYLOC
 			_LocatorIndex.insert(make_pair(shardId, proxy));
 		}
 
-		void onModuleDown(IModuleProxy *proxy)
+		void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			// check if the module is the local char synchronizer
 			if (proxy->getModuleDistance() == 0
@@ -269,7 +269,7 @@ namespace ENTITYLOC
 			TLocatorClient::iterator it(_LocatorClients.find(proxy));
 			if (it != _LocatorClients.end())
 			{
-				IModuleProxy *proxy = it->first;
+				auto proxy = it->first;
 				TShardId shardId = it->second;
 				nldebug("CLocatorClient::onModuleDown : removing module '%s' as client for shard %u", proxy->getModuleName().c_str(), shardId);
 
@@ -341,7 +341,7 @@ namespace ENTITYLOC
 		///////// IModuleTrackerCb virtuals implementations
 		/////////////////////////////////////////////////////////////
 
-		virtual void onTrackedModuleUp(IModuleProxy *moduleProxy)
+		virtual void onTrackedModuleUp(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			nldebug("ENTLOC: connection of tracked module %s, sending %u connected chars",
 				moduleProxy->getModuleName().c_str(),
@@ -365,7 +365,7 @@ namespace ENTITYLOC
 			elc.connectionEvents(this, connections);
 		}
 
-		virtual void onTrackedModuleDown(ITModuleProxyPtr moduleProxy)
+		virtual void onTrackedModuleDown(TModuleProxyPtr moduleProxy) NL_OVERRIDE
 		{
 			// nothing for now
 		}
@@ -380,22 +380,22 @@ namespace ENTITYLOC
 			return _ConnectedUsers.find(userId) != _ConnectedUsers.end();
 		}
 
-		IModuleProxy *getLocatorModuleForChar(uint32 charId)
+	    TModuleProxyPtr getLocatorModuleForChar(uint32 charId)
 		{
-			TCharMap::iterator it(_ConnectedChars.find(charId));
+			auto it(_ConnectedChars.find(charId));
 
 			if (it == _ConnectedChars.end())
-				return NULL;
+				return nullptr;
 
 			// ok the character is online, retrieve the locator module
-			TLocatorIndex::iterator locIt(_LocatorIndex.find(it->second.ShardId));
+			auto locIt(_LocatorIndex.find(it->second.ShardId));
 
 			nlassert(locIt != _LocatorIndex.end());
 
 			return locIt->second;
 		}
 
-		NLNET::IModuleProxy *getLocatorModuleForChar(const ucstring &charName)
+	    TModuleProxyPtr getLocatorModuleForChar(const ucstring &charName)
 		{
 			TCharNameMap::iterator it(_ConnectedCharsByName.find(toCaseInsensitive(charName.toUtf8()))); // FIXME: UTF-8
 			if (it == _ConnectedCharsByName.end())
@@ -430,9 +430,9 @@ namespace ENTITYLOC
 		}
 
 		/** Return the module for a given shard id
-		 *	return NULL if no module available for the specified shard id
-		*/
-		NLNET::IModuleProxy *getLocatorModuleForShard(uint32 shardId)
+	     *	return NULL if no module available for the specified shard id
+	     */
+	    TModuleProxyPtr getLocatorModuleForShard(uint32 shardId)
 		{
 			TLocatorIndex::iterator it(_LocatorIndex.find(shardId));
 			if (it == _LocatorIndex.end())
@@ -473,7 +473,7 @@ namespace ENTITYLOC
 		/////////////////////////////////////////////////////////////
 
 		// The locator client send the initial state of active player and character connections
-		void initState(NLNET::IModuleProxy *sender, const std::vector < uint32 > &connectedUsers, const std::vector < TConnectedCharInfo > &connectedChars)
+		void initState(TModuleProxyPtr sender, const std::vector<uint32> &connectedUsers, const std::vector<TConnectedCharInfo> &connectedChars)
 		{
 			nldebug("ENTLOC : initState : receive initial state from module '%s' with %u players and %u characters connected", 
 				sender->getModuleName().c_str(),
@@ -493,7 +493,7 @@ namespace ENTITYLOC
 
 
 		// A player has connected on a shard
-		void playerConnected(NLNET::IModuleProxy *sender, uint32 userId)
+		void playerConnected(TModuleProxyPtr sender, uint32 userId) NL_OVERRIDE
 		{
 			nldebug("ENTLOC : playerConnected : player %u connected from '%s'", userId, sender->getModuleName().c_str());
 
@@ -521,10 +521,10 @@ namespace ENTITYLOC
 			}
 
 			// send user event to cb interfaces
-			NLMISC_BROADCAST_TO_LISTENER(ICharacterEventCb, onUserConnection(sender, userId));
+			NLMISC_BROADCAST_TO_LISTENER(ICharacterEventCb, onUserConnection(sender.get(), userId));
 		}
 		// A player has disconnected from a shard
-		void playerDisconnected(NLNET::IModuleProxy *sender, uint32 userId)
+		void playerDisconnected(TModuleProxyPtr sender, uint32 userId) NL_OVERRIDE
 		{
 			nldebug("ENTLOC : playerDisconnected : player %u disconnected from '%s'", userId, sender->getModuleName().c_str());
 
@@ -559,12 +559,12 @@ namespace ENTITYLOC
 				// erase the information
 				_ConnectedUsers.erase(it);
 				// send user event to cb interfaces
-				NLMISC_BROADCAST_TO_LISTENER(ICharacterEventCb, onUserDisconnection(sender, userId));
+				NLMISC_BROADCAST_TO_LISTENER(ICharacterEventCb, onUserDisconnection(sender.get(), userId));
 			}
 
 		}
 		// A character has connected
-		void charConnected(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, uint32 lastDisconnectionDate)
+		void charConnected(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, uint32 lastDisconnectionDate) NL_OVERRIDE
 		{
 			TCharId charId = (TCharId)charEId.getShortId();
 			uint32 dynamicId = charEId.getDynamicId();
@@ -584,7 +584,7 @@ namespace ENTITYLOC
 			_charConnected(sender, charId, lastDisconnectionDate, shardId, dynamicId);
 		}
 
-		void _charConnected(NLNET::IModuleProxy *sender, uint32 charId, uint32 lastDisconnectionDate, uint32 shardId, uint32 dynamicId)
+		void _charConnected(TModuleProxyPtr sender, uint32 charId, uint32 lastDisconnectionDate, uint32 shardId, uint32 dynamicId)
 		{
 			uint32 lastConnectionDate = CTime::getSecondsSince1970();
 
@@ -648,7 +648,7 @@ namespace ENTITYLOC
 				this, connections);
 		}
 		// A character has disconnected
-		void charDisconnected(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId)
+		void charDisconnected(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId) NL_OVERRIDE
 		{
 			TCharId charId = (TCharId)charEId.getShortId();
 			nldebug("ENTLOC : charDisconnected : character %u disconnected from '%s'", charId, sender->getModuleName().c_str());
@@ -675,7 +675,7 @@ namespace ENTITYLOC
 			_charDisconnected(sender, charId, shardId);
 		}
 
-		void _charDisconnected(NLNET::IModuleProxy *sender, uint32 charId, uint32 shardId)
+		void _charDisconnected(TModuleProxyPtr sender, uint32 charId, uint32 shardId)
 		{
 			TCharMap::iterator it(_ConnectedChars.find(charId));
 			if (it == _ConnectedChars.end())
@@ -691,7 +691,7 @@ namespace ENTITYLOC
 			}
 
 			// send character event to cb interfaces
-			NLMISC_BROADCAST_TO_LISTENER(ICharacterEventCb, onCharacterDisconnection(sender, charId));
+			NLMISC_BROADCAST_TO_LISTENER(ICharacterEventCb, onCharacterDisconnection(sender.get(), charId));
 
 			// send the connection event to EGS
 			vector<TCharConnectionEvent> connections;
@@ -704,7 +704,7 @@ namespace ENTITYLOC
 				this, connections);		
 		}
 
-		IModuleProxy *getLocalProxyForMe()
+	    TModuleProxyPtr getLocalProxyForMe()
 		{
 			vector<IModuleSocket *> sockets;
 			this->getPluggedSocketList(sockets);
@@ -797,7 +797,7 @@ namespace ENTITYLOC
 //				return true;
 //			}
 
-			_charConnected(NULL, charId, CTime::getSecondsSince1970()-10, shardId, 0);
+			_charConnected(NULL, charId, CTime::getSecondsSince1970() - 10, shardId, 0);
 
 			return true;
 		}
@@ -812,7 +812,7 @@ namespace ENTITYLOC
 
 			log.displayNL("Simulate user %u disconnection", userId);
 
-			IModuleProxy *proxy = getLocalProxyForMe();
+			auto proxy = getLocalProxyForMe();
 			if (proxy == NULL)
 			{
 				log.displayNL("Can't find local proxy for entity locator %s, can't execute command", this->getModuleFullyQualifiedName().c_str());
@@ -834,7 +834,7 @@ namespace ENTITYLOC
 
 			log.displayNL("Simulate user %u connection", userId);
 
-			IModuleProxy *proxy = getLocalProxyForMe();
+			auto proxy = getLocalProxyForMe();
 			if (proxy == NULL)
 			{
 				log.displayNL("Can't find local proxy for entity locator %s, can't execute command", this->getModuleFullyQualifiedName().c_str());
@@ -858,7 +858,7 @@ namespace ENTITYLOC
 			TLocatorClient::iterator first(_LocatorClients.begin()), last(_LocatorClients.end());
 			for (; first != last; ++first)
 			{
-				IModuleProxy *proxy = first->first;
+				auto proxy = first->first;
 				TShardId shardId = first->second;
 
 				log.displayNL("  + Module '%s' client for shard %u", proxy->getModuleName().c_str(), shardId);

@@ -63,8 +63,8 @@ public:
 	//---------------------------------------------------------------------------------------------
 	// callbacks on receipt of module messages
 
-	void installVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString& domainName, uint32 version) NL_OVERRIDE {}
-	void launchVersion(NLNET::IModuleProxy *sender, const NLMISC::CSString& domainName, uint32 version) NL_OVERRIDE {}
+	void installVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE {}
+	void launchVersion(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &domainName, uint32 version) NL_OVERRIDE {}
 	void executeCommand(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &cmdline, const NLMISC::CSString &originator) NL_OVERRIDE;
 
 	

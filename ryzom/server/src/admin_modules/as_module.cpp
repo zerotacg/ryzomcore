@@ -369,17 +369,17 @@ retry_pending_command:
 		///////////////////////////////////////////////////////////////////////
 
 		// An AES send an update of the list of service up
-		virtual void upServiceUpdate(NLNET::IModuleProxy *sender, const std::vector < TServiceStatus > &serviceStatus) NL_OVERRIDE
+		virtual void upServiceUpdate(TModuleProxyPtr sender, const std::vector<TServiceStatus> &serviceStatus) NL_OVERRIDE
 		{
 			auto trackedModules(_AESTracker.getTrackedModules());
-			auto it(std::find_if(trackedModules.begin(), trackedModules.end(), [sender](const auto &moduleProxy) { return moduleProxy.get() == sender; }));
+			auto it(trackedModules.find(sender));
 			if (it == trackedModules.end())
 			{
 				nlwarning("'%s' send upServiceUpdate but is not an valid AES", sender->getModuleName().c_str());
 				return;
 			}
 
-			auto service(std::find_if(_KnownServices.begin(), _KnownServices.end(), [sender](const auto &entry) { return entry.first.get() == sender; })->second);
+			auto service(_KnownServices.find(sender)->second);
 
 			service.LastReportDate = NLMISC::CTime::getSecondsSince1970();
 			service.ServiceStatus = serviceStatus;
@@ -398,7 +398,7 @@ retry_pending_command:
 		}
 
 		// An AES send graph data update
-		virtual void graphUpdate(NLNET::IModuleProxy *sender, const TGraphDatas &graphDatas) NL_OVERRIDE
+		virtual void graphUpdate(TModuleProxyPtr sender, const TGraphDatas &graphDatas) NL_OVERRIDE
 		{
 			// dump the datas
 //			nldebug("Received graph data for time %u", 
@@ -506,7 +506,7 @@ retry_pending_command:
 		}
 
 		// An AES send high rez graph data update
-		virtual void highRezGraphUpdate(NLNET::IModuleProxy *sender, const THighRezDatas &graphDatas) NL_OVERRIDE
+		virtual void highRezGraphUpdate(TModuleProxyPtr sender, const THighRezDatas &graphDatas) NL_OVERRIDE
 		{
 			// dump the datas
 //			nldebug("Received high rez graph info for var %s from service %s", 
@@ -577,7 +577,7 @@ retry_pending_command:
 		}
 
 		// AES send back the result of execution of a command
-		virtual void commandResult(NLNET::IModuleProxy *sender, uint32 commandId, const std::string &serviceName, const std::string &result) NL_OVERRIDE
+		virtual void commandResult(TModuleProxyPtr sender, uint32 commandId, const std::string &serviceName, const std::string &result) NL_OVERRIDE
 		{
 			TPendingWebCommands::iterator it(_PendingWebCommands.find(commandId));
 

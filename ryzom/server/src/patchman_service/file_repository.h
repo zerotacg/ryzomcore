@@ -79,7 +79,7 @@ namespace PATCHMAN
 		// methods for use in derived classes
 		void init(NLNET::IModule* parent,const NLMISC::CSString& rootDirectory);
 		void onModuleUp(NLNET::TModuleProxyPtr module);
-		void onModuleDown(NLNET::IModuleProxy *module);
+		void onModuleDown(NLNET::TModuleProxyPtr module);
 		void onModuleUpdate();
 
 		// update methods
@@ -106,8 +106,8 @@ namespace PATCHMAN
 
 		// treatment of subscriptions and unsubscriptions
 		void subscribe(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
-		void unsubscribe(NLNET::IModuleProxy *sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
-		void unsubscribeAll(NLNET::IModuleProxy *sender) NL_OVERRIDE;
+		void unsubscribe(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
+		void unsubscribeAll(NLNET::TModuleProxyPtr sender) NL_OVERRIDE;
 		void getInfo(NLNET::TModuleProxyPtr sender, const NLMISC::CSString &fileSpec) NL_OVERRIDE;
 
 		// IFileInfoUpdateListener specialisation implementation
@@ -118,7 +118,7 @@ namespace PATCHMAN
 		void _broadcastFileInfoChanges(const TFileInfoVector& fileInfoChanges);
 
 		// overloadable method for treating my module down
-		virtual void onFileRepositoryModuleDown(NLNET::IModuleProxy *module);
+		virtual void onFileRepositoryModuleDown(NLNET::TModuleProxyPtr module);
 
 	private:
 		// private data

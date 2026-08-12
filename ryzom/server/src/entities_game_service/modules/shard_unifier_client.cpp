@@ -788,7 +788,7 @@ public:
 	///////// 	Mail forum notifier interface implementation
 	////////////////////////////////////////////////////////////////
 	// A character have received a mail
-	void notifyMail(NLNET::IModuleProxy *sender, uint32 charId) NL_OVERRIDE
+	void notifyMail(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 	{
 		uint32 userId = charId >> 4;
 		uint32 charIndex = charId & 0xf;
@@ -805,7 +805,7 @@ public:
 
 	// A new message have been posted in a guild forum
 	// the notifier client send a notification for each member character
-	void notifyForumMessage(NLNET::IModuleProxy *sender, uint32 charId, uint32 guildId, uint32 threadId) NL_OVERRIDE 
+	void notifyForumMessage(TModuleProxyPtr sender, uint32 charId, uint32 guildId, uint32 threadId) NL_OVERRIDE
 	{
 		uint32 userId = charId >> 4;
 		uint32 charIndex = charId & 0xf;
@@ -826,7 +826,7 @@ public:
 	// The name unifier send the initial content for the Eid translator.
 	// EGS need to wait until it receive this message before continuing
 	// it's startup sequence in order to have coherent name in guild.
-	virtual void initEIdTranslator(NLNET::IModuleProxy *sender, bool firstPacket, bool lastPacket, const std::vector < TNameEntry > &nameEntries) NL_OVERRIDE
+	virtual void initEIdTranslator(TModuleProxyPtr sender, bool firstPacket, bool lastPacket, const std::vector<TNameEntry> &nameEntries) NL_OVERRIDE
 	{
 		H_AUTO(initEidTranslator);
 
@@ -863,7 +863,7 @@ public:
 	// The name unifier send an update for the EID translator.
 	// releasedNames contains a list of charId whose names have been released
 	// changedNames contains a list of add or update entries
-	virtual void updateEIdTranslator(NLNET::IModuleProxy *sender, const std::vector < uint32 > &releasedNames, const std::vector < TNameEntry > &changedNames) NL_OVERRIDE
+	virtual void updateEIdTranslator(TModuleProxyPtr sender, const std::vector<uint32> &releasedNames, const std::vector<TNameEntry> &changedNames) NL_OVERRIDE
 	{
 		CEntityIdTranslator *eidt = CEntityIdTranslator::getInstance();
 
@@ -900,7 +900,7 @@ public:
 
 	// The name unifier send the result for validation
 	// of a character name before creation.
-	virtual void validateCharacterNameResult(NLNET::IModuleProxy *sender, const CValidateNameResult &nameResult) NL_OVERRIDE
+	virtual void validateCharacterNameResult(TModuleProxyPtr sender, const CValidateNameResult &nameResult) NL_OVERRIDE
 	{
 		// retrieve the name in the validation queue
 		TCharId charId = (nameResult.getUserId()<<4)+nameResult.getCharIndex();
@@ -919,7 +919,7 @@ public:
 
 	// The name unifier send the result for name assignment
 	// of a new character name during creation.
-	virtual void assignCharacterNameResult(NLNET::IModuleProxy *sender, const CValidateNameResult &nameResult) NL_OVERRIDE
+	virtual void assignCharacterNameResult(TModuleProxyPtr sender, const CValidateNameResult &nameResult) NL_OVERRIDE
 	{
 		TCharId charId = (nameResult.getUserId()<<4)+nameResult.getCharIndex();
 		TCreateCharPending::iterator it(_CreateCharPending.find(charId));
@@ -939,7 +939,7 @@ public:
 
 	// The name unifier has renamed a character
 	// EGS must do what it need to take the new name into account
-	void characterRenamed(NLNET::IModuleProxy *sender, uint32 charId, const std::string &newName, bool sendSummary) NL_OVERRIDE
+	void characterRenamed(TModuleProxyPtr sender, uint32 charId, const std::string &newName, bool sendSummary) NL_OVERRIDE
 	{
 		ICharacter *ich = ICharacter::getInterface(charId, false);
 
@@ -962,7 +962,7 @@ public:
 	// The name unifier has updated/validated/eventualy renamed
 	// all the characters send by EGS for a user.
 	// EGS can proceed to send the characters summary to client
-	void userCharUpdatedAndValidated(NLNET::IModuleProxy *sender, uint32 userId, const vector<TCharSyncResultEntry> &charInfos) NL_OVERRIDE
+	void userCharUpdatedAndValidated(TModuleProxyPtr sender, uint32 userId, const vector<TCharSyncResultEntry> &charInfos) NL_OVERRIDE
 	{
 		IPlayerManager::TMapPlayers::const_iterator it(IPlayerManager::getInstance().getPlayers().find(userId));
 
@@ -994,7 +994,7 @@ public:
 	// all the characters send by EGS for a user.
 	// EGS can proceed to send the characters summary to client
 	// but the character names are perhaps not good ?
-	virtual void userCharSyncFailed(NLNET::IModuleProxy *sender, uint32 userId) NL_OVERRIDE
+	virtual void userCharSyncFailed(TModuleProxyPtr sender, uint32 userId) NL_OVERRIDE
 	{
 		IPlayerManager::TMapPlayers::const_iterator it(IPlayerManager::getInstance().getPlayers().find(userId));
 
@@ -1009,7 +1009,7 @@ public:
 
 
 	// The name unifier has renamed a guild to resolve a name conflict
-	virtual void guildRenamed(NLNET::IModuleProxy *sender, uint32 guildId, const ucstring &newName) NL_OVERRIDE
+	virtual void guildRenamed(TModuleProxyPtr sender, uint32 guildId, const ucstring &newName) NL_OVERRIDE
 	{
 		IGuild *guild = IGuild::getGuildInterface(IGuildManager::getInstance().getGuildFromId(guildId));
 
@@ -1026,7 +1026,7 @@ public:
 	}
 
 	// The name unifier respond to EGS about guild name validation request
-	virtual void validateGuildNameResult(NLNET::IModuleProxy *sender, uint32 guildId, const ucstring &guildName, TCharacterNameResult result) NL_OVERRIDE
+	virtual void validateGuildNameResult(TModuleProxyPtr sender, uint32 guildId, const ucstring &guildName, TCharacterNameResult result) NL_OVERRIDE
 	{
 		// callback the guild manager
 
@@ -1035,7 +1035,7 @@ public:
 
 	// The unifier has detected an invalid guild/character association
 	// and ask to the EGS to remove the character from the guild
-	virtual void removeCharFromGuild(NLNET::IModuleProxy *sender, uint32 charId, uint32 guildId) NL_OVERRIDE
+	virtual void removeCharFromGuild(TModuleProxyPtr sender, uint32 charId, uint32 guildId) NL_OVERRIDE
 	{
 		nldebug("CShardUnifierClient::removeCharFromGuild : removing char %u from guild %u", charId, guildId);
 		CGuild *guild = IGuildManager::getInstance().getGuildFromId(guildId);
@@ -1076,7 +1076,7 @@ public:
 	/////////////////////////////////////////////////////////////////
 
 	// The entity locator send a list of connection event to EGS
-	virtual void connectionEvents(NLNET::IModuleProxy *sender, const std::vector < TCharConnectionEvent > &events) NL_OVERRIDE
+	virtual void connectionEvents(TModuleProxyPtr sender, const std::vector<TCharConnectionEvent> &events) NL_OVERRIDE
 	{
 		nldebug("Uni : connectionEvents: receive %u connection event", events.size());
 		// update the list of 'foreign online' character

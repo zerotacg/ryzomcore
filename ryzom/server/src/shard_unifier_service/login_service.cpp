@@ -201,7 +201,7 @@ namespace LS
 //			return false;
 //		}
 
-		virtual void				onModuleUp(IModuleProxy *proxy)
+		virtual void				onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			if (proxy->getModuleClassName() == "WelcomeService")
 			{
@@ -210,7 +210,7 @@ namespace LS
 				_LSClients.insert(proxy);
 			}
 		}
-		virtual void				onModuleDown(IModuleProxy *proxy)
+		virtual void				onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			TLSCLients::iterator it(_LSClients.find(proxy));
 			if (it != _LSClients.end())
@@ -224,7 +224,7 @@ namespace LS
 		//////////////////////////////////////////////////
 		///// login service from WS module interface callbacks
 		//////////////////////////////////////////////////
-		virtual void pendingUserLost(NLNET::IModuleProxy *sender, const NLNET::CLoginCookie &cookie)
+		virtual void pendingUserLost(TModuleProxyPtr sender, const NLNET::CLoginCookie &cookie) NL_OVERRIDE
 		{
 			nldebug("LS:pendingUserLost : WS '%s' report that user %u with cookie %s did not connect in the allowed time",
 				sender->getModuleName().c_str(),
@@ -290,7 +290,7 @@ namespace LS
 			_LoggedUsers.insert(make_pair(userId, NLMISC::CTime::getSecondsSince1970()));
 		}
 
-		virtual void onCharacterConnection(NLNET::IModuleProxy *locatorHost, uint32 charId, uint32 lastDisconnectionDate)
+		virtual void onCharacterConnection(TModuleProxyPtr locatorHost, uint32 charId, uint32 lastDisconnectionDate)
 		{	/* nothing	*/	}
 		virtual void onCharacterDisconnection(NLNET::IModuleProxy *locatorHost, uint32 charId)
 		{	/* nothing */	}

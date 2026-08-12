@@ -58,7 +58,7 @@ void CDeploymentConfigurationSynchroniser::requestSync(TModuleProxyPtr sender)
 	other.sync(_Parent,NLNET::TBinBuffer(blob.buffer(),blob.size()));
 }
 
-void CDeploymentConfigurationSynchroniser::sync(NLNET::IModuleProxy *sender, const NLNET::TBinBuffer &dataBlob)
+void CDeploymentConfigurationSynchroniser::sync(TModuleProxyPtr sender, const NLNET::TBinBuffer &dataBlob)
 {
 	// make sure we're initialised
 	nlassert(_Parent!=NULL);
@@ -70,7 +70,7 @@ void CDeploymentConfigurationSynchroniser::sync(NLNET::IModuleProxy *sender, con
 	blob.serial(CDeploymentConfiguration::getInstance());
 
 	// call the derived class' callback method (if there is one)
-	cbDeploymentConfigurationSynchronised(sender);
+	cbDeploymentConfigurationSynchronised(sender.get());
 }
 
 CDeploymentConfigurationSynchroniser::CDeploymentConfigurationSynchroniser()

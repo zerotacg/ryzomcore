@@ -79,7 +79,7 @@ public:
 	// Virtual overrides from char name mapper
 	////////////////////////////////////////////////////////////////
 	// DSS send a list of ring names user item with a AI instance
-	virtual void storeItemNamesForAIInstance(NLNET::IModuleProxy *sender, uint32 aiInstance, const std::vector < TCharMappedInfo > &itemInfo) NL_OVERRIDE
+	virtual void storeItemNamesForAIInstance(TModuleProxyPtr sender, uint32 aiInstance, const std::vector<TCharMappedInfo> &itemInfo) NL_OVERRIDE
 	{
 		SM->storeItemNamesForAIInstance(aiInstance, itemInfo);
 	}

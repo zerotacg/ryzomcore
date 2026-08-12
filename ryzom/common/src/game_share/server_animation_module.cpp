@@ -1329,7 +1329,7 @@ void CServerAnimationModule::startAct(TSessionId sessionId, uint32 actId)
 			addPioneer(sessionId, charId);
 			if (mustTp)
 			{
-				getEditionModule()->tpToEntryPoint(pUserModuleProxy->get(), actId);
+				getEditionModule()->tpToEntryPoint(*pUserModuleProxy, actId);
 			}
 		}
 		else
@@ -2364,13 +2364,13 @@ bool CServerAnimationModule::getPosition(TSessionId sessionId, double& x, double
 }
 
 
-void CServerAnimationModule::getStartParams(NLNET::IModuleProxy * /* sender */, uint32 charId, TSessionId lastStoredSessionId)
+void CServerAnimationModule::getStartParams(TModuleProxyPtr, uint32 charId, TSessionId lastStoredSessionId)
 {
 	_Server->getEditionModule()->getStartParams(charId, lastStoredSessionId);
 }
 
 
-void CServerAnimationModule::askSetUserCharActPosition( NLNET::IModuleProxy * /* sender */, uint32 charId )
+void CServerAnimationModule::askSetUserCharActPosition(TModuleProxyPtr, uint32 charId)
 {
 	// get entry point
 	double x, y, orient;
@@ -2522,14 +2522,14 @@ void CServerAnimationModule::addPioneer( TSessionId sessionId, TCharId charId)
 
 
 
-void CServerAnimationModule::onDssTarget( IModuleProxy *senderModuleProxy, const std::vector<std::string> & params)
+void CServerAnimationModule::onDssTarget(TModuleProxyPtr senderModuleProxy, const std::vector<std::string> &params)
 {
 	uint32 charId;
 	NLMISC::CEntityId eid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(senderModuleProxy, charId, eid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(senderModuleProxy.get(), charId, eid, userPriv, extendedPriv);
 	if (!ok) { return ; }
 
 	DROP_IF(!_CharacterControlProxy, "Try to send message to EGS must he is down", return);
@@ -3002,12 +3002,12 @@ void CServerAnimationModule::updateAnimationProperties(NLNET::IModuleProxy *send
 	return;
 }
 
-void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderModuleProxy,
-	const NLMISC::CEntityId& eid, const NLMISC::CEntityId&creatureId,
-	TAIAlias alias, TDataSetRow entityRowId,
-	const ucstring& /* ucName */, uint32 nameId,
-	const std::vector<std::string> & param,
-	bool alived)
+void CServerAnimationModule::onCharTargetReceived(TModuleProxyPtr senderModuleProxy,
+    const NLMISC::CEntityId &eid, const NLMISC::CEntityId &creatureId,
+    TAIAlias alias, TDataSetRow entityRowId,
+    const ucstring & /* ucName */, uint32 nameId,
+    const std::vector<std::string> &param,
+    bool alived)
 {
 
 
@@ -3323,7 +3323,7 @@ void CServerAnimationModule::onCharTargetReceived( NLNET::IModuleProxy *senderMo
 }
 
 // EGS message to indicates that a character is ready in mirror
-void CServerAnimationModule::characterReady(NLNET::IModuleProxy * /* sender */, const NLMISC::CEntityId &charEid)
+void CServerAnimationModule::characterReady(TModuleProxyPtr, const NLMISC::CEntityId &charEid)
 {
 	uint32 charId = uint32(charEid.getShortId());
 
@@ -3891,7 +3891,7 @@ void CServerAnimationModule::deactivateEasterEggsFromAct(TSessionId scenarioId, 
 
 }
 
-void CServerAnimationModule::deactivateEasterEgg(class NLNET::IModuleProxy * /* aisControl */, uint32 easterEggId, TSessionId scenarioId, uint32 actId)
+void CServerAnimationModule::deactivateEasterEgg(TModuleProxyPtr, uint32 easterEggId, TSessionId scenarioId, uint32 actId)
 {
 	DROP_IF(_CharacterControlProxy == nullptr, "No CharacterControlProxy", return);
 
@@ -3920,7 +3920,7 @@ void CServerAnimationModule::deactivateEasterEgg(class NLNET::IModuleProxy * /* 
 	proxy.deactivateEasterEgg(this,  easterEggId, scenarioId);
 }
 
-void CServerAnimationModule::activateEasterEgg(class NLNET::IModuleProxy * /* aisControl */, uint32 easterEggId, TSessionId scenarioId, uint32 actId ,const std::string & items, float x, float y, float z, float heading, const std::string& grpControler, const std::string& name, const std::string& look)
+void CServerAnimationModule::activateEasterEgg(TModuleProxyPtr, uint32 easterEggId, TSessionId scenarioId, uint32 actId, const std::string &items, float x, float y, float z, float heading, const std::string &grpControler, const std::string &name, const std::string &look)
 {
 	DROP_IF(_CharacterControlProxy == nullptr, "No CharacterControlProxy", return);
 
@@ -3988,7 +3988,7 @@ void CServerAnimationModule::activateEasterEgg(class NLNET::IModuleProxy * /* ai
 
 }
 
-void CServerAnimationModule::onEasterEggLooted(class NLNET::IModuleProxy * /* egs */, uint32 easterEggId, TSessionId scenarioId)
+void CServerAnimationModule::onEasterEggLooted(TModuleProxyPtr, uint32 easterEggId, TSessionId scenarioId)
 {
 	CAnimationSession* session = getSession(scenarioId);
 	DROP_IF(!session, toString("No Session %d", scenarioId.asInt()), return);
@@ -3996,14 +3996,14 @@ void CServerAnimationModule::onEasterEggLooted(class NLNET::IModuleProxy * /* eg
 }
 
 
-void CServerAnimationModule::onUserTriggerTriggered(NLNET::IModuleProxy *senderModuleProxy, uint32 actId, uint32 triggerId)
+void CServerAnimationModule::onUserTriggerTriggered(TModuleProxyPtr senderModuleProxy, uint32 actId, uint32 triggerId)
 {
 	uint32 charId;
 	NLMISC::CEntityId clientEid;
 	std::string userPriv;
 	std::string extendedPriv;
 
-	bool ok =  checkSecurityInfo(senderModuleProxy, charId, clientEid, userPriv, extendedPriv);
+	bool ok =  checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
 	if (!ok) { return; }
 
 	TSessionId sessionId = getSessionIdByCharId(charId);
@@ -4404,7 +4404,7 @@ uint32 CServerAnimationModule::getCurrentAct(TSessionId sessionId) const
 	return 1;
 }
 
-void CServerAnimationModule::dssMessage(NLNET::IModuleProxy * /* ais */, TSessionId sessionId, const std::string & msgType, const std::string& who, const std::string& msg)
+void CServerAnimationModule::dssMessage(TModuleProxyPtr, TSessionId sessionId, const std::string &msgType, const std::string &who, const std::string &msg)
 {
 	CAnimationSession* session = getSession(sessionId);
 	if (session)
@@ -4453,7 +4453,7 @@ bool CServerAnimationModule::getHeaderInfo(TSessionId sessionId, TScenarioHeader
 	return true;
 }
 
-void CServerAnimationModule::teleportCharacter(NLNET::IModuleProxy * /* ais */, const NLMISC::CEntityId& eid, float x, float y, float z)
+void CServerAnimationModule::teleportCharacter(TModuleProxyPtr, const NLMISC::CEntityId &eid, float x, float y, float z)
 {
 	CAnimationSession * session = getSessionByCharId(TCharId(eid.getShortId()));
 	if (session)
@@ -4480,7 +4480,7 @@ void CServerAnimationModule::broadcastMsg(TSessionId sessionId, const NLNET::CMe
 	broadcastMessage(session, msg);
 }
 
-void CServerAnimationModule::setScenarioPoints(NLNET::IModuleProxy * /* ais */, TSessionId sessionId, float scenarioPoints)
+void CServerAnimationModule::setScenarioPoints(TModuleProxyPtr, TSessionId sessionId, float scenarioPoints)
 {
 	CAnimationSession* session = getSession(sessionId);
 	if (!session) { return; }
@@ -4489,7 +4489,7 @@ void CServerAnimationModule::setScenarioPoints(NLNET::IModuleProxy * /* ais */, 
 	return;
 }
 
-void CServerAnimationModule::startScenarioTiming(NLNET::IModuleProxy * /* ais */, TSessionId sessionId)
+void CServerAnimationModule::startScenarioTiming(TModuleProxyPtr, TSessionId sessionId)
 {
 	CAnimationSession* session = getSession(sessionId);
 	if (!session) { return; }
@@ -4504,7 +4504,7 @@ void CServerAnimationModule::startScenarioTiming(NLNET::IModuleProxy * /* ais */
 	return;
 }
 
-void CServerAnimationModule::endScenarioTiming(NLNET::IModuleProxy * /* ais */, TSessionId sessionId)
+void CServerAnimationModule::endScenarioTiming(TModuleProxyPtr, TSessionId sessionId)
 {
 	CAnimationSession* session = getSession(sessionId);
 	if (!session) { return; }

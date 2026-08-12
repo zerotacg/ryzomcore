@@ -103,7 +103,7 @@ namespace R2 {
 		~CServerAnswerForseener();
 		// if ok == true, then simulate the replay that The Server would do for other client
 		// if ok == false, remove the  Forseen Answer from the answer queue.
-		void ack(CClientEditionModule* client, NLNET::IModuleProxy *server, TMessageId msgId, bool ok );
+		void ack(CClientEditionModule *client, TModuleProxyPtr server, TMessageId msgId, bool ok);
 
 		// Add to the Forssen Answer queue (we do not take the ownership of value)
 		TMessageId onScenarioUploaded( const CObject* hlScenario) ;
@@ -124,7 +124,7 @@ namespace R2 {
 	class IServerAnswerMsg
 	{
 	public:
-		virtual void ok(CClientEditionModule* client, NLNET::IModuleProxy *server) = 0;
+		virtual void ok(CClientEditionModule *client, TModuleProxyPtr server) = 0;
 		virtual ~IServerAnswerMsg()	{}
 	};
 
@@ -135,7 +135,7 @@ namespace R2 {
 			:_Value( value?value->clone() : nullptr)
 	    {}
 
-		void ok(CClientEditionModule* client, NLNET::IModuleProxy *server) NL_OVERRIDE
+		void ok(CClientEditionModule *client, TModuleProxyPtr server) NL_OVERRIDE
 		{
 			client->onScenarioUploaded(server, _Value.getPtr());
 		}
@@ -150,7 +150,7 @@ namespace R2 {
 			:_InstanceId(instanceId), _AttrName(attrName), _Value( value?value->clone() : nullptr)
 	    {}
 
-		void ok(CClientEditionModule* client, NLNET::IModuleProxy *server) NL_OVERRIDE
+		void ok(CClientEditionModule *client, TModuleProxyPtr server) NL_OVERRIDE
 		{
 			client->onNodeSet(server, _InstanceId, _AttrName, _Value.getPtr());
 		}
@@ -167,7 +167,7 @@ namespace R2 {
 			:_InstanceId(instanceId), _AttrName(attrName), _Position(position), _Key(key), _Value( value?value->clone() : nullptr)
 	    {}
 
-		void ok(CClientEditionModule* client, NLNET::IModuleProxy *server) NL_OVERRIDE
+		void ok(CClientEditionModule *client, TModuleProxyPtr server) NL_OVERRIDE
 		{
 			client->onNodeInserted(server, _InstanceId, _AttrName, _Position, _Key, _Value.getPtr());
 		}
@@ -185,7 +185,7 @@ namespace R2 {
 		CServerAnswerMsgErased(const std::string &instanceId, const std::string &attrName, sint32 position)
 			:_InstanceId(instanceId), _AttrName(attrName), _Position(position){}
 
-		void ok(CClientEditionModule* client, NLNET::IModuleProxy *server) NL_OVERRIDE
+		void ok(CClientEditionModule *client, TModuleProxyPtr server) NL_OVERRIDE
 		{
 			client->onNodeErased(server, _InstanceId, _AttrName, _Position);
 		}
@@ -203,7 +203,7 @@ namespace R2 {
 			:_InstanceId1(instanceId1), _AttrName1(attrName1), _Position1(position1),
 			_InstanceId2(instanceId2), _AttrName2(attrName2), _Position2(position2){}
 
-		void ok(CClientEditionModule* client, NLNET::IModuleProxy *server) NL_OVERRIDE
+		void ok(CClientEditionModule *client, TModuleProxyPtr server) NL_OVERRIDE
 		{
 			client->onNodeMoved(server, _InstanceId1, _AttrName1, _Position1, _InstanceId2, _AttrName2, _Position2);
 		}
@@ -239,7 +239,7 @@ CServerAnswerForseener::~CServerAnswerForseener()
 
 }
 
-void CServerAnswerForseener::ack(CClientEditionModule* client, NLNET::IModuleProxy *server, TMessageId msgId, bool ok)
+void CServerAnswerForseener::ack(CClientEditionModule *client, TModuleProxyPtr server, TMessageId msgId, bool ok)
 {
 	TAnswers::iterator found = _Answers.find(msgId);
 	BOMB_IF( found == _Answers.end(), "Message not found", return);
@@ -537,7 +537,7 @@ bool CClientEditionModule::onProcessModuleMessage(TModuleProxyPtr senderModulePr
 		CUserComponent* component = new CUserComponent();
 		//message.serial(const_cast<CUserComponent&>(*component));
 		component->serial( const_cast<CMessage&>(message));
-		onUserComponentDownloaded(senderModuleProxy.get(), component);
+		onUserComponentDownloaded(senderModuleProxy, component);
 		return true;
 	}
 
@@ -692,7 +692,7 @@ bool CClientEditionModule::onProcessModuleMessage(TModuleProxyPtr senderModulePr
 
 }
 
-void CClientEditionModule::onTestModeDisconnected(NLNET::IModuleProxy * /* moduleProxy */, TSessionId sessionId, uint32 lastAct, TScenarioSessionType sessionType)
+void CClientEditionModule::onTestModeDisconnected(TModuleProxyPtr, TSessionId sessionId, uint32 lastAct, TScenarioSessionType sessionType)
 {
 	//H_AUTO(R2_CClientEditionModule_onTestModeDisconnected)
 	// indicate the Editor that the animation has stopped.
@@ -1031,7 +1031,7 @@ bool CClientEditionModule::askUpdateCharMode(R2::TCharMode mode)
 }
 
 
-void CClientEditionModule::onCharModeUpdated(NLNET::IModuleProxy * /* senderModuleProxy */, R2::TCharMode mode)
+void CClientEditionModule::onCharModeUpdated(TModuleProxyPtr, R2::TCharMode mode)
 {
 	//H_AUTO(R2_CClientEditionModule_onCharModeUpdated)
 	_CharMode = mode;
@@ -1042,7 +1042,7 @@ void CClientEditionModule::onCharModeUpdated(NLNET::IModuleProxy * /* senderModu
 
 
 
-void CClientEditionModule::startScenario(class NLNET::IModuleProxy * proxy, bool ok, uint32 /* startingAct */, const std::string& errorReason)
+void CClientEditionModule::startScenario(TModuleProxyPtr proxy, bool ok, uint32 /* startingAct */, const std::string &errorReason)
 {
 	//H_AUTO(R2_CClientEditionModule_startScenario)
 	if (ok)
@@ -1090,7 +1090,7 @@ void CClientEditionModule::startScenario(class NLNET::IModuleProxy * proxy, bool
 
 
 
-void CClientEditionModule::startingScenario(class NLNET::IModuleProxy * /* serverProxy */, uint32 charId)
+void CClientEditionModule::startingScenario(TModuleProxyPtr, uint32 charId)
 {
 	//H_AUTO(R2_CClientEditionModule_startingScenario)
 	CShareServerEditionItfProxy proxy(_ServerEditionProxy);
@@ -1276,7 +1276,7 @@ CUserComponent* CClientEditionModule::getUserComponentByHashMd5( const NLMISC::C
 }
 
 
-void CClientEditionModule::onUserComponentUploading(NLNET::IModuleProxy * /* senderModuleProxy */, const CHashKeyMD5 & md5)
+void CClientEditionModule::onUserComponentUploading(TModuleProxyPtr, const CHashKeyMD5 &md5)
 {
 	//H_AUTO(R2_CClientEditionModule_onUserComponentUploading)
 	BOMB_IF(_ServerEditionProxy == NULL, "Server Edition Module not connected", return);
@@ -1295,7 +1295,7 @@ void CClientEditionModule::onUserComponentUploading(NLNET::IModuleProxy * /* sen
 }
 
 
-void CClientEditionModule::onUserComponentRegistered(NLNET::IModuleProxy * /* senderModuleProxy */, const CHashKeyMD5 & md5)
+void CClientEditionModule::onUserComponentRegistered(TModuleProxyPtr, const CHashKeyMD5 &md5)
 {
 	//H_AUTO(R2_CClientEditionModule_onUserComponentRegistered)
 	BOMB_IF(_ServerEditionProxy == NULL, "Server Edition Module not connected", return);
@@ -1313,7 +1313,7 @@ void CClientEditionModule::onUserComponentRegistered(NLNET::IModuleProxy * /* se
 }
 
 
-void CClientEditionModule::onUserComponentDownloaded(NLNET::IModuleProxy *senderModuleProxy, CUserComponent* component)
+void CClientEditionModule::onUserComponentDownloaded(TModuleProxyPtr senderModuleProxy, CUserComponent *component)
 {
 	//H_AUTO(R2_CClientEditionModule_onUserComponentDownloaded)
 
@@ -1725,12 +1725,12 @@ void CClientEditionModule::refreshComponents()
 	*/
 }
 
-void CClientEditionModule::ackMsg( NLNET::IModuleProxy *sender, uint32 msgId, bool ok)
+void CClientEditionModule::ackMsg(TModuleProxyPtr sender, uint32 msgId, bool ok)
 {
  	_ServerAnswerForseener->ack(this, sender, msgId, ok);
 }
 
-void CClientEditionModule::onScenarioUploaded(NLNET::IModuleProxy * /* sender */, const R2::CObjectSerializerClient &hlScenario)
+void CClientEditionModule::onScenarioUploaded(TModuleProxyPtr, const R2::CObjectSerializerClient &hlScenario)
 {
 	//H_AUTO(R2_CClientEditionModule_onScenarioUploaded)
 	_Factory->clear();
@@ -1738,7 +1738,7 @@ void CClientEditionModule::onScenarioUploaded(NLNET::IModuleProxy * /* sender */
 }
 
 // The client request to set a node on a hl scenario.
-void CClientEditionModule::onNodeSet(NLNET::IModuleProxy * /* sender */, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerClient &value)
+void CClientEditionModule::onNodeSet(TModuleProxyPtr, const std::string &instanceId, const std::string &attrName, const R2::CObjectSerializerClient &value)
 {
 	//H_AUTO(R2_CClientEditionModule_onNodeSet)
 	if (_Mute) return;
@@ -1747,7 +1747,7 @@ void CClientEditionModule::onNodeSet(NLNET::IModuleProxy * /* sender */, const s
 }
 
 // The ServerEditionMode inserts a node on a hl scenario.
-void CClientEditionModule::onNodeInserted(NLNET::IModuleProxy * /* sender */, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerClient &value)
+void CClientEditionModule::onNodeInserted(TModuleProxyPtr, const std::string &instanceId, const std::string &attrName, sint32 position, const std::string &key, const R2::CObjectSerializerClient &value)
 {
 	//H_AUTO(R2_CClientEditionModule_onNodeInserted)
 	if (_Mute) return;
@@ -1755,7 +1755,7 @@ void CClientEditionModule::onNodeInserted(NLNET::IModuleProxy * /* sender */, co
 }
 
 // The ServerEditionMode erases a node on a hl scenario.
-void CClientEditionModule::onNodeErased(NLNET::IModuleProxy * /* sender */, const std::string &instanceId, const std::string &attrName, sint32 position)
+void CClientEditionModule::onNodeErased(TModuleProxyPtr, const std::string &instanceId, const std::string &attrName, sint32 position)
 {
 	//H_AUTO(R2_CClientEditionModule_onNodeErased)
 	if (_Mute) return;
@@ -1763,7 +1763,7 @@ void CClientEditionModule::onNodeErased(NLNET::IModuleProxy * /* sender */, cons
 }
 
 // The ServerEditionMode a move node on a hl scenario.
-void CClientEditionModule::onNodeMoved(NLNET::IModuleProxy * /* sender */, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2)
+void CClientEditionModule::onNodeMoved(TModuleProxyPtr, const std::string &instanceId1, const std::string &attrName1, sint32 position1, const std::string &instanceId2, const std::string &attrName2, sint32 position2)
 {
 	//H_AUTO(R2_CClientEditionModule_onNodeMoved)
 	if (_Mute) return;
@@ -1771,7 +1771,7 @@ void CClientEditionModule::onNodeMoved(NLNET::IModuleProxy * /* sender */, const
 			instanceId2, attrName2, position2);
 }
 
-void CClientEditionModule::onQuotaUpdated(NLNET::IModuleProxy * /* senderModuleProxy */, uint32 maxNpcs, uint32 maxStaticObjects)
+void CClientEditionModule::onQuotaUpdated(TModuleProxyPtr, uint32 maxNpcs, uint32 maxStaticObjects)
 {
 	//H_AUTO(R2_CClientEditionModule_onQuotaUpdated)
 	//R2::getEditor().getLua().executeScriptNoThrow(toString("r2.QuotaMgr.onQuotaUpdated(%u, %u)", maxNpcs, maxStaticObjects));
@@ -1859,7 +1859,7 @@ void CClientEditionModule::setStartingActIndex(uint32 startingActIndex)
 	_StartingActIndex = startingActIndex;
 }
 
-void CClientEditionModule::onTpPositionSimulated(NLNET::IModuleProxy * /* sender */,  TSessionId /* sessionId */, uint64 /* characterId64 */, sint32 x, sint32 y, sint32 z, uint8 /* scenarioSeason */)
+void CClientEditionModule::onTpPositionSimulated(TModuleProxyPtr, TSessionId /* sessionId */, uint64 /* characterId64 */, sint32 x, sint32 y, sint32 z, uint8 /* scenarioSeason */)
 {
 	//H_AUTO(R2_CClientEditionModule_onTpPositionSimulated)
 
@@ -1882,13 +1882,13 @@ void CClientEditionModule::onTpPositionSimulated(NLNET::IModuleProxy * /* sender
 
 }
 
-void CClientEditionModule::onDisconnected(NLNET::IModuleProxy * /* sender */)
+void CClientEditionModule::onDisconnected(TModuleProxyPtr)
 {
 	//H_AUTO(R2_CClientEditionModule_onDisconnected)
 	R2::getEditor().getLua().executeScriptNoThrow(NLMISC::toString("r2.onDisconnected()"));
 }
 
-void CClientEditionModule::onKicked(NLNET::IModuleProxy * /* sender */, uint32 timeBeforeDisconnection, bool mustKick)
+void CClientEditionModule::onKicked(TModuleProxyPtr, uint32 timeBeforeDisconnection, bool mustKick)
 {
 	//H_AUTO(R2_CClientEditionModule_onKicked)
 
@@ -2032,14 +2032,14 @@ bool CClientEditionModule::connectAnimationModePlay()
 }
 
 
-void CClientEditionModule::onAnimationModePlayConnected(NLNET::IModuleProxy * /* senderModuleProxy */)
+void CClientEditionModule::onAnimationModePlayConnected(TModuleProxyPtr)
 {
 	//H_AUTO(R2_CClientEditionModule_onAnimationModePlayConnected)
 	_Client->onAnimationModePlayConnected();
 }
 
 
-void CClientEditionModule::scheduleStartAct(NLNET::IModuleProxy * /* sender */, uint32 errorId, uint32 actId, uint32 nbSeconds)
+void CClientEditionModule::scheduleStartAct(TModuleProxyPtr, uint32 errorId, uint32 actId, uint32 nbSeconds)
 {
 	//H_AUTO(R2_CClientEditionModule_scheduleStartAct)
 	R2::getEditor().getLua().push(errorId);
@@ -2050,14 +2050,14 @@ void CClientEditionModule::scheduleStartAct(NLNET::IModuleProxy * /* sender */, 
 }
 
 
-void CClientEditionModule::updateScenarioHeader(NLNET::IModuleProxy * /* sender */, const TScenarioHeaderSerializer& header)
+void CClientEditionModule::updateScenarioHeader(TModuleProxyPtr, const TScenarioHeaderSerializer &header)
 {
 	//H_AUTO(R2_CClientEditionModule_updateScenarioHeader)
 	_ScenarioHeader = header.Value;
 	R2::getEditor().getLua().executeScriptNoThrow( "r2.onScenarioHeaderUpdated(r2.getScenarioHeader())" );
 }
 
-void CClientEditionModule::updateMissionItemsDescription(NLNET::IModuleProxy * /* sender */, TSessionId /* sessionId */, const std::vector<R2::TMissionItem> &missionItem)
+void CClientEditionModule::updateMissionItemsDescription(TModuleProxyPtr, TSessionId /* sessionId */, const std::vector<R2::TMissionItem> &missionItem)
 {
 	//H_AUTO(R2_CClientEditionModule_updateMissionItemsDescription)
 	uint i;
@@ -2082,7 +2082,7 @@ void CClientEditionModule::updateMissionItemsDescription(NLNET::IModuleProxy * /
 	}
 }
 
-void CClientEditionModule::updateActPositionDescriptions(NLNET::IModuleProxy * /* sender */, const TActPositionDescriptions &actPositionDescriptions)
+void CClientEditionModule::updateActPositionDescriptions(TModuleProxyPtr, const TActPositionDescriptions &actPositionDescriptions)
 {
 	//H_AUTO(R2_CClientEditionModule_updateActPositionDescriptions)
 	this->_ActPositionDescriptions = actPositionDescriptions;
@@ -2090,7 +2090,7 @@ void CClientEditionModule::updateActPositionDescriptions(NLNET::IModuleProxy * /
 
 }
 
-void CClientEditionModule::updateUserTriggerDescriptions(NLNET::IModuleProxy * /* sender */,  const TUserTriggerDescriptions &userTriggerDescriptions)
+void CClientEditionModule::updateUserTriggerDescriptions(TModuleProxyPtr, const TUserTriggerDescriptions &userTriggerDescriptions)
 {
 	//H_AUTO(R2_CClientEditionModule_updateUserTriggerDescriptions)
 	this->_UserTriggerDescriptions = userTriggerDescriptions;
@@ -2115,7 +2115,7 @@ bool CClientEditionModule::requestTriggerUserTrigger(uint32 actId, uint triggerI
 	serverAnimationModule.onUserTriggerTriggered(this, actId, triggerId);
 	return true;
 }
-void CClientEditionModule::onCurrentActIndexUpdated(NLNET::IModuleProxy * /* sender */, uint32 actId)
+void CClientEditionModule::onCurrentActIndexUpdated(TModuleProxyPtr, uint32 actId)
 {
 	//H_AUTO(R2_CClientEditionModule_onCurrentActIndexUpdated)
 	this->_CurrentActIndex = actId;
@@ -2133,14 +2133,14 @@ void CClientEditionModule::dssTarget( std::vector<std::string>& args)
 }
 
 
-void CClientEditionModule::updateIncarningList(NLNET::IModuleProxy * /* sender */, const std::vector<uint32> & botId)
+void CClientEditionModule::updateIncarningList(TModuleProxyPtr, const std::vector<uint32> &botId)
 {
 	//H_AUTO(R2_CClientEditionModule_updateIncarningList)
 	this->_IncarnatingList = botId;
 	R2::getEditor().getLua().executeScriptNoThrow( "r2.onIncarnatingListUpdated()" );
 }
 
-void CClientEditionModule::updateTalkingAsList(NLNET::IModuleProxy * /* sender */, const std::vector<uint32> & botId)
+void CClientEditionModule::updateTalkingAsList(TModuleProxyPtr, const std::vector<uint32> &botId)
 {
 	//H_AUTO(R2_CClientEditionModule_updateTalkingAsList)
 	this->_TalkingAsList = botId;
@@ -2160,7 +2160,7 @@ std::vector<uint32>	CClientEditionModule::getTalkingAsList() const
 }
 
 
-void CClientEditionModule::systemMsg(NLNET::IModuleProxy * /* sender */,  const std::string& msgType, const std::string& who, const std::string& msg)
+void CClientEditionModule::systemMsg(TModuleProxyPtr, const std::string &msgType, const std::string &who, const std::string &msg)
 {
 	//H_AUTO(R2_CClientEditionModule_systemMsg)
 	R2::getEditor().getLua().push(msgType);
@@ -2186,7 +2186,7 @@ std::string CClientEditionModule::getCharacterRingAccess() const
 	return _RingAccess;
 }
 
-void CClientEditionModule::onRingAccessUpdated(NLNET::IModuleProxy * /* moduleSocket */, const std::string& ringAccess)
+void CClientEditionModule::onRingAccessUpdated(TModuleProxyPtr, const std::string &ringAccess)
 {
 	//H_AUTO(R2_CClientEditionModule_onRingAccessUpdated)
 
@@ -2306,7 +2306,7 @@ void CClientEditionModule::addToUserComponentSaveList(const std::string& filenam
 	return;
 }
 
-void CClientEditionModule::saveUserComponentFileAccepted(NLNET::IModuleProxy *senderModuleProxy, const std::string& md5, const std::string& signature, bool ok)
+void CClientEditionModule::saveUserComponentFileAccepted(TModuleProxyPtr senderModuleProxy, const std::string &md5, const std::string &signature, bool ok)
 {
 	//H_AUTO(R2_CClientEditionModule_saveScenarioFileAccepted)
 
@@ -2364,7 +2364,7 @@ bool CClientEditionModule::addToUserComponentLoadList( const std::string& filena
 }
 
 
-void CClientEditionModule::loadUserComponentFileAccepted(NLNET::IModuleProxy * /* senderModuleProxy */, const std::string& md5, bool ok)
+void CClientEditionModule::loadUserComponentFileAccepted(TModuleProxyPtr, const std::string &md5, bool ok)
 {
 	//H_AUTO(R2_CClientEditionModule_loadScenarioFileAccepted)
 
@@ -2396,7 +2396,7 @@ void CClientEditionModule::loadUserComponentFileAccepted(NLNET::IModuleProxy * /
 
 /**************************************************************************************/
 
-void CClientEditionModule::saveScenarioFileAccepted(NLNET::IModuleProxy *senderModuleProxy, const std::string& md5, const std::string& signature, bool ok)
+void CClientEditionModule::saveScenarioFileAccepted(TModuleProxyPtr senderModuleProxy, const std::string &md5, const std::string &signature, bool ok)
 {
 	//H_AUTO(R2_CClientEditionModule_saveScenarioFileAccepted)
 
@@ -2511,7 +2511,7 @@ void CClientEditionModule::loadAnimationSucceded(const std::string& filename, co
 	_Client->loadAnimationFromBuffer(body, filename, errMsg, values);
 }
 
-void CClientEditionModule::loadScenarioFileAccepted(NLNET::IModuleProxy * /* senderModuleProxy */, const std::string& md5, bool ok)
+void CClientEditionModule::loadScenarioFileAccepted(TModuleProxyPtr, const std::string &md5, bool ok)
 {
 	//H_AUTO(R2_CClientEditionModule_loadScenarioFileAccepted)
 
@@ -2769,17 +2769,17 @@ void CMessageSpliter::sendSplitedMsg(uint32 charId, const NLNET::CMessage& msg, 
 
 // Messages from dss that notify that he has received data
 // We received first a multiPartMsgHead, then X multiPartMsgBody, then one multiPartMsgFoot
-void CClientEditionModule::multiPartMsgHead(NLNET::IModuleProxy * /* sender */,  const std::string& msgName, uint32 nbPacket, uint32 size)
+void CClientEditionModule::multiPartMsgHead(TModuleProxyPtr, const std::string &msgName, uint32 nbPacket, uint32 size)
 {
 	R2::getEditor().getLua().executeScriptNoThrow( NLMISC::toString("r2:onMessageSendingStart('%s', %u, %u)",msgName.c_str(), nbPacket, size ) );
 }
 
-void CClientEditionModule::multiPartMsgBody(NLNET::IModuleProxy * /* sender */, uint32 packetId, uint32 packetSize)
+void CClientEditionModule::multiPartMsgBody(TModuleProxyPtr, uint32 packetId, uint32 packetSize)
 {
 	R2::getEditor().getLua().executeScriptNoThrow( NLMISC::toString("r2:onMessageSendingUpdate(%u, %u)", packetId,  packetSize));
 }
 
-void CClientEditionModule::multiPartMsgFoot(NLNET::IModuleProxy * /* sender */)
+void CClientEditionModule::multiPartMsgFoot(TModuleProxyPtr)
 {
 	R2::getEditor().getLua().executeScriptNoThrow( NLMISC::toString("r2:onMessageSendingFinish()"));
 }

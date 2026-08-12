@@ -144,7 +144,7 @@ public:
 	///////////////////////////////////////////////////////////////////////////
 
 	// 
-	virtual void charNamesMapped(NLNET::IModuleProxy *sender, const std::vector < TCharMappedInfo > &charMappedInfos) NL_OVERRIDE
+	virtual void charNamesMapped(TModuleProxyPtr sender, const std::vector<TCharMappedInfo> &charMappedInfos) NL_OVERRIDE
 	{
 		nldebug("Receveived %u mapped names from IOS", charMappedInfos.size());
 

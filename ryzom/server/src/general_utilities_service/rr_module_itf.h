@@ -151,7 +151,7 @@ namespace GUS_SCM
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -170,14 +170,14 @@ namespace GUS_SCM
 
 	private:
 		
-		void fileList_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+		void fileList_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 		{
 			std::vector < TFileRecord >	files;
 			nlRead(__message, serialCont, files);
 			fileList(sender, files);
 		}
 
-		void beginFile_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+		void beginFile_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 		{
 			std::string	fileName;
 			nlRead(__message, serial, fileName);
@@ -186,7 +186,7 @@ namespace GUS_SCM
 			beginFile(sender, fileName, fileSize);
 		}
 
-		void fileData_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+		void fileData_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 		{
 			std::string	fileName;
 			nlRead(__message, serial, fileName);
@@ -195,7 +195,7 @@ namespace GUS_SCM
 			fileData(sender, fileName, data);
 		}
 
-		void fileEnd_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+		void fileEnd_skel(NLNET::TModuleProxyPtr sender, const NLNET::CMessage &__message)
 		{
 			std::string	fileName;
 			nlRead(__message, serial, fileName);
@@ -208,13 +208,13 @@ namespace GUS_SCM
 		/////////////////////////////////////////////////////////////////
 
 		// 
-		virtual void fileList(NLNET::IModuleProxy *sender, const std::vector < TFileRecord > &files) =0;
+		virtual void fileList(NLNET::TModuleProxyPtr sender, const std::vector<TFileRecord> &files) =0;
 		// 
-		virtual void beginFile(NLNET::IModuleProxy *sender, const std::string &fileName, uint32 fileSize) =0;
+		virtual void beginFile(NLNET::TModuleProxyPtr sender, const std::string &fileName, uint32 fileSize) =0;
 		// 
-		virtual void fileData(NLNET::IModuleProxy *sender, const std::string &fileName, const std::string &data) =0;
+		virtual void fileData(NLNET::TModuleProxyPtr sender, const std::string &fileName, const std::string &data) =0;
 		// 
-		virtual void fileEnd(NLNET::IModuleProxy *sender, const std::string &fileName) =0;
+		virtual void fileEnd(NLNET::TModuleProxyPtr sender, const std::string &fileName) =0;
 
 
 	};
@@ -234,7 +234,7 @@ namespace GUS_SCM
 
 
 	public:
-		CRepositoryReceiverProxy(NLNET::IModuleProxy *proxy)
+		CRepositoryReceiverProxy(NLNET::TModuleProxyPtr proxy)
 		{
 			nlassert(proxy->getModuleClassName() == "RepositoryReceiver");
 			_ModuleProxy = proxy;

@@ -90,7 +90,7 @@ public:
 		return true;
 	}
 
-	void onModuleUp(IModuleProxy *module) NL_OVERRIDE
+	void onModuleUp(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		// allow the base classes a chance to do their stuff
 		CAdministeredModuleBase::onModuleUp(module);
@@ -105,7 +105,7 @@ public:
 		}
 	}
 
-	void onModuleDown(IModuleProxy *module) NL_OVERRIDE
+	void onModuleDown(TModuleProxyPtr module) NL_OVERRIDE
 	{
 		// allow the base classes a chance to do their stuff
 		CAdministeredModuleBase::onModuleDown(module);

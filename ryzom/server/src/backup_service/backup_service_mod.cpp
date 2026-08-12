@@ -77,9 +77,9 @@ namespace BS
 		/////////////////////////////////////////////////////////////
 
 		// A module ask to save a file in the backup repository
-		void saveFile(NLNET::IModuleProxy *sender, const std::string &fileName, const NLNET::TBinBuffer &data) NL_OVERRIDE
+		void saveFile(TModuleProxyPtr sender, const std::string &fileName, const NLNET::TBinBuffer &data) NL_OVERRIDE
 		{
-		    auto *access = new CWriteFile(fileName, TRequester(sender), 0, data.getBuffer(), data.getBufferSize());
+		    auto *access = new CWriteFile(fileName, TRequester(sender.get()), 0, data.getBuffer(), data.getBufferSize());
 
 			access->FailureMode = CWriteFile::MajorFailureIfFileUnwritable | CWriteFile::MajorFailureIfFileUnbackupable;
 			access->BackupFile = true;
@@ -90,9 +90,9 @@ namespace BS
 		}
 
 		// A module ask to load a file
-		void loadFile(NLNET::IModuleProxy *sender, const std::string &fileName, uint32 requestId) NL_OVERRIDE
+		void loadFile(TModuleProxyPtr sender, const std::string &fileName, uint32 requestId) NL_OVERRIDE
 		{
-			CLoadFile* access = new CLoadFile(fileName, TRequester(sender), requestId);
+			CLoadFile* access = new CLoadFile(fileName, TRequester(sender.get()), requestId);
 
 			CBackupService::getInstance()->FileManager.stackFileAccess(access);
 		}

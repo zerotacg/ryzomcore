@@ -88,7 +88,7 @@ namespace R2
 		virtual bool isClientAuthorized(uint32 charId) const = 0;
 		virtual void disconnectChar(uint32 charId) = 0;
 		virtual const NLNET::TModuleProxyPtr * getClientProxyPtr(TCharId charId) const = 0;
-		virtual void tpToEntryPoint(NLNET::IModuleProxy *senderModuleProxy, uint32 actId) = 0;
+		virtual void tpToEntryPoint(NLNET::TModuleProxyPtr senderModuleProxy, uint32 actId) = 0;
 		// wakup a session (load session from BS), start animation, connect waiting clients
 		virtual bool wakeUpSession(TSessionId sessionId, TCharId ownerId,  std::string& msg) = 0;
 
@@ -186,6 +186,11 @@ namespace R2
 
 	// get the security info of the module and verify that the su has allowed the client to connect to the dss
 	bool checkSecurityInfo(NLNET::IModuleProxy *senderModuleProxy, uint32 & charId, NLMISC::CEntityId & clientEid, std::string & userPriv, std::string &extendedPriv);
+	inline bool checkSecurityInfo(NLNET::TModuleProxyPtr senderModuleProxy, uint32 & charId, NLMISC::CEntityId & clientEid, std::string & userPriv, std::string &extendedPriv)
+	{
+		return checkSecurityInfo(senderModuleProxy.get(), charId, clientEid, userPriv, extendedPriv);
+
+	}
 
 } // namespace R2
 

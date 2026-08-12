@@ -187,7 +187,7 @@ void CClientPatchRepository::onModuleDown(TModuleProxyPtr module)
 {
 	// allow the base classes a chance to do their stuff
 	CAdministeredModuleBase::onModuleDown(module);
-	CFileRepository::onModuleDown(module.get());
+	CFileRepository::onModuleDown(module);
 }
 
 //void CClientPatchRepository::onProcessModuleMessage(IModuleProxy *sender, const CMessage &msg)

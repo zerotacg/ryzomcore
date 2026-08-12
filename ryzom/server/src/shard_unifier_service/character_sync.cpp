@@ -82,7 +82,7 @@ namespace CHARSYNC
 		/// utility struct to store info abount client eid begin filled
 		struct TRunningEidInit
 		{
-			IModuleProxy				*Module;
+			TModuleProxyPtr				Module;
 			// the next eid info to send
 			CNameManager::TCharSlot		NextEidToSend;
 		};
@@ -130,11 +130,11 @@ namespace CHARSYNC
 			return ret;
 		}
 
-		void onModuleUp(IModuleProxy *proxy)
+		void onModuleUp(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 		}
 
-		void onModuleDown(IModuleProxy *proxy)
+		void onModuleDown(TModuleProxyPtr proxy) NL_OVERRIDE
 		{
 			if (_UnifierClients.find(proxy) != _UnifierClients.end())
 			{
@@ -252,7 +252,7 @@ namespace CHARSYNC
 
 
 
-		void _renameCharacter(IModuleProxy *sender, uint32 charId, bool updateToClient)
+		void _renameCharacter(TModuleProxyPtr sender, uint32 charId, bool updateToClient)
 		{
 			CCharacterPtr character = CCharacter::load(_RingDB, charId, __FILE__, __LINE__);
 			BOMB_IF(character == NULL, "Failed to find character "<<charId<<" in database for renaming", return);
@@ -404,7 +404,7 @@ namespace CHARSYNC
 					character->getObjectId(),
 					guildId);
 				// bad association, ask the shard owning the guild to remove the offending member
-				IModuleProxy *guildHomeModule = IEntityLocator::getInstance()->getLocatorModuleForShard(guildShardId);
+				auto guildHomeModule = IEntityLocator::getInstance()->getLocatorModuleForShard(guildShardId);
 
 				if (guildHomeModule == NULL)
 				{
@@ -499,7 +499,7 @@ namespace CHARSYNC
 
 		// EGS register it's name unifier in order to receive
 		// an updated eid to name translation table
-		virtual void registerNameUnifierClient(NLNET::IModuleProxy *sender)
+		virtual void registerNameUnifierClient(TModuleProxyPtr sender) NL_OVERRIDE
 		{
 			_UnifierClients.insert(sender);
 
@@ -541,7 +541,7 @@ namespace CHARSYNC
 		// EGS ask to validate a character name
 		// If the NU validate the name, it temporary
 		// lock it to the associated player.
-		virtual  void validateCharacterName(NLNET::IModuleProxy *sender, uint32 userId, uint8 charIndex, const std::string &name, uint32 homeMainlandSessionId)
+		virtual  void validateCharacterName(TModuleProxyPtr sender, uint32 userId, uint8 charIndex, const std::string &name, uint32 homeMainlandSessionId) NL_OVERRIDE
 		{
 			nldebug("CHARSYNC : validateCharacterName : module '%s' ask to validate name '%s' for user %u, character %u",
 				sender->getModuleName().c_str(),
@@ -564,7 +564,7 @@ namespace CHARSYNC
 		}
 
 		// EGS ask to assign a name to a character
-		virtual void assignNameToCharacter(NLNET::IModuleProxy *sender, uint32 charId, const std::string &name, uint32 homeSessionId)
+		virtual void assignNameToCharacter(TModuleProxyPtr sender, uint32 charId, const std::string &name, uint32 homeSessionId) NL_OVERRIDE
 		{
 			CValidateNameResult	ret;
 
@@ -594,7 +594,7 @@ namespace CHARSYNC
 
 		// EGS ask to rename a character.
 		// Renaming consist of assigning a default randomly generated name to the character
-		virtual void renameCharacter(NLNET::IModuleProxy *sender, uint32 charId)
+		virtual void renameCharacter(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 		{
 			_renameCharacter(sender, charId, true);
 		}
@@ -604,18 +604,16 @@ namespace CHARSYNC
 		// and rename any guild having a conflicting name.
 		// If any guild is renamed, then the name unifier send back
 		// a guildRenamed message to EGS.
-		virtual void registerLoadedGuildNames(NLNET::IModuleProxy *sender, uint32 shardId, const std::vector < CGuildInfo > &guildInfos) 
+		virtual void registerLoadedGuildNames(TModuleProxyPtr sender, uint32 shardId, const std::vector<CGuildInfo> &guildInfos) NL_OVERRIDE
 		{
 
 			std::vector<uint32>			renamedGuildIds;
 			std::map<uint32, ucstring>	guilds;
 
 			// build the map of guilds
-			for (uint i=0; i<guildInfos.size(); ++i)
+			for (const auto & gi : guildInfos)
 			{
-				const CGuildInfo &gi = guildInfos[i];
-
-				guilds.insert(make_pair(gi.getGuildId(), gi.getGuildName()));
+					guilds.insert(make_pair(gi.getGuildId(), gi.getGuildName()));
 			}
 
 			// register the guilds
@@ -625,7 +623,7 @@ namespace CHARSYNC
 
 			// update the database with the new guild list
 			CShardPtr shard = CShard::load(_RingDB, shardId, __FILE__, __LINE__);
-			if (shard == NULL)
+			if (shard == nullptr)
 			{
 				// no entry for this shard, create one
 				shard = CShard::createTransient(__FILE__, __LINE__);
@@ -698,7 +696,7 @@ namespace CHARSYNC
 		}
 
 		// EGS ask to name unifier to validate a new guild name
-		virtual void validateGuildName(NLNET::IModuleProxy *sender, uint32 guildId, const ucstring &guildName)
+		virtual void validateGuildName(TModuleProxyPtr sender, uint32 guildId, const ucstring &guildName) NL_OVERRIDE
 		{
 			TCharacterNameResult ret;
 			// ask to name manager to validate the guild name
@@ -711,7 +709,7 @@ namespace CHARSYNC
 		}
 
 		// EGS add newly created guild info
-		virtual void addGuild(NLNET::IModuleProxy *sender, uint32 shardId, uint32 guildId, const ucstring &guildName)
+		virtual void addGuild(TModuleProxyPtr sender, uint32 shardId, uint32 guildId, const ucstring &guildName) NL_OVERRIDE
 		{
 			// register the new guild name in the name manager
 			ucstring name;
@@ -746,7 +744,7 @@ namespace CHARSYNC
 		}
 
 		// EGS remove deleted guild info
-		virtual void removeGuild(NLNET::IModuleProxy *sender, uint32 shardId, uint32 guildId)
+		virtual void removeGuild(TModuleProxyPtr sender, uint32 shardId, uint32 guildId) NL_OVERRIDE
 		{
 			// Release the name in the name manager
 			_NameManager.releaseGuildName(shardId, guildId);
@@ -760,7 +758,7 @@ namespace CHARSYNC
 		//////////////////////////////////////////////////
 
 		// A new character have been create by a client
-		void addCharacter(NLNET::IModuleProxy *sender, const TCharInfo &charInfo)
+		void addCharacter(TModuleProxyPtr sender, const TCharInfo &charInfo) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::addCharacter : module '%s' add character %s named '%s'", 
 				sender->getModuleName().c_str(),
@@ -825,7 +823,7 @@ namespace CHARSYNC
 		}
 
 		// A character have been deleted
-		void deleteCharacter(NLNET::IModuleProxy *sender, uint32 charId)
+		void deleteCharacter(TModuleProxyPtr sender, uint32 charId) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::deleteCharacter : module '%s' delete character %u", 
 				sender->getModuleName().c_str(),
@@ -904,7 +902,7 @@ namespace CHARSYNC
 //		}
 
 		// A character guild have changed
-		void updateCharGuild(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, uint32 guildId)
+		void updateCharGuild(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, uint32 guildId) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::updateCharGuild : module '%s' update character %s guild as %u", 
 				sender->getModuleName().c_str(),
@@ -932,7 +930,7 @@ namespace CHARSYNC
 		}
 
 		// Update the respawn points count of a character
-		virtual void updateCharRespawnPoints(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, const CONTINENT::TRespawnPointCounters &respawnPoints)
+		virtual void updateCharRespawnPoints(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, const CONTINENT::TRespawnPointCounters &respawnPoints) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::updateCharRespawnPoints : module '%s' update character %s %u respawn points counters", 
 				sender->getModuleName().c_str(),
@@ -959,7 +957,7 @@ namespace CHARSYNC
 		}
 
 		// Update the newbie flag of a characters
-		virtual void updateCharNewbieFlag(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, bool newbie)
+		virtual void updateCharNewbieFlag(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, bool newbie) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::updateCharNewbieFlag : module '%s' update newbie flag to %s for character %s", 
 				sender->getModuleName().c_str(),
@@ -976,7 +974,7 @@ namespace CHARSYNC
 		}
 
 		// The best level of a character has changed
-		void updateCharsBestLevel(NLNET::IModuleProxy *sender, const std::vector < TCharBestLevelInfo > &charLevelInfos) 
+		void updateCharsBestLevel(TModuleProxyPtr sender, const std::vector<TCharBestLevelInfo> &charLevelInfos) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::updateCharsBestLevel : module '%s' update best level for %u characters", 
 				sender->getModuleName().c_str(),
@@ -1012,7 +1010,7 @@ namespace CHARSYNC
 		}
 
 		// Update the allegiance of a characters
-		void updateCharAllegiance(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, TCivilisation civilisation, TCult cult)
+		void updateCharAllegiance(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, TCivilisation civilisation, TCult cult) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::updateCharAllegiance : module '%s' updates character %s with cult '%s' and civ '%s'", 
 				sender->getModuleName().c_str(),
@@ -1054,7 +1052,7 @@ namespace CHARSYNC
 		}
 
 		// Set HomeMainlandSessionId (when converting an old file)
-		void updateCharHomeMainlandSessionId(NLNET::IModuleProxy *sender, const NLMISC::CEntityId &charEId, TSessionId homeMainlandSessionId)
+		void updateCharHomeMainlandSessionId(TModuleProxyPtr sender, const NLMISC::CEntityId &charEId, TSessionId homeMainlandSessionId) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::updateCharHomeMainlandSessionId : module '%s' updates character %s with '%u'", 
 				sender->getModuleName().c_str(),
@@ -1101,7 +1099,7 @@ namespace CHARSYNC
 		// The characters for a player have been loaded
 		// EGS send the full list to SU to make
 		// sure any divergence in the database is cleared
-		void syncUserChars(NLNET::IModuleProxy *sender, uint32 userId, const std::vector < TCharInfo > &charInfos)
+		void syncUserChars(TModuleProxyPtr sender, uint32 userId, const std::vector<TCharInfo> &charInfos) NL_OVERRIDE
 		{
 			nldebug("CharacterSync::syncUserChars : module '%s' update %u characters", 
 				sender->getModuleName().c_str(),

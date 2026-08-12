@@ -163,7 +163,7 @@ namespace PATCHMAN
 		}
 	}
 
-	void CFileReceiver::onModuleDown(NLNET::IModuleProxy *module)
+	void CFileReceiver::onModuleDown(TModuleProxyPtr module)
 	{
 		// make sure we've been initialised
 		nlassert(_Parent!=NULL);
@@ -290,7 +290,7 @@ namespace PATCHMAN
 		nlassert(_Parent!=NULL);
 
 		// make sure the proxy that sent this list exist
-		DROP_IF(_Proxies.find(sender.get())==_Proxies.end(),"Ignoring unexpected SetupSubscriptions from module "+sender->getModuleName(),return);
+		DROP_IF(_Proxies.find(sender)==_Proxies.end(),"Ignoring unexpected SetupSubscriptions from module "+sender->getModuleName(),return);
 
 		// send the subscription request
 		CFileRepositoryProxy spr(sender);
@@ -299,10 +299,10 @@ namespace PATCHMAN
 		_log(NLMISC::toString("setupSubscriptions from: %s",sender->getModuleName().c_str()));
 	}
 
-	void CFileReceiver::cbFileInfo(NLNET::IModuleProxy *sender, const TFileInfoVector &files)
+	void CFileReceiver::cbFileInfo(TModuleProxyPtr sender, const TFileInfoVector &files)
 	{
 		// make sure we've been initialised
-		nlassert(_Parent!=NULL);
+		nlassert(_Parent!=nullptr);
 		_log(NLMISC::toString("List (%d files) from: %s",files.size(),sender->getModuleName().c_str()));
 
 		// make sure the proxy that sent this list exist
@@ -340,9 +340,9 @@ namespace PATCHMAN
 		nlassert(_Parent!=NULL);
 
 		// look for the request that this data block corresponds to
-		DROP_IF(_Proxies.find(sender.get()) ==_Proxies.end(),"Ignoring unexpected file data for file '"+fileName+"' from module "+sender->getModuleName(),return);
+		DROP_IF(_Proxies.find(sender) ==_Proxies.end(),"Ignoring unexpected file data for file '"+fileName+"' from module "+sender->getModuleName(),return);
 
-		SProxyInfo& theSender= _Proxies[sender.get()];
+		SProxyInfo& theSender= _Proxies[sender];
 		TFileRequestPtr theRequest= theSender.CurrentRequest;
 		DROP_IF(theRequest==NULL,"Ignoring unexpected file data for file '"+fileName+"' from module "+sender->getModuleName(),return);
 		BOMB_IF(theRequest->Emitter!=theSender.Proxy,"Ignoring file data for file '"+fileName+"' from broken module "+sender->getModuleName(),return);
@@ -355,7 +355,7 @@ namespace PATCHMAN
 		if (data.getBufferSize()>=theRequest->ExpectedFileSize)
 		{
 			// we've reached the end of file
-			_dealWithReceivedFile(sender.get(),theRequest,data);
+			_dealWithReceivedFile(sender,theRequest,data);
 			return;
 		}
 
@@ -369,7 +369,7 @@ namespace PATCHMAN
 		if (theRequest->DataSoFar.size()>=theRequest->ExpectedFileSize)
 		{
 			// we've reached the end of file
-			_dealWithReceivedFile(sender.get(),theRequest,NLNET::TBinBuffer((const uint8 *)&theRequest->DataSoFar[0],(uint32)theRequest->DataSoFar.size()));
+			_dealWithReceivedFile(sender,theRequest,NLNET::TBinBuffer((const uint8 *)&theRequest->DataSoFar[0],(uint32)theRequest->DataSoFar.size()));
 			return;
 		}
 
@@ -391,10 +391,10 @@ namespace PATCHMAN
 		_downloadLog(fileName,(uint32)theRequest->DataSoFar.size(),theRequest->ExpectedFileSize);
 	}
 
-	void CFileReceiver::cbFileDataFailure(NLNET::IModuleProxy *sender, const std::string &fileName)
+	void CFileReceiver::cbFileDataFailure(TModuleProxyPtr sender, const std::string &fileName)
 	{
 		// make sure we've been initialised
-		nlassert(_Parent!=NULL);
+		nlassert(_Parent!=nullptr);
 		_logError("Read Failure "+sender->getModuleName()+": "+fileName);
 
 		// clear the download log for this file as it's all broken
