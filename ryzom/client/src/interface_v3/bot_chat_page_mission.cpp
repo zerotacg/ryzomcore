@@ -45,7 +45,7 @@ static const char *WIN_BOT_CHAT_ACCEPT_MISSION = "ui:interface:bot_chat_accept_m
 CBotChatPageMission::CBotChatPageMission()
 {
 	_MissionPagesObs.setListType(CHugeListObs::Missions);
-	_CurrSel = NULL;
+	_CurrSel = nullptr;
 }
 
 // *******************************************************************************************
@@ -160,7 +160,7 @@ void CBotChatPageMission::acceptMission()
 	activateWindow(WIN_BOT_CHAT_ACCEPT_MISSION, false);
 	/// close the botchat
 	//CBotChatManager::getInstance()->setCurrPage(NULL);
-	_CurrSel = NULL;
+	_CurrSel = nullptr;
 }
 
 
@@ -171,7 +171,7 @@ void CBotChatPageMission::acceptMission()
 // handler for bot chat mission
 class CAHSelectMission : public IActionHandler
 {
-	virtual void execute (CCtrlBase *pCaller, const string &/* params */)
+	virtual void execute (CCtrlBase *pCaller, const string &/* params */) NL_OVERRIDE
 	{
 		CDBCtrlSheet *sheet = dynamic_cast<CDBCtrlSheet *>(pCaller);
 		if (sheet) BotChatPageAll->ChooseMission->selectMission(sheet);
@@ -182,7 +182,7 @@ REGISTER_ACTION_HANDLER(CAHSelectMission, "select_mission");
 // the player has accepted a mission and now select it
 class CAHAcceptMission : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* params */) NL_OVERRIDE
 	{
 		BotChatPageAll->ChooseMission->acceptMission();
 	}

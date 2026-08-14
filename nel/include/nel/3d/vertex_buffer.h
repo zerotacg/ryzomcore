@@ -337,6 +337,13 @@ public:
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
 
+	/** Serial write-compatibility switch for export tools: when true, serialHeader() writes
+	  * the pre-TBufferUsage header version 3 (the old TPreferredMemory enum values), matching
+	  * streams produced before the buffer-usage refactor. Read code accepts both, always.
+	  * Global, not thread-safe: set once at tool startup (asset export pipelines only).
+	  */
+	static bool				SerialOldPreferredMemory;
+
 	/**
 	  * Default constructor. Make an empty vertex buffer. No value, no vertex. Vertex color format is set to TRGBA.
 	  */
@@ -817,7 +824,7 @@ public:
 
 	CVertexBufferReadWrite()
 	{
-		_Parent = NULL;
+		_Parent = nullptr;
 	}
 	~CVertexBufferReadWrite()
 	{
@@ -833,7 +840,7 @@ public:
 		if (_Parent)
 		{
 			_Parent->unlock(_First, _Last);
-			_Parent = NULL;
+			_Parent = nullptr;
 		}
 	}
 
@@ -898,7 +905,7 @@ public:
 
 	CVertexBufferRead()
 	{
-		_Parent = NULL;
+		_Parent = nullptr;
 	}
 	~CVertexBufferRead()
 	{
@@ -914,7 +921,7 @@ public:
 		if (_Parent)
 		{
 			_Parent->unlock();
-			_Parent = NULL;
+			_Parent = nullptr;
 		}
 	}
 
@@ -1242,7 +1249,7 @@ inline void CVertexBuffer::lock (CVertexBufferReadWrite &accessor, uint first, u
 		else
 		{
 			if (_NonResidentVertices.empty())
-				_LockedBuffer = NULL;
+				_LockedBuffer = nullptr;
 			else
 				_LockedBuffer = &(_NonResidentVertices[0]);
 		}
@@ -1278,7 +1285,7 @@ inline void CVertexBuffer::lock (CVertexBufferRead &accessor, uint first, uint l
 		else
 		{
 			if (_NonResidentVertices.empty())
-				_LockedBuffer = NULL;
+				_LockedBuffer = nullptr;
 			else
 				_LockedBuffer = const_cast<uint8*>(&(_NonResidentVertices[0]));
 		}
@@ -1306,7 +1313,7 @@ inline void CVertexBuffer::unlock (uint /* first */, uint /* end */)
 		if (isResident() && !_KeepLocalMemory)
 			DrvInfos->unlock (0, 0);
 
-		_LockedBuffer = NULL;
+		_LockedBuffer = nullptr;
 	}
 }
 
@@ -1325,7 +1332,7 @@ inline void CVertexBuffer::unlock () const
 		if (isResident() && !_KeepLocalMemory)
 			DrvInfos->unlock (0, 0);
 
-		_LockedBuffer = NULL;
+		_LockedBuffer = nullptr;
 	}
 }
 

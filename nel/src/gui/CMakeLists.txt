@@ -4,20 +4,15 @@ FILE(GLOB HEADERS ../../include/nel/gui/*.h)
 SOURCE_GROUP("" FILES ${HEADERS} ${SRC})
 
 NL_TARGET_LIB(nelgui ${SRC} ${HEADERS})
-add_project_library_alias(nelgui gui)
-
-TARGET_INCLUDE_DIRECTORIES(nelgui
-        PRIVATE
-        ${LUA_INCLUDE_DIR}
-        ${LUABIND_INCLUDE_DIR}
-)
+add_library(NeL::gui ALIAS nelgui)
+set_target_properties(nelgui PROPERTIES EXPORT_NAME gui)
 
 TARGET_LINK_LIBRARIES(nelgui
         PUBLIC
         NeL::misc
         NeL::web
         NeL::3d
-        ${LUA_LIBRARIES}
+        Lua::Lua
         Luabind::Luabind
         PRIVATE
         CURL::libcurl

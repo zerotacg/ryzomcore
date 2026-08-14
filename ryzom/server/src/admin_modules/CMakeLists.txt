@@ -3,6 +3,13 @@ FILE(GLOB SRC *.cpp *.h)
 NL_TARGET_LIB(ryzom_adminmodules ${SRC})
 
 TARGET_INCLUDE_DIRECTORIES(ryzom_adminmodules PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(Ryzom::adminmodules ALIAS ryzom_adminmodules)
+
+if (WITH_RYZOM_XSLT)
+  add_module_interface(XML_SOURCES
+          admin_modules_itf.xml
+  )
+endif ()
 
 TARGET_LINK_LIBRARIES(ryzom_adminmodules
         PUBLIC

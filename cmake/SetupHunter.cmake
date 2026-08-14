@@ -11,8 +11,8 @@ IF(WITH_FFMPEG)
 ENDIF()
 
 set(HUNTER_ENABLED ON)
-set(HUNTER_URL "https://github.com/cpp-pm/hunter/archive/v0.26.1.tar.gz")
-set(HUNTER_SHA1 "e41ac7a18c49b35ebac99ff2b5244317b2638a65")
+set(HUNTER_URL "https://github.com/cpp-pm/hunter/archive/v0.26.10.tar.gz")
+set(HUNTER_SHA1 "3d904b93ba684f0e671a2d44969a1a127abe3e66")
 set(HUNTER_FILEPATH_CONFIG "${CMAKE_CURRENT_LIST_DIR}/../CMakeModules/HunterConfig.cmake")
 
 include(FetchContent)

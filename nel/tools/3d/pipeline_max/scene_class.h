@@ -3,6 +3,8 @@
  * \brief CSceneClass
  * \date 2012-08-20 09:07GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
+ * \author Claude Sonnet 5
  * CSceneClass
  */
 
@@ -56,6 +58,8 @@ class ISceneClassDesc;
  * \brief CSceneClass
  * \date 2012-08-19 19:25GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
+ * \author Claude Sonnet 5
  * It is recommended to use CRefPtr<T> to refer to any pointers to
  * classes inherited from this class.
  * NOTE: CRefPtr<T> does not delete the class when references go to
@@ -71,24 +75,24 @@ class CSceneClass : public CStorageContainer, public NLMISC::CVirtualRefCount
 {
 public:
 	CSceneClass(CScene *scene);
-	virtual ~CSceneClass();
+	virtual ~CSceneClass() NL_OVERRIDE;
 
 	//! \name Inherited functions that are implemented by wrapping around other virtual functions in this class
 	//@{
-	virtual std::string className() const; // do not override, implemented using classDesc
-	virtual void toString(std::ostream &ostream, const std::string &pad = "") const; // do not override, implemented using toStringLocal
+	virtual std::string className() const NL_OVERRIDE; // do not override, implemented using classDesc
+	virtual void toString(std::ostream &ostream, const std::string &pad = "") const NL_OVERRIDE; // do not override, implemented using toStringLocal
 	//@}
 
 	//! \name Inherited functions called through the storage loading and saving system
 	//@{
 	/// Override this to read a chunk from the chunks stream. Call the parent's parse function first. Get the necessary chunks implemented by your class using getChunk. See the getChunk function for further information. In case of failure, call disown. If m_ChunksOwnsPointers is true, the parsing has failed, warnings have already been printed, and nothing should happen. Chunks are already parsed when you get them from getChunk
-	virtual void parse(uint16 version, uint filter = 0);
+	virtual void parse(uint16 version, uint filter = 0) NL_OVERRIDE;
 	/// Override this if the chunks you are using are not needed after they have been parsed. You may delete any chunks you own. Call the parent's clean first. You must call clean on any chunks you own if they implement this function
-	virtual void clean();
+	virtual void clean() NL_OVERRIDE;
 	/// Override this to write a chunk to the chunks stream. If you create a new chunk, the creating class owns it, and should delete it when clean is called. You no longer own any created chunks when disown has been called. Use putChunk to add the chunk. Call the parent's build first. The putChunk function calls build on added chunks
-	virtual void build(uint16 version, uint filter = 0);
+	virtual void build(uint16 version, uint filter = 0) NL_OVERRIDE;
 	/// Remove any references to chunks that are owned by the inheriting class (those that were acquired using getChunk during parse or created using putChunk during build). You no longer have ownership over these chunks, and should not use them anymore. This function may be called after build to disable any functionality from the loaded storage. Call the parent's disown after disowning your own chunks. Disown is called on the disowned child chunks for you
-	virtual void disown();
+	virtual void disown() NL_OVERRIDE;
 	//@}
 
 	//! \name Virtual functionality for inheriting classes to implement
@@ -131,6 +135,16 @@ public:
 	inline CSceneClassContainer *container() const { return m_Scene->container(); }
 	//@}
 
+	//! \name Container-bit preservation
+	//@{
+	/// Set by CSceneClassContainer::createChunkById when this object's own chunk was read with
+	/// the container bit unset (a scene-class slot that is a literal 0-byte leaf in the source
+	/// file — every CSceneClass is a CStorageContainer so isContainer() is always true, but the
+	/// file's own bit for this particular slot must be reproduced or T2 byte-identity breaks).
+	inline void setReadAsLeaf(bool readAsLeaf) { m_ReadAsLeaf = readAsLeaf; }
+	virtual bool writeAsContainer() const NL_OVERRIDE { return !m_ReadAsLeaf; }
+	//@}
+
 protected:
 	//! \name Methods used by inheriting classes to read and write to the storage safely
 	//@{
@@ -149,7 +163,7 @@ protected:
 	//@}
 
 protected:
-	virtual IStorageObject *createChunkById(uint16 id, bool container);
+	virtual IStorageObject *createChunkById(uint16 id, bool container) NL_OVERRIDE;
 
 	/// Chunks which have been parsed, kept unmodified, and which are no longer necessary, should be placed here
 	std::vector<IStorageObject *> m_ArchivedChunks;
@@ -160,13 +174,15 @@ private:
 
 	CScene *m_Scene;
 
+	bool m_ReadAsLeaf;
+
 }; /* class CSceneClass */
 
 template <typename T>
 const T &CSceneClass::getChunkValue(uint16 id)
 {
 	CStorageValue<T> *chunk = static_cast<CStorageValue<T> *>(getChunk(id));
-	if (!chunk) { nlerror("Try to get required chunk value 0x%x but it does not exist, bad file format"); }
+	if (!chunk) { nlerror("Try to get required chunk value 0x%x but it does not exist, bad file format", (uint32)id); }
 	m_ArchivedChunks.push_back(chunk);
 	return chunk->Value;
 }
@@ -184,6 +200,8 @@ void CSceneClass::putChunkValue(uint16 id, const T &value)
  * \brief ISceneClassDesc
  * \date 2012-08-19 19:25GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
+ * \author Claude Sonnet 5
  * ISceneClassDesc
  */
 class ISceneClassDesc
@@ -203,6 +221,8 @@ public:
  * \brief CSceneClassDesc
  * \date 2012-08-19 19:25GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
+ * \author Claude Sonnet 5
  * CSceneClassDesc
  * Use in a cpp when registering the CClassId.
  */
@@ -211,13 +231,13 @@ class CSceneClassDesc : public ISceneClassDesc
 {
 public:
 	CSceneClassDesc(const IDllPluginDescInternal *dllPluginDesc) : m_DllPluginDesc(dllPluginDesc) { }
-	virtual CSceneClass *create(CScene *scene) const { return static_cast<CSceneClass *>(new T(scene)); }
-	virtual void destroy(CSceneClass *sc) const { delete static_cast<T *>(sc); }
-	virtual const ucchar *displayName() const { return T::DisplayName.c_str(); }
-	virtual const char *internalName() const { return T::InternalName; }
-	virtual NLMISC::CClassId classId() const { return T::ClassId; }
-	virtual TSClassId superClassId() const { return T::SuperClassId; }
-	virtual const IDllPluginDescInternal *dllPluginDesc() const { return m_DllPluginDesc; }
+	virtual CSceneClass *create(CScene *scene) const NL_OVERRIDE { return static_cast<CSceneClass *>(new T(scene)); }
+	virtual void destroy(CSceneClass *sc) const NL_OVERRIDE { delete static_cast<T *>(sc); }
+	virtual const ucchar *displayName() const NL_OVERRIDE { return T::DisplayName.c_str(); }
+	virtual const char *internalName() const NL_OVERRIDE { return T::InternalName; }
+	virtual NLMISC::CClassId classId() const NL_OVERRIDE { return T::ClassId; }
+	virtual TSClassId superClassId() const NL_OVERRIDE { return T::SuperClassId; }
+	virtual const IDllPluginDescInternal *dllPluginDesc() const NL_OVERRIDE { return m_DllPluginDesc; }
 private:
 	const IDllPluginDescInternal *m_DllPluginDesc;
 

@@ -3,6 +3,7 @@
  * \brief CStorageArray
  * \date 2012-08-21 11:33GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
  * CStorageArray
  */
 
@@ -50,6 +51,7 @@ namespace MAX {
  * \brief CStorageArray
  * \date 2012-08-21 11:33GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
  * WARNING: sizeof(TType) should match the serialized size,
  * otherwise you must specialize the getSize and setSize functions!
  */
@@ -63,15 +65,15 @@ public:
 	TTypeArray Value;
 
 	// inherited
-	virtual std::string className() const;
-	virtual void serial(NLMISC::IStream &stream);
-	virtual void toString(std::ostream &ostream, const std::string &pad = "") const;
+	virtual std::string className() const NL_OVERRIDE;
+	virtual void serial(NLMISC::IStream &stream) NL_OVERRIDE;
+	virtual void toString(std::ostream &ostream, const std::string &pad = "") const NL_OVERRIDE;
 
 public: // should be protected but that doesn't compile, nice c++!
 	// Sets size when reading
-	virtual void setSize(sint32 size);
+	virtual void setSize(sint32 size) NL_OVERRIDE;
 	// Gets the size when writing, return false if unknown
-	virtual bool getSize(sint32 &size) const;
+	virtual bool getSize(sint32 &size) const NL_OVERRIDE;
 }; /* class CStorageArray */
 
 template <typename T>
@@ -127,10 +129,10 @@ template <typename T>
 class CStorageArraySizePre : public CStorageArray<T>
 {
 public:
-	virtual std::string className() const;
-	virtual void serial(NLMISC::IStream &stream);
-	virtual void setSize(sint32 size);
-	virtual bool getSize(sint32 &size) const;
+	virtual std::string className() const NL_OVERRIDE;
+	virtual void serial(NLMISC::IStream &stream) NL_OVERRIDE;
+	virtual void setSize(sint32 size) NL_OVERRIDE;
+	virtual bool getSize(sint32 &size) const NL_OVERRIDE;
 };
 
 template <typename T>
@@ -157,7 +159,9 @@ void CStorageArraySizePre<T>::setSize(sint32 size)
 template <typename T>
 bool CStorageArraySizePre<T>::getSize(sint32 &size) const
 {
-	size = CStorageArray<T>::getSize(size) + sizeof(uint32);
+	sint32 innerSize = 0;
+	if (!CStorageArray<T>::getSize(innerSize)) return false;
+	size = innerSize + (sint32)sizeof(uint32);
 	return true;
 }
 
@@ -171,10 +175,10 @@ template <typename T>
 class CStorageArrayDynSize : public CStorageArray<T>
 {
 public:
-	virtual std::string className() const;
-	virtual void serial(NLMISC::IStream &stream);
-	virtual void setSize(sint32 size);
-	virtual bool getSize(sint32 &size) const;
+	virtual std::string className() const NL_OVERRIDE;
+	virtual void serial(NLMISC::IStream &stream) NL_OVERRIDE;
+	virtual void setSize(sint32 size) NL_OVERRIDE;
+	virtual bool getSize(sint32 &size) const NL_OVERRIDE;
 };
 
 template <typename T>

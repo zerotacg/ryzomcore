@@ -103,7 +103,7 @@ void INode::toStringLocal(std::ostream &ostream, const std::string &pad, uint fi
 	// Print the implied connected children
 	ostream << "\n" << pad << "Children: IMPLICIT { ";
 	uint i = 0;
-	for (std::set<NLMISC::CRefPtr<INode> >::iterator it = m_Children.begin(), end = m_Children.end(); it != end; ++it)
+	for (std::set<NLMISC::CRefPtr<INode> >::const_iterator it = m_Children.begin(), end = m_Children.end(); it != end; ++it)
 	{
 		INode *node = (*it);
 		nlassert(node);
@@ -132,7 +132,7 @@ void INode::toStringLocal(std::ostream &ostream, const std::string &pad, uint fi
 INode *INode::parent()
 {
 	nlerror("Unkown node class, cannot get parent node");
-	return NULL;
+	return nullptr;
 }
 
 void INode::setParent(INode *node)
@@ -159,14 +159,14 @@ const ucstring &INode::userName() const
 INode *INode::find(const ucstring &userName) const
 {
 	ucstring unl = NLMISC::toLower(userName);
-	for (std::set<NLMISC::CRefPtr<INode> >::iterator it = m_Children.begin(), end = m_Children.end(); it != end; ++it)
+	for (std::set<NLMISC::CRefPtr<INode> >::const_iterator it = m_Children.begin(), end = m_Children.end(); it != end; ++it)
 	{
 		INode *node = (*it);
 		nlassert(node);
 		if (NLMISC::toLower(node->userName()) == unl)
 			return node;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void INode::dumpNodes(std::ostream &ostream, const std::string &pad) const
@@ -195,7 +195,7 @@ void INode::dumpNodes(std::ostream &ostream, const std::string &pad) const
 	}
 	uint i = 0 ;
 	std::string padpad = pad + "\t";
-	for (std::set<NLMISC::CRefPtr<INode> >::iterator it = m_Children.begin(), end = m_Children.end(); it != end; ++it)
+	for (std::set<NLMISC::CRefPtr<INode> >::const_iterator it = m_Children.begin(), end = m_Children.end(); it != end; ++it)
 	{
 		INode *node = (*it);
 		nlassert(node);

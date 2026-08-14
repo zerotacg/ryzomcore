@@ -284,6 +284,13 @@ public:
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
 
+	/** Serial write-compatibility switch for export tools: when true, serial() writes the
+	  * pre-TBufferUsage version 2 (the old TPreferredMemory enum values), matching streams
+	  * produced before the buffer-usage refactor. Read code accepts both, always.
+	  * Global, not thread-safe: set once at tool startup (asset export pipelines only).
+	  */
+	static bool				SerialOldPreferredMemory;
+
 	/**
 	  * Default constructor. Make an empty index buffer. No value, no index. Index color format is set to TRGBA.
 	  */
@@ -588,7 +595,7 @@ public:
 
 	CIndexBufferReadWrite()
 	{
-		_Parent = NULL;
+		_Parent = nullptr;
 	}
 	~CIndexBufferReadWrite()
 	{
@@ -604,7 +611,7 @@ public:
 		if (_Parent)
 		{
 			_Parent->unlock(_First, _Last);
-			_Parent = NULL;
+			_Parent = nullptr;
 		}
 	}
 
@@ -684,7 +691,7 @@ public:
 		{
 			nlassert(0);
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	/** Touch the updated indexes. If the method is not call, the accessor update all the indexes.
@@ -718,7 +725,7 @@ public:
 
 	CIndexBufferRead()
 	{
-		_Parent = NULL;
+		_Parent = nullptr;
 	}
 	~CIndexBufferRead()
 	{
@@ -734,7 +741,7 @@ public:
 		if (_Parent)
 		{
 			_Parent->unlock();
-			_Parent = NULL;
+			_Parent = nullptr;
 		}
 	}
 
@@ -754,7 +761,7 @@ public:
 		{
 			nlassert(0);
 		}
-		return NULL;
+		return nullptr;
 	}
 	const CIndexBuffer *getParent() const { return _Parent; }
 	uint getIndexNumBytes() const { nlassert(_Parent); return _Parent->getIndexNumBytes(); }
@@ -792,7 +799,7 @@ inline void CIndexBuffer::lock (CIndexBufferReadWrite &accessor, uint first, uin
 		else
 		{
 			if (_NonResidentIndexes.empty())
-				_LockedBuffer = NULL;
+				_LockedBuffer = nullptr;
 			else
 				_LockedBuffer = &(_NonResidentIndexes[0]);
 		}
@@ -829,7 +836,7 @@ inline void CIndexBuffer::lock (CIndexBufferRead &accessor, uint first, uint las
 		else
 		{
 			if (_NonResidentIndexes.empty())
-				_LockedBuffer = NULL;
+				_LockedBuffer = nullptr;
 			else
 				_LockedBuffer = const_cast<void*>((const void *) &(_NonResidentIndexes[0]));
 		}
@@ -857,7 +864,7 @@ inline void CIndexBuffer::unlock (uint /* first */, uint /* end */)
 		if (isResident() && !_KeepLocalMemory)
 			DrvInfos->unlock (0, 0);
 
-		_LockedBuffer = NULL;
+		_LockedBuffer = nullptr;
 	}
 }
 
@@ -876,7 +883,7 @@ inline void CIndexBuffer::unlock () const
 		if (isResident() && !_KeepLocalMemory)
 			DrvInfos->unlock (0, 0);
 
-		_LockedBuffer = NULL;
+		_LockedBuffer = nullptr;
 	}
 }
 

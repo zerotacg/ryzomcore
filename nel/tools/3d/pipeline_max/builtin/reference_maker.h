@@ -3,6 +3,8 @@
  * \brief CReferenceMaker
  * \date 2012-08-22 08:52GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
+ * \author Claude Opus 4.8
  * CReferenceMaker
  */
 
@@ -45,13 +47,15 @@ namespace BUILTIN {
  * \brief CReferenceMaker
  * \date 2012-08-22 08:52GMT
  * \author Jan Boon (Kaetemi)
+ * \author Claude Opus 4.7
+ * \author Claude Opus 4.8
  * This class implements references
  */
 class CReferenceMaker : public CAnimatable
 {
 public:
 	CReferenceMaker(CScene *scene);
-	virtual ~CReferenceMaker();
+	virtual ~CReferenceMaker() NL_OVERRIDE;
 
 	// class desc
 	static const ucstring DisplayName;
@@ -61,14 +65,14 @@ public:
 	static const TSClassId SuperClassId;
 
 	// inherited
-	virtual void parse(uint16 version, uint filter = 0);
-	virtual void clean();
-	virtual void build(uint16 version, uint filter = 0);
-	virtual void disown();
-	virtual void init();
-	virtual bool inherits(const NLMISC::CClassId classId) const;
-	virtual const ISceneClassDesc *classDesc() const;
-	virtual void toStringLocal(std::ostream &ostream, const std::string &pad = "", uint filter = 0) const;
+	virtual void parse(uint16 version, uint filter = 0) NL_OVERRIDE;
+	virtual void clean() NL_OVERRIDE;
+	virtual void build(uint16 version, uint filter = 0) NL_OVERRIDE;
+	virtual void disown() NL_OVERRIDE;
+	virtual void init() NL_OVERRIDE;
+	virtual bool inherits(const NLMISC::CClassId classId) const NL_OVERRIDE;
+	virtual const ISceneClassDesc *classDesc() const NL_OVERRIDE;
+	virtual void toStringLocal(std::ostream &ostream, const std::string &pad = "", uint filter = 0) const NL_OVERRIDE;
 
 	// child classes should inherit, default implementation stores in a vector
 	/// Get a reference
@@ -78,9 +82,15 @@ public:
 
 protected:
 	// inherited
-	virtual IStorageObject *createChunkById(uint16 id, bool container);
-	/// Storage method
+	virtual IStorageObject *createChunkById(uint16 id, bool container) NL_OVERRIDE;
+	/// Storage method: false = 0x2034 (flat array), true = 0x2035 (sparse pairs).
+	/// Only load-bearing when a reference chunk existed in the source or one is authored.
 	bool m_ReferenceMap;
+	/// Set when the source stream had a 0x2034 or 0x2035 chunk. build() only re-emits the
+	/// reference chunk when this is set OR when references have been authored — otherwise
+	/// classes that never had a reference chunk in the .max would get one on write, breaking
+	/// byte-identity.
+	bool m_HasReferencesChunk;
 
 private:
 	CStorageValue<uint8> *m_204B_Equals_2E;
@@ -89,10 +99,21 @@ private:
 	std::vector<NLMISC::CRefPtr<CReferenceMaker> > m_References;
 	/// Unknown value
 	uint32 m_References2035Value0;
+	/// Length of the source 0x2034 flat reference array (0 when none / not the 0x2034 form).
+	/// build() re-emits at least this many entries so trailing empty (-1) slots survive a
+	/// rebuild — subclasses that store references in their own vector (CTrackViewNode's
+	/// m_Children, CSceneImpl's fixed slots) grow that vector only up to the last non-empty
+	/// slot, so nbReferences() alone would silently drop the trailing -1 entries (a roundtrip
+	/// defect: observed on a TVNode with two empty trailing slots in the sfx corpus).
+	uint32 m_References2034Count;
 
-	CStorageRaw *m_Unknown2045;
-	CStorageRaw *m_Unknown2047;
-	CStorageRaw *m_Unknown21B0;
+	// Unknown chunks preserved verbatim. Types are IStorageObject* rather than CStorageRaw*
+	// because the source can flag any of these as a container — createChunkById defers to the
+	// default (CStorageContainer for container chunks, CStorageRaw for leaves) rather than
+	// forcing a specific type.
+	IStorageObject *m_Unknown2045;
+	IStorageObject *m_Unknown2047;
+	IStorageObject *m_Unknown21B0;
 
 }; /* class CReferenceMaker */
 

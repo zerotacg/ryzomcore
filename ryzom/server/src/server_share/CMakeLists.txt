@@ -9,8 +9,20 @@ SOURCE_GROUP("" FILES ${SRC})
 SOURCE_GROUP("R2" FILES ${R2})
 
 NL_TARGET_LIB(ryzom_servershare ${SRC} ${R2})
+add_library(Ryzom::servershare ALIAS ryzom_servershare)
 
-TARGET_INCLUDE_DIRECTORIES(ryzom_servershare PRIVATE ${MYSQL_INCLUDE_DIR})
+if (WITH_RYZOM_XSLT)
+    add_module_interface(XML_SOURCES
+            backup_service_itf.xml
+            char_name_mapper_itf.xml
+            chat_unifier_itf.xml
+            command_executor_itf.xml
+            entity_locator_itf.xml
+            logger_service_itf.xml
+            login_service_itf.xml
+            mail_forum_itf.xml
+    )
+endif ()
 
 TARGET_LINK_LIBRARIES(ryzom_servershare
         PUBLIC
@@ -18,8 +30,8 @@ TARGET_LINK_LIBRARIES(ryzom_servershare
         NeL::pacs
         NeL::georges
         NeL::net
-        ryzom_gameshare
-        ${MYSQL_LIBRARIES}
+        Ryzom::gameshare
+        MySQL::MySQL
         ${ZLIB_LIBRARIES}
 )
 

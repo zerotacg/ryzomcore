@@ -85,6 +85,12 @@ static const char *WaterFPGLSL_Body = "layout(location = 8) smooth in vec4 texCo
                                       "  b1 = b1 * bump1ScaleBias.x + bump1ScaleBias.y;\n"
                                       "  vec2 uv2 = texCoord2.xy + b1;\n"
                                       "  vec4 col = texture(sampler2, uv2);\n"
+                                      "#ifdef USE_CALC_REFLECTIVITY\n"
+                                      "  // Calculated reflectivity: blend alpha from the per-vertex\n"
+                                      "  // reflectivity base (texCoord2.z) boosted by the reflection's\n"
+                                      "  // gamma-space luma, reproducing the original assets' rule\n"
+                                      "  col.a = mix(texCoord2.z, 1.0, dot(col.rgb, vec3(0.2126, 0.7152, 0.0722)));\n"
+                                      "#endif\n"
                                       "#ifdef USE_DIFFUSE\n"
                                       "  col *= texture(sampler3, texCoord3.xy);\n"
                                       "#endif\n"
@@ -123,11 +129,20 @@ static const char *WaterFPGLSL_UBO_Body = "smooth in vec4 texCoord0;\n"
                                           "  b1 = b1 * bump1ScaleBias.x + bump1ScaleBias.y;\n"
                                           "  vec2 uv2 = texCoord2.xy + b1;\n"
                                           "  vec4 col = texture(sampler2, uv2);\n"
+                                          "#ifdef USE_CALC_REFLECTIVITY\n"
+                                          "  // Calculated reflectivity: blend alpha from the per-vertex\n"
+                                          "  // reflectivity base (texCoord2.z) boosted by the reflection's\n"
+                                          "  // gamma-space luma, reproducing the original assets' rule\n"
+                                          "  col.a = mix(texCoord2.z, 1.0, dot(col.rgb, vec3(0.2126, 0.7152, 0.0722)));\n"
+                                          "#endif\n"
                                           "#ifdef USE_DIFFUSE\n"
                                           "  col *= texture(sampler3, texCoord3.xy);\n"
                                           "#endif\n"
                                           "  float z = abs(ecPos.y / ecPos.w);\n"
-                                          "  float fogFactor = clamp((fogParams.t - z) / (fogParams.t - fogParams.s), 0.0, 1.0);\n"
+                                          "  // Fog disabled leaves fogParams at (0, 0); guard the degenerate\n"
+                                          "  // denominator so it means \"no fog\" instead of NaN (black water)\n"
+                                          "  float fogDenom = fogParams.t - fogParams.s;\n"
+                                          "  float fogFactor = fogDenom > 0.0 ? clamp((fogParams.t - z) / fogDenom, 0.0, 1.0) : 1.0;\n"
                                           "  col = vec4(mix(fogColor.rgb, col.rgb, fogFactor), col.a);\n"
                                           "  fragColor = col;\n"
                                           "}\n";
@@ -278,7 +293,7 @@ bool CDriverGL3::setupMaterial(CMaterial &mat)
 	if (!mat._MatDrvInfo)
 	{
 		// insert into driver list. (so it is deleted when driver is deleted).
-		ItMatDrvInfoPtrList it = _MatDrvInfos.insert(_MatDrvInfos.end(), (NL3D::IMaterialDrvInfos *)NULL);
+		ItMatDrvInfoPtrList it = _MatDrvInfos.insert(_MatDrvInfos.end(), (NL3D::IMaterialDrvInfos *)nullptr);
 		// create and set iterator, for future deletion.
 		*it = mat._MatDrvInfo = new CMaterialDrvInfosGL3(this, it);
 
@@ -421,7 +436,7 @@ bool CDriverGL3::setupMaterial(CMaterial &mat)
 		for (uint stage = 0; stage < IDRV_MAT_MAXTEXTURES; ++stage)
 		{
 			ITexture *text = mat.getTexture(uint8(stage));
-			if (text != NULL && !setupTexture(*text))
+			if (text != nullptr && !setupTexture(*text))
 				textureFailed = true;
 		}
 	}
@@ -431,7 +446,7 @@ bool CDriverGL3::setupMaterial(CMaterial &mat)
 		for (uint stage = 0; stage < mat._LightMaps.size(); stage++)
 		{
 			ITexture *text = mat._LightMaps[stage].Texture;
-			if (text != NULL && !setupTexture(*text))
+			if (text != nullptr && !setupTexture(*text))
 				textureFailed = true;
 		}
 	}
@@ -827,7 +842,11 @@ sint CDriverGL3::beginLightMapMultiPass()
 // ***************************************************************************
 void CDriverGL3::setupLightMapPass(uint pass)
 {
-	nlassert(getProgram(PixelProgram));
+	// Under the linked-mega path there is no CPixelProgram object — the mega pixel program
+	// implements the LightMap shader directly (texCoord1 lightmap stages) and this function
+	// stages its state through the material UBO slots / _LightMapUBOOverride below. The
+	// program-object precondition only holds for the SSO/user-program paths.
+	nlassert(getProgram(PixelProgram) || (m_LinkedMegaShaders && m_UseMegaShaders));
 	nlassert(!m_UserPixelProgram);
 
 	H_AUTO_OGL(CDriverGL3_setupLightMapPass)
@@ -860,7 +879,7 @@ void CDriverGL3::setupLightMapPass(uint pass)
 		for (uint stage = 1; stage < IDRV_MAT_MAXTEXTURES; stage++)
 		{
 			// disable texturing.
-			activateTexture(stage, NULL);
+			activateTexture(stage, nullptr);
 		}
 
 		// Stage per-material UBO slot for this pass (slot 1, no-lightmap case)
@@ -1013,7 +1032,7 @@ void CDriverGL3::setupLightMapPass(uint pass)
 		else
 		{
 			// else all other stages are disabled.
-			activateTexture(stage, NULL);
+			activateTexture(stage, nullptr);
 		}
 	}
 
@@ -1205,11 +1224,13 @@ void CDriverGL3::setupWaterPass(uint /* pass */)
 	}
 	for (k = 4; k < IDRV_PROGRAM_MAXSAMPLERS; ++k)
 	{
-		activateTexture(k, NULL);
+		activateTexture(k, nullptr);
 	}
 
-	// Select water FP variant: bit 0 = fog, bit 1 = diffuse
-	uint fpIdx = (_FogEnabled ? 1 : 0) | (mat.getTexture(3) != NULL ? 2 : 0);
+	// Select water FP variant: bit 0 = fog, bit 1 = diffuse,
+	// bit 2 = calculated reflectivity
+	uint fpIdx = (_FogEnabled ? 1 : 0) | (mat.getTexture(3) != nullptr ? 2 : 0)
+	    | (mat.isWaterCalcReflectivity() ? 4 : 0);
 
 	// Lazy creation of water FP programs
 	if (!_WaterFP[fpIdx])
@@ -1228,6 +1249,7 @@ void CDriverGL3::setupWaterPass(uint /* pass */)
 
 		std::string defines;
 		if (fpIdx & 2) defines += "#define USE_DIFFUSE\n";
+		if (fpIdx & 4) defines += "#define USE_CALC_REFLECTIVITY\n";
 
 		_WaterFP[fpIdx] = new CPixelProgram();
 
@@ -1238,8 +1260,9 @@ void CDriverGL3::setupWaterPass(uint /* pass */)
 			s->Features.UsesCameraUBO = true;
 			s->Features.OnlyUBOs = true;
 			s->UniformBufferFormats[UBBindingPixelProgram] = _WaterUBFormat;
-			s->DisplayName = NLMISC::toString("glsl300esf/WaterFP/%s",
-			    (fpIdx & 2) ? "diffuse" : "noDiffuse");
+			s->DisplayName = NLMISC::toString("glsl300esf/WaterFP/%s%s",
+			    (fpIdx & 2) ? "diffuse" : "noDiffuse",
+			    (fpIdx & 4) ? "/calcRefl" : "");
 			s->setSource(std::string(WaterFPGLSL_ES_Header) + defines + WaterFPGLSL_UBO_Body);
 			_WaterFP[fpIdx]->addSource(s);
 		}
@@ -1248,14 +1271,15 @@ void CDriverGL3::setupWaterPass(uint /* pass */)
 		{
 			std::string src = WaterFPGLSL_Header;
 			if (fpIdx & 1) src += "#define USE_FOG\n";
-			if (fpIdx & 2) src += "#define USE_DIFFUSE\n";
+			src += defines;
 			src += WaterFPGLSL_Body;
 
 			IProgram::CSource *s = new IProgram::CSource();
 			s->Profile = IProgram::glsl330f;
-			s->DisplayName = NLMISC::toString("glsl330f/WaterFP/%s/%s",
+			s->DisplayName = NLMISC::toString("glsl330f/WaterFP/%s/%s%s",
 			    (fpIdx & 1) ? "fog" : "noFog",
-			    (fpIdx & 2) ? "diffuse" : "noDiffuse");
+			    (fpIdx & 2) ? "diffuse" : "noDiffuse",
+			    (fpIdx & 4) ? "/calcRefl" : "");
 			s->setSource(src);
 			_WaterFP[fpIdx]->addSource(s);
 		}
@@ -1298,10 +1322,10 @@ void CDriverGL3::endWaterMultiPass()
 
 	// Unbind water UBO if bound
 	if (_BoundUserUB[UBBindingPixelProgram] == _WaterUB)
-		bindUniformBuffer(UBBindingPixelProgram, NULL);
+		bindUniformBuffer(UBBindingPixelProgram, nullptr);
 
 	// Clear material pixel program — next setupPass() will restore builtin/mega PP
-	m_MaterialPixelProgram = NULL;
+	m_MaterialPixelProgram = nullptr;
 }
 
 } // NLDRIVERGL3

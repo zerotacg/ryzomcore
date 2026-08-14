@@ -130,12 +130,21 @@ public:
 		uint32 nFace, nCorner;
 		uint32 VertVB;
 
+		CVertLink ()
+		{
+			nFace = 0;
+			nCorner = 0;
+			VertVB = 0;
+		}
+
 		CVertLink (uint32 face, uint32 corner, uint32 iVB)
 		{
 			nFace = face;
 			nCorner = corner;
 			VertVB = iVB;
 		}
+
+		void serial(NLMISC::IStream &f);
 	};
 
 	/** Mesh Interface System for MRM
@@ -144,11 +153,15 @@ public:
 	{
 		CVector					Pos;
 		CVector					Normal;
+
+		void serial(NLMISC::IStream &f);
 	};
 	struct	CInterface
 	{
 		// The polygon describing the interface between 2 meshs.
 		std::vector<CInterfaceVertex>	Vertices;
+
+		void serial(NLMISC::IStream &f);
 	};
 	/// For each vertex
 	struct	CInterfaceLink
@@ -161,7 +174,10 @@ public:
 		CInterfaceLink()
 		{
 			InterfaceId= -1;
+			InterfaceVertexId= 0;
 		}
+
+		void serial(NLMISC::IStream &f);
 	};
 
 	/// A mesh information.
@@ -206,8 +222,12 @@ public:
 
 		CMeshBuild();
 
-		// Serialization
-		//void serial(NLMISC::IStream &f);
+		/** Versioned serialization of the pre-build mesh state.
+		 *	Never serialized historically; added as the 1_export -> standalone-lightmapper
+		 *	scene-graph contract (a long-lived pipeline intermediate — keep it versioned
+		 *	and backward-readable from day one).
+		 */
+		void serial(NLMISC::IStream &f);
 
 	};
 	//@}
@@ -222,7 +242,7 @@ public:
 	/// Constructor
 	CMesh();
 	/// dtor
-	~CMesh();
+	~CMesh() NL_OVERRIDE;
 	CMesh(const CMesh &mesh);
 	CMesh	&operator=(const CMesh &mesh);
 
@@ -252,29 +272,29 @@ public:
 	// @{
 
 	/// Create a CMeshInstance, which contains materials.
-	virtual	CTransformShape		*createInstance(CScene &scene);
+	virtual	CTransformShape		*createInstance(CScene &scene) NL_OVERRIDE;
 
 	/// clip this mesh in a driver.
-	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) NL_OVERRIDE ;
 
 	/// render() this mesh in a driver.
-	virtual void	render(IDriver *drv, CTransformShape *trans, bool opaquePass);
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool opaquePass) NL_OVERRIDE;
 
 	/// serial this mesh.
-	virtual void	serial(NLMISC::IStream &f);
+	virtual void	serial(NLMISC::IStream &f) NL_OVERRIDE;
 	NLMISC_DECLARE_CLASS(CMesh);
 
 	/// get trinagle count.
-	virtual float	getNumTriangles (float distance);
+	virtual float	getNumTriangles (float distance) NL_OVERRIDE;
 
 	/// Get bbox.
-	virtual void	getAABBox(NLMISC::CAABBox &bbox) const {bbox= getBoundingBox().getAABBox();}
+	virtual void	getAABBox(NLMISC::CAABBox &bbox) const NL_OVERRIDE {bbox= getBoundingBox().getAABBox();}
 
 	/// profiling
-	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass);
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass) NL_OVERRIDE;
 
 	/// System Mem Geometry Copy, built at load time
-	virtual void	buildSystemGeometry();
+	virtual void	buildSystemGeometry() NL_OVERRIDE;
 
 	// @}
 
@@ -315,7 +335,7 @@ public:
 
 	/// \name Mesh Block Render Interface
 	// @{
-	virtual IMeshGeom	*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const;
+	virtual IMeshGeom	*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const NL_OVERRIDE;
 	// @}
 
 private:
@@ -344,7 +364,7 @@ public:
 
 	/// Constructor
 	CMeshGeom();
-	virtual ~CMeshGeom();
+	virtual ~CMeshGeom() NL_OVERRIDE;
 
 	/// Build a meshGeom
 	void			build(CMesh::CMeshBuild &mbuild, uint numMaxMaterial);
@@ -359,26 +379,26 @@ public:
 	// @{
 
 	/// Init instance info.
-	virtual	void	initInstance(CMeshBaseInstance *mbi);
+	virtual	void	initInstance(CMeshBaseInstance *mbi) NL_OVERRIDE;
 
 	/// clip this mesh
-	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) NL_OVERRIDE ;
 
 	/// render() this mesh in a driver.
-	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha);
+	virtual void	render(IDriver *drv, CTransformShape *trans, float polygonCount, uint32 rdrFlags, float globalAlpha) NL_OVERRIDE;
 
 	/// render() this mesh as a skin
-	virtual void	renderSkin(CTransformShape *trans, float alphaMRM);
+	virtual void	renderSkin(CTransformShape *trans, float alphaMRM) NL_OVERRIDE;
 
 	// get an approximation of the number of triangles this instance will render for a fixed distance.
-	virtual float	getNumTriangles (float distance);
+	virtual float	getNumTriangles (float distance) NL_OVERRIDE;
 
 	/// serial this mesh.
-	virtual void	serial(NLMISC::IStream &f);
+	virtual void	serial(NLMISC::IStream &f) NL_OVERRIDE;
 	NLMISC_DECLARE_CLASS(CMeshGeom);
 
 	// profile
-	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags);
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags) NL_OVERRIDE;
 
 	// @}
 
@@ -387,7 +407,7 @@ public:
 	// @{
 
 	/// get the extended axis aligned bounding box of the mesh
-	const NLMISC::CAABBoxExt& getBoundingBox() const
+	const NLMISC::CAABBoxExt& getBoundingBox() const NL_OVERRIDE
 	{
 		return _BBox;
 	}
@@ -489,23 +509,23 @@ public:
 	/** true if this meshGeom support meshBlock rendering.
 	 *	return false if skinned/meshMorphed.
 	 */
-	virtual bool	supportMeshBlockRendering () const;
+	virtual bool	supportMeshBlockRendering () const NL_OVERRIDE;
 
-	virtual bool	sortPerMaterial() const;
-	virtual uint	getNumRdrPassesForMesh() const ;
-	virtual uint	getNumRdrPassesForInstance(CMeshBaseInstance *inst) const ;
-	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) ;
-	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) ;
-	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) ;
-	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
+	virtual bool	sortPerMaterial() const NL_OVERRIDE;
+	virtual uint	getNumRdrPassesForMesh() const NL_OVERRIDE ;
+	virtual uint	getNumRdrPassesForInstance(CMeshBaseInstance *inst) const NL_OVERRIDE ;
+	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) NL_OVERRIDE ;
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) NL_OVERRIDE ;
+	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) NL_OVERRIDE ;
+	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) NL_OVERRIDE ;
 
-	virtual	bool	getVBHeapInfo(uint &vertexFormat, uint &numVertices);
-	virtual	void	computeMeshVBHeap(void *dst, uint indexStart);
+	virtual	bool	getVBHeapInfo(uint &vertexFormat, uint &numVertices) NL_OVERRIDE;
+	virtual	void	computeMeshVBHeap(void *dst, uint indexStart) NL_OVERRIDE;
 
 	// @}
 
 	// Is this mesh Geom has a VertexProgram bound?
-	virtual bool	hasMeshVertexProgram() const {return _MeshVertexProgram!=NULL;}
+	virtual bool	hasMeshVertexProgram() const NL_OVERRIDE {return _MeshVertexProgram != nullptr; }
 
 	// get the Mesh VertexProgram
 	IMeshVertexProgram	*getMeshVertexProgram() const {return _MeshVertexProgram;}

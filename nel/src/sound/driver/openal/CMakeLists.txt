@@ -42,7 +42,18 @@ IF(HUNTER_ENABLED)
   FIND_PACKAGE(OpenAL CONFIG REQUIRED)
 ENDIF()# hunter
 
-TARGET_COMPILE_DEFINITIONS(${NLDRV_AL_LIB} PRIVATE AL_ALEXT_PROTOTYPES)
+IF(HUNTER_ENABLED OR VCPKG_TOOLCHAIN OR OPENAL_LIBRARY MATCHES "\\.a$")
+  # Hunter and vcpkg build OpenAL Soft from source, so the linked library
+  # always matches and the EFX entry points can be linked as static
+  # imports; a static libopenal.a makes this MANDATORY — the archive's
+  # real EFX functions collide with the same-named runtime-loading
+  # pointers in ext_al.cpp (multiple definition at link). With prebuilt
+  # externals the deployed OpenAL32.dll may be an older build without
+  # static EFX exports (-> "entry point not found" at load), so there
+  # the EFX entry points are loaded at runtime through alGetProcAddress
+  # (see ext_al.cpp).
+  TARGET_COMPILE_DEFINITIONS(${NLDRV_AL_LIB} PRIVATE AL_ALEXT_PROTOTYPES)
+ENDIF()
 
 TARGET_LINK_LIBRARIES(${NLDRV_AL_LIB}
         PUBLIC
@@ -60,7 +71,7 @@ IF(WIN32)
   FIND_PACKAGE(EFXUtil)
   IF(EFXUTIL_FOUND)
     TARGET_INCLUDE_DIRECTORIES(${NLDRV_AL_LIB} PRIVATE ${EFXUTIL_INCLUDE_DIR})
-    TARGET_LINK_LIBRARIES(${NLDRV_AL_LIB} ${EFXUTIL_LIBRARY})
+    TARGET_LINK_LIBRARIES(${NLDRV_AL_LIB} PRIVATE ${EFXUTIL_LIBRARY})
     TARGET_COMPILE_DEFINITIONS(${NLDRV_AL_LIB} PRIVATE EFX_CREATIVE_AVAILABLE=1)
   ENDIF()
 ENDIF()

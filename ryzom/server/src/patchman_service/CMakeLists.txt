@@ -20,13 +20,25 @@ LIST(REMOVE_ITEM SRC
 
 ADD_EXECUTABLE(ryzom_patchman_service WIN32 ${SRC})
 
-TARGET_INCLUDE_DIRECTORIES(ryzom_patchman_service PRIVATE ${RZ_SERVER_SRC_DIR} ${MYSQL_INCLUDE_DIR} ${NEL_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(ryzom_patchman_service PRIVATE ${RZ_SERVER_SRC_DIR} ${MYSQL_INCLUDE_DIR})
+
+if (WITH_RYZOM_XSLT)
+    add_module_interface(XML_SOURCES
+            module_admin_itf.xml
+            #re_module_itf.xml
+            #rr_module_itf.xml
+            #spa_module_itf.xml
+            #spm_module_itf.xml
+            #spt_module_itf.xml
+    )
+endif ()
+
 
 TARGET_LINK_LIBRARIES(ryzom_patchman_service
         PRIVATE
-        ryzom_adminmodules
-        ryzom_gameshare
-        ryzom_servershare
+        Ryzom::adminmodules
+        Ryzom::gameshare
+        Ryzom::servershare
         NeL::misc
         NeL::net
         NeL::pacs

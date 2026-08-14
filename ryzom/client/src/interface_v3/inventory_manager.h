@@ -231,7 +231,7 @@ public:
 		enum TFrom { Slot, TextList, IconList, Nowhere };
 		void beginDrag(CDBCtrlSheet *pCS, TFrom eFromWhere);
 		void endDrag();
-		bool isDragging() { return DNDCurrentItem != NULL; }
+		bool isDragging() { return DNDCurrentItem != nullptr; }
 		// Is the dragged sheet comes from inventory list
 		bool isDraggingFromTextList() { return DNDFrom == TextList; }
 		bool isDraggingFromIconList() { return DNDFrom == IconList; }
@@ -392,17 +392,17 @@ private:
 		class	CItemInfoSlotVersionObs : public NLMISC::ICDBNode::IPropertyObserver
 		{
 		public:
-			virtual void update(NLMISC::ICDBNode* node);
+			virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 		};
 		class	CItemSheetObs : public NLMISC::ICDBNode::IPropertyObserver
 		{
 		public:
-			virtual void update(NLMISC::ICDBNode* node);
+			virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 		};
 		class	CItemInfoTradeObs : public NLMISC::ICDBNode::IPropertyObserver
 		{
 		public:
-			virtual void update(NLMISC::ICDBNode* node);
+			virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 		};
 		CItemInfoTradeObs			_DBTradeInfoObs;
 		CItemInfoSlotVersionObs		_DBInfoSlotVersionObs;
@@ -415,7 +415,7 @@ private:
 		class CDBEquipObs : public NLMISC::ICDBNode::IPropertyObserver
 		{
 		public:
-			virtual void update(NLMISC::ICDBNode* node);
+			virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 		};
 		CDBEquipObs _DBEquipObs;
 		friend class CDBEquipObs;
@@ -424,7 +424,7 @@ private:
 		class CDBBagObs : public NLMISC::ICDBNode::IPropertyObserver
 		{
 		public:
-			virtual void update(NLMISC::ICDBNode* node);
+			virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 		};
 		CDBBagObs _DBBagObs;
 };
@@ -486,13 +486,13 @@ private:
 	class CDBObs : public NLMISC::ICDBNode::IPropertyObserver
 	{
 	public:
-		virtual void update(NLMISC::ICDBNode* node);
+		virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 	};
 
 	class CDBObsType : public NLMISC::ICDBNode::IPropertyObserver
 	{
 	public:
-		virtual void update(NLMISC::ICDBNode* node);
+		virtual void update(NLMISC::ICDBNode* node) NL_OVERRIDE;
 	};
 
 	// Database management stuff, specialized for forage progress
@@ -500,7 +500,7 @@ private:
 	{
 	public:
 		CDBForageQQObs() : NLMISC::ICDBNode::IPropertyObserver(), WhichOne(~0), FullValue(0.0f) {}
-		virtual void update(NLMISC::ICDBNode *node);
+		virtual void update(NLMISC::ICDBNode *node) NL_OVERRIDE;
 		uint	WhichOne;
 		float	FullValue;
 	};
@@ -571,7 +571,7 @@ struct SBagOptions
 	SBagOptions()
 	{
 		InvType = CInventoryManager::InvUnknown;
-		DbFilterArmor = DbFilterWeapon = DbFilterTool = DbFilterPet = DbFilterMP = DbFilterMissMP = DbFilterTP = NULL;
+		DbFilterArmor = DbFilterWeapon = DbFilterTool = DbFilterPet = DbFilterMP = DbFilterMissMP = DbFilterTP = nullptr;
 		LastDbFilterArmor = LastDbFilterWeapon = LastDbFilterTool = LastDbFilterPet = LastDbFilterMP = LastDbFilterMissMP = LastDbFilterTP = false;
 		SearchFilterChanged = false;
 		SearchQualityMin = 0;
@@ -587,43 +587,43 @@ struct SBagOptions
 
 	bool getFilterArmor() const
 	{
-		if (DbFilterArmor == NULL) return true;
+		if (DbFilterArmor == nullptr) return true;
 		return (DbFilterArmor->getValue8()!=0);
 	}
 
 	bool getFilterWeapon() const
 	{
-		if (DbFilterWeapon == NULL) return true;
+		if (DbFilterWeapon == nullptr) return true;
 		return (DbFilterWeapon->getValue8()!=0);
 	}
 
 	bool getFilterTool() const
 	{
-		if (DbFilterTool == NULL) return true;
+		if (DbFilterTool == nullptr) return true;
 		return (DbFilterTool->getValue8()!=0);
 	}
 
 	bool getFilterPet() const
 	{
-		if (DbFilterPet == NULL) return true;
+		if (DbFilterPet == nullptr) return true;
 		return (DbFilterPet->getValue8()!=0);
 	}
 
 	bool getFilterMP() const
 	{
-		if (DbFilterMP == NULL) return true;
+		if (DbFilterMP == nullptr) return true;
 		return (DbFilterMP->getValue8()!=0);
 	}
 
 	bool getFilterMissMP() const
 	{
-		if (DbFilterMissMP == NULL) return true;
+		if (DbFilterMissMP == nullptr) return true;
 		return (DbFilterMissMP->getValue8()!=0);
 	}
 
 	bool getFilterTP() const
 	{
-		if (DbFilterTP == NULL) return true;
+		if (DbFilterTP == nullptr) return true;
 		return (DbFilterTP->getValue8() != 0);
 	}
 
@@ -647,8 +647,8 @@ public:
 	{
 	}
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
-	virtual void checkCoords ();
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
+	virtual void checkCoords () NL_OVERRIDE;
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -659,11 +659,11 @@ public:
 		sint32				LastQuality;
 		CInterfaceProperty	CurrentQuality;
 
-		virtual void updateViewText(CDBGroupListSheetText *pFather);
-		virtual bool isSheetValid(CDBGroupListSheetText *pFather); // To filter
-		virtual void init(CDBGroupListSheetText *pFather, uint index);
-		virtual bool isInvalidated(CDBGroupListSheetText *pFather);
-		virtual void update(CDBGroupListSheetText *pFather);
+		virtual void updateViewText(CDBGroupListSheetText *pFather) NL_OVERRIDE;
+		virtual bool isSheetValid(CDBGroupListSheetText *pFather) NL_OVERRIDE; // To filter
+		virtual void init(CDBGroupListSheetText *pFather, uint index) NL_OVERRIDE;
+		virtual bool isInvalidated(CDBGroupListSheetText *pFather) NL_OVERRIDE;
+		virtual void update(CDBGroupListSheetText *pFather) NL_OVERRIDE;
 
 		CSheetChildBag() : CSheetChild()
 		{
@@ -671,10 +671,10 @@ public:
 		}
 	};
 
-	virtual CSheetChild *createSheetChild() { return new CSheetChildBag; }
-	virtual bool swapable () const {return true;}
-	virtual void onSwap (sint nDraggedSheet, sint nDroppedSheet);
-	virtual void sort();
+	virtual CSheetChild *createSheetChild() NL_OVERRIDE { return new CSheetChildBag; }
+	virtual bool swapable () const NL_OVERRIDE {return true;}
+	virtual void onSwap (sint nDraggedSheet, sint nDroppedSheet) NL_OVERRIDE;
+	virtual void sort() NL_OVERRIDE;
 
 	CInventoryManager::TInvType getInvType() const { return _BO.InvType; }
 
@@ -703,11 +703,11 @@ public:
 	{
 	}
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
-	virtual void checkCoords ();
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
+	virtual void checkCoords () NL_OVERRIDE;
 
-	virtual CSheetChild *createSheetChild() { return new CSheetChildBag; }
-	virtual void sort();
+	virtual CSheetChild *createSheetChild() NL_OVERRIDE { return new CSheetChildBag; }
+	virtual void sort() NL_OVERRIDE;
 
 	CInventoryManager::TInvType getInvType() const { return _BO.InvType; }
 
@@ -721,7 +721,7 @@ public:
 	// A child node
 	struct	CSheetChildBag : public CDBGroupListSheet::CSheetChild
 	{
-		virtual bool isSheetValid(CDBGroupListSheet *pFather);
+		virtual bool isSheetValid(CDBGroupListSheet *pFather) NL_OVERRIDE;
 	};
 
 private:
@@ -742,12 +742,12 @@ public:
 		: CDBGroupListSheet(param)
 	{}
 
-	virtual CSheetChild *createSheetChild() { return new CSheetChildFilter; }
+	virtual CSheetChild *createSheetChild() NL_OVERRIDE { return new CSheetChildFilter; }
 
 	// A child node
 	struct	CSheetChildFilter : public CDBGroupListSheet::CSheetChild
 	{
-		virtual bool isSheetValid(CDBGroupListSheet *pFather);
+		virtual bool isSheetValid(CDBGroupListSheet *pFather) NL_OVERRIDE;
 	};
 };
 
@@ -764,16 +764,16 @@ public:
 		: CDBGroupListSheet(param)
 	{}
 
-	virtual CSheetChild *createSheetChild() { return new CSheetChildFilter; }
+	virtual CSheetChild *createSheetChild() NL_OVERRIDE { return new CSheetChildFilter; }
 
 	// A child node
 	struct	CSheetChildFilter : public CDBGroupListSheet::CSheetChild
 	{
-		virtual bool isSheetValid(CDBGroupListSheet *pFather);
+		virtual bool isSheetValid(CDBGroupListSheet *pFather) NL_OVERRIDE;
 	};
 
-	void sort();
-	bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	void sort() NL_OVERRIDE;
+	bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
 private:
 	SBagOptions	_BO;

@@ -660,65 +660,6 @@ MACRO(FIND_LIBRARY_HELPER NAME)
   MARK_AS_ADVANCED(${_UPNAME_FIXED}_LIBRARY_RELEASE ${_UPNAME_FIXED}_LIBRARY_DEBUG)
 ENDMACRO()
 
-MACRO(FIND_LIBXML2)
-  IF(NOT LIBXML2_FOUND)
-    FIND_PACKAGE(LibXml2 REQUIRED)
-
-    IF(WIN32 OR WITH_STATIC_LIBXML2)
-      set_property(TARGET LibXml2::LibXml2
-              APPEND
-              PROPERTY INTERFACE_COMPILE_DEFINITIONS
-              LIBXML_STATIC
-      )
-    ENDIF()
-
-    FIND_PACKAGE(Iconv QUIET)
-    IF(ICONV_FOUND)
-      set_property(TARGET LibXml2::LibXml2
-              APPEND
-              PROPERTY INTERFACE_LINK_LIBRARIES
-              ${ICONV_LIBRARIES}
-      )
-    ENDIF()
-
-    IF(WITH_STATIC)
-      # libxml2 could need winsock2 library
-      IF(WIN32)
-        FIND_LIBRARY(WINSOCK2_LIB ws2_32)
-      
-        IF(WINSOCK2_LIB)
-          set_property(TARGET LibXml2::LibXml2
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${WINSOCK2_LIB}
-          )
-        ENDIF()
-
-        FIND_LIBRARY(CRYPT32_LIB Crypt32)
-
-        IF(CRYPT32_LIB)
-          set_property(TARGET LibXml2::LibXml2
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${CRYPT32_LIB}
-          )
-        ENDIF()
-      ELSEIF(NOT HUNTER_ENABLED)
-        # under Linux and OS X, recent libxml2 versions are linked against liblzma
-        FIND_PACKAGE(LibLZMA)
-
-        IF(LIBLZMA_LIBRARIES)
-          set_property(TARGET LibXml2::LibXml2
-                  APPEND
-                  PROPERTY INTERFACE_LINK_LIBRARIES
-                  ${LIBLZMA_LIBRARIES}
-          )
-        ENDIF()
-      ENDIF()
-    ENDIF()
-  ENDIF()
-ENDMACRO()
-
 MACRO(ADD_QT_LIBRARY _NAME)
   IF(WIN32)
     SET(_PREFIX "Qt5")

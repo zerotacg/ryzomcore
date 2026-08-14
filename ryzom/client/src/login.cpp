@@ -220,7 +220,7 @@ void createOptionalCatUI()
 {
 	CInterfaceManager *pIM = CInterfaceManager::getInstance();
 	CInterfaceGroup *pList = dynamic_cast<CInterfaceGroup*>(CWidgetManager::getInstance()->getElementFromId(GROUP_LIST_CAT));
-	if (pList == NULL)
+	if (pList == nullptr)
 	{
 		nlwarning("element " GROUP_LIST_CAT " not found probably bad login_main.xml");
 		return;
@@ -228,7 +228,7 @@ void createOptionalCatUI()
 
 	// Update optional categories
 
-	CInterfaceGroup *pPrevLine = NULL;
+	CInterfaceGroup *pPrevLine = nullptr;
 	for(uint i = 0; i < InfoOnPatch.OptCat.size(); i++)
 	{
 		vector< pair < string, string > > params;
@@ -238,12 +238,12 @@ void createOptionalCatUI()
 			params.push_back(pair<string,string>("posref", "BL TL"));
 
 		CInterfaceGroup *pNewLine = CWidgetManager::getInstance()->getParser()->createGroupInstance("t_cat", GROUP_LIST_CAT, params);
-		if (pNewLine != NULL)
+		if (pNewLine != nullptr)
 		{
 			CViewText *pVT = dynamic_cast<CViewText*>(pNewLine->getView("name"));
-			if (pVT != NULL) pVT->setText(InfoOnPatch.OptCat[i].Name);
+			if (pVT != nullptr) pVT->setText(InfoOnPatch.OptCat[i].Name);
 			pVT = dynamic_cast<CViewText*>(pNewLine->getView("size"));
-			if (pVT != NULL)
+			if (pVT != nullptr)
 			{
 				pVT->setText(BGDownloader::getWrittenSize(InfoOnPatch.OptCat[i].Size));
 			}
@@ -278,7 +278,7 @@ void initEula()
 	}
 	else
 	{
-		CAHManager::getInstance()->runActionHandler("accept_eula", NULL);
+		CAHManager::getInstance()->runActionHandler("accept_eula", nullptr);
 	}
 }
 
@@ -287,7 +287,7 @@ static void setDataScanLog(const std::string &text)
 {
 	CInterfaceManager	*pIM= CInterfaceManager::getInstance();
 	CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:datascan:content:log_txt:log"));
-	if (pVT != NULL)
+	if (pVT != nullptr)
 	{
 		pVT->setText(text);
 	}
@@ -298,10 +298,10 @@ static void setDataScanState(const std::string &text, const std::string &progres
 {
 	CInterfaceManager	*pIM= CInterfaceManager::getInstance();
 	CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:datascan:content:state"));
-	if (pVT != NULL) pVT->setText(text);
+	if (pVT != nullptr) pVT->setText(text);
 
 	pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:datascan:content:progress"));
-	if (pVT != NULL) pVT->setText(progress);
+	if (pVT != nullptr) pVT->setText(progress);
 }
 
 void initCatDisplay()
@@ -338,7 +338,7 @@ static void setPatcherStateText(const std::string &baseUIPath, const std::string
 {
 	CInterfaceManager *pIM = CInterfaceManager::getInstance();
 	CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId(baseUIPath + ":content:state"));
-	if (pVT != NULL)
+	if (pVT != nullptr)
 	{
 		pVT->setText(str);
 	}
@@ -349,7 +349,7 @@ static void setPatcherProgressText(const std::string &baseUIPath, const std::str
 {
 	CInterfaceManager *pIM = CInterfaceManager::getInstance();
 	CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId(baseUIPath + ":content:progress"));
-	if (pVT != NULL)
+	if (pVT != nullptr)
 	{
 		pVT->setText(str);
 	}
@@ -440,12 +440,12 @@ void loginMainLoop()
 		Driver->setMatrixMode2D11();
 
 		// Update sound
-		if (SoundMngr != NULL)
+		if (SoundMngr != nullptr)
 			SoundMngr->update();
 
 		// Interface handling & displaying
 		pIM->updateFrameEvents();
-		pIM->updateFrameViews(NULL);
+		pIM->updateFrameViews(nullptr);
 		IngameDbMngr.flushObserverCalls();
 		NLGUI::CDBManager::getInstance()->flushObserverCalls();
 
@@ -728,7 +728,7 @@ void loginMainLoop()
 			string sTmp;
 			sTmp = BGDownloader::getWrittenSize(currentPatchingSize);
 			sTmp += " / " + BGDownloader::getWrittenSize(totalPatchSize);
-			if (pVT != NULL) pVT->setText(sTmp);
+			if (pVT != nullptr) pVT->setText(sTmp);
 		}
 //		else if (screen == UI_VARIABLES_SCREEN_CATDISP) // If we are displaying patch info
 		else if (LoginSM.getCurrentState() == CLoginStateMachine::st_display_cat)
@@ -740,15 +740,15 @@ void loginMainLoop()
 			TotalPatchSize = 0;
 			vector<sint32> ReqCat;
 			CInterfaceGroup *pList = dynamic_cast<CInterfaceGroup*>(CWidgetManager::getInstance()->getElementFromId(GROUP_LIST_CAT));
-			if (pList != NULL)
+			if (pList != nullptr)
 			{
 				for(uint i = 0; i < InfoOnPatch.OptCat.size(); i++)
 				{
 					CInterfaceGroup *pLine = pList->getGroup("c"+toString(i));
-					if (pLine != NULL)
+					if (pLine != nullptr)
 					{
 						CCtrlButton *pCB = dynamic_cast<CCtrlButton*>(pLine->getCtrl("on_off"));
-						if ((pCB != NULL) && (pCB->getPushed()))
+						if ((pCB != nullptr) && (pCB->getPushed()))
 						{
 							TotalPatchSize += InfoOnPatch.OptCat[i].Size;
 							if (InfoOnPatch.OptCat[i].Req != -1)
@@ -777,10 +777,10 @@ void loginMainLoop()
 			// Total size of the patches is optional cats + required cat (f(optCat)) + non opt cat
 
 			CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId(VIEW_TOTAL_SIZE));
-			if (pVT != NULL) pVT->setText(BGDownloader::getWrittenSize(TotalPatchSize));
+			if (pVT != nullptr) pVT->setText(BGDownloader::getWrittenSize(TotalPatchSize));
 
 			pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId(VIEW_NON_OPTIONAL_SIZE));
-			if (pVT != NULL) pVT->setText(BGDownloader::getWrittenSize(nNonOptSize));
+			if (pVT != nullptr) pVT->setText(BGDownloader::getWrittenSize(nNonOptSize));
 		}
 	}
 }
@@ -817,20 +817,20 @@ void initLoginScreen()
 	if(!l.empty())
 	{
 		CGroupEditBox *pGEB = dynamic_cast<CGroupEditBox*>(CWidgetManager::getInstance()->getElementFromId(CTRL_EDITBOX_LOGIN));
-		if (pGEB != NULL && (pGEB->getInputString().empty()))
+		if (pGEB != nullptr && (pGEB->getInputString().empty()))
 		{
 			pGEB->setInputString(l);
 		}
-		CAHManager::getInstance()->runActionHandler("set_keyboard_focus", NULL, "target=" CTRL_EDITBOX_PASSWORD "|select_all=false");
+		CAHManager::getInstance()->runActionHandler("set_keyboard_focus", nullptr, "target=" CTRL_EDITBOX_PASSWORD "|select_all=false");
 	}
 	else
 	{
-		CAHManager::getInstance()->runActionHandler("set_keyboard_focus", NULL, "target=" CTRL_EDITBOX_LOGIN "|select_all=false");
+		CAHManager::getInstance()->runActionHandler("set_keyboard_focus", nullptr, "target=" CTRL_EDITBOX_LOGIN "|select_all=false");
 	}
 
 
 	CCtrlTextButton *pCB = dynamic_cast<CCtrlTextButton*>(CWidgetManager::getInstance()->getElementFromId(CTRL_BUTTON_CONNECT));
-	if (pCB != NULL) pCB->setActive(false);
+	if (pCB != nullptr) pCB->setActive(false);
 
 	setLoginFinished( false );
 	loginOK = false;
@@ -843,7 +843,7 @@ void initAutoLogin()
 	CGroupEditBox *pGEBPwd = dynamic_cast<CGroupEditBox*>(CWidgetManager::getInstance()->getElementFromId(CTRL_EDITBOX_PASSWORD));
 	pGEBLog->setInputString(LoginLogin);
 	pGEBPwd->setInputString(LoginPassword);
-	CAHManager::getInstance()->runActionHandler("on_login", NULL, "");
+	CAHManager::getInstance()->runActionHandler("on_login", nullptr, "");
 
 	if (ClientCfg.R2Mode)
 	{
@@ -1105,7 +1105,7 @@ std::string getBGDownloaderCommandLine()
 {
 	#ifdef NL_DEBUG
 		CConfigFile::CVar *bgdCommandLine = ClientCfg.ConfigFile.getVarPtr("BackgroundDownloaderCommandLine");
-		if (bgdCommandLine != NULL && !bgdCommandLine->asString().empty())
+		if (bgdCommandLine != nullptr && !bgdCommandLine->asString().empty())
 		{
 			return bgdCommandLine->asString();
 		}
@@ -1169,7 +1169,7 @@ void initShardDisplay()
 	NLGUI::CDBManager::getInstance()->getDbProp("UI:VARIABLES:SCREEN")->setValue32(UI_VARIABLES_SCREEN_SHARDDISP);
 
 	CInterfaceGroup *pList = dynamic_cast<CInterfaceGroup*>(CWidgetManager::getInstance()->getElementFromId(GROUP_LIST_SHARD));
-	if (pList == NULL)
+	if (pList == nullptr)
 	{
 		nlwarning("element " GROUP_LIST_SHARD " not found probably bad login_main.xml");
 		return;
@@ -1182,7 +1182,7 @@ void initShardDisplay()
 		Shards.push_back(s);
 	}*/
 
-	CInterfaceGroup *pPrevLine = NULL;
+	CInterfaceGroup *pPrevLine = nullptr;
 	for(uint i = 0; i < Shards.size(); i++)
 	{
 		vector< pair < string, string > > params;
@@ -1192,24 +1192,24 @@ void initShardDisplay()
 			params.push_back(pair<string,string>("posref", "BL TL"));
 
 		CInterfaceGroup *pNewLine = CWidgetManager::getInstance()->getParser()->createGroupInstance("t_shard", GROUP_LIST_SHARD, params);
-		if (pNewLine != NULL)
+		if (pNewLine != nullptr)
 		{
 			CViewText *pVT = dynamic_cast<CViewText*>(pNewLine->getView("name"));
-			if (pVT != NULL) pVT->setText(Shards[i].Name);
+			if (pVT != nullptr) pVT->setText(Shards[i].Name);
 
 			pVT = dynamic_cast<CViewText*>(pNewLine->getView("version"));
-			if (pVT != NULL) pVT->setText(Shards[i].Version);
+			if (pVT != nullptr) pVT->setText(Shards[i].Version);
 
 			CViewBase *pVBon = pNewLine->getView("online");
 			CViewBase *pVBoff = pNewLine->getView("offline");
-			if ((pVBon != NULL) && (pVBoff != NULL))
+			if ((pVBon != nullptr) && (pVBoff != nullptr))
 			{
 				pVBon->setActive (Shards[i].Online);
 				pVBoff->setActive (!Shards[i].Online);
 			}
 
 			pVT = dynamic_cast<CViewText*>(pNewLine->getView("nbplayer"));
-			if (pVT != NULL) pVT->setText(toString(Shards[i].NbPlayers));
+			if (pVT != nullptr) pVT->setText(toString(Shards[i].NbPlayers));
 
 
 			// Add to the list
@@ -1225,7 +1225,7 @@ void initShardDisplay()
 	if (!Shards.empty())
 	{
 		CCtrlButton *pCB = dynamic_cast<CCtrlButton*>(CWidgetManager::getInstance()->getElementFromId(GROUP_LIST_SHARD ":s0:but"));
-		if (pCB != NULL)
+		if (pCB != nullptr)
 		{
 			pCB->setPushed(true);
 			CAHManager::getInstance()->runActionHandler(pCB->getActionOnLeftClick(), pCB, pCB->getParamsOnLeftClick());
@@ -1380,7 +1380,7 @@ void onlogin(bool vanishScreen = true)
 
 class CAHOnLogin : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		//nlinfo("CAHOnLogin called");
 
@@ -1388,7 +1388,7 @@ class CAHOnLogin : public IActionHandler
 
 		CGroupEditBox *pGEBLog = dynamic_cast<CGroupEditBox*>(CWidgetManager::getInstance()->getElementFromId(CTRL_EDITBOX_LOGIN));
 		CGroupEditBox *pGEBPwd = dynamic_cast<CGroupEditBox*>(CWidgetManager::getInstance()->getElementFromId(CTRL_EDITBOX_PASSWORD));
-		if ((pGEBLog == NULL) || (pGEBPwd == NULL))
+		if ((pGEBLog == nullptr) || (pGEBPwd == nullptr))
 		{
 			nlwarning("element " CTRL_EDITBOX_LOGIN " or " CTRL_EDITBOX_PASSWORD " not found probably bad login_main.xml");
 			return;
@@ -1406,7 +1406,7 @@ REGISTER_ACTION_HANDLER (CAHOnLogin, "on_login");
 // ***************************************************************************
 class CAHOnGameConfiguration : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHOnGameConfiguration called");
 
@@ -1433,7 +1433,7 @@ REGISTER_ACTION_HANDLER (CAHOnGameConfiguration, "on_game_configuration");
 // ***************************************************************************
 class CAHLoginQuit : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHLoginQuit called");
 
@@ -1449,7 +1449,7 @@ REGISTER_ACTION_HANDLER (CAHLoginQuit, "login_quit");
 // ***************************************************************************
 class CAHLoginTab : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHLoginTab called");
 
@@ -1458,7 +1458,7 @@ class CAHLoginTab : public IActionHandler
 		if (NLGUI::CDBManager::getInstance()->getDbProp("UI:VARIABLES:SCREEN")->getValue32() == UI_VARIABLES_SCREEN_CHECKPASS)
 		{
 			CCtrlBase *pCB = CWidgetManager::getInstance()->getCaptureKeyboard();
-			if (pCB != NULL)
+			if (pCB != nullptr)
 			{
 				CCtrlBase *pNewCB;
 				string sID = pCB->getId();
@@ -1472,7 +1472,7 @@ class CAHLoginTab : public IActionHandler
 		else if (NLGUI::CDBManager::getInstance()->getDbProp("UI:VARIABLES:SCREEN")->getValue32() == UI_VARIABLES_SCREEN_CREATE_ACCOUNT)
 		{
 			CCtrlBase *pCB = CWidgetManager::getInstance()->getCaptureKeyboard();
-			if (pCB != NULL)
+			if (pCB != nullptr)
 			{
 				CCtrlBase *pNewCB;
 				string sID = pCB->getId();
@@ -1495,23 +1495,23 @@ REGISTER_ACTION_HANDLER (CAHLoginTab, "login_tab");
 // ***************************************************************************
 class CAHShardSelect : public IActionHandler
 {
-	virtual void execute (CCtrlBase *pCaller, const string &/* Params */)
+	virtual void execute (CCtrlBase *pCaller, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHShardSelect called");
 
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 
-		CCtrlButton *pCB = NULL;
+		CCtrlButton *pCB = nullptr;
 		// Unselect
 		if (ShardSelected != -1)
 		{
 			pCB = dynamic_cast<CCtrlButton*>(CWidgetManager::getInstance()->getElementFromId(GROUP_LIST_SHARD ":s"+toString(ShardSelected)+":but"));
-			if (pCB != NULL)
+			if (pCB != nullptr)
 				pCB->setPushed(false);
 		}
 
 		pCB = dynamic_cast<CCtrlButton*>(pCaller);
-		if (pCB != NULL)
+		if (pCB != nullptr)
 		{
 			string name = pCB->getId();
 			name = name.substr(0,name.rfind(':'));
@@ -1522,7 +1522,7 @@ class CAHShardSelect : public IActionHandler
 		}
 
 		CCtrlTextButton *pCTB = dynamic_cast<CCtrlTextButton*>(CWidgetManager::getInstance()->getElementFromId(CTRL_BUTTON_CONNECT));
-		if (pCTB != NULL)
+		if (pCTB != nullptr)
 			pCTB->setActive(true);
 	}
 };
@@ -1570,7 +1570,7 @@ void ConnectToShard()
 // ***************************************************************************
 class CAHLoginConnect : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHLoginConnect called");
 
@@ -1619,7 +1619,7 @@ REGISTER_ACTION_HANDLER (CAHLoginConnect, "login_connect");
 // see if we have to continue patching or directly go ingame)
 class CAHLoginConnect2 : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHLoginConnect2 called");
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
@@ -1673,7 +1673,7 @@ void initPatch()
 		vector<string> vCategories;
 
 		CInterfaceGroup *pList = dynamic_cast<CInterfaceGroup*>(CWidgetManager::getInstance()->getElementFromId(GROUP_LIST_CAT));
-		if (pList == NULL)
+		if (pList == nullptr)
 		{
 			nlwarning("element " GROUP_LIST_CAT " not found probably bad login_main.xml");
 			return;
@@ -1727,7 +1727,7 @@ void initPatch()
 // Called after the check has been done. The page is full of optional categories that must be selected for patching
 class CAHLoginPatch : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHLoginPatch called");
 
@@ -1785,7 +1785,7 @@ REGISTER_ACTION_HANDLER (CAHLoginPatch, "login_patch");
 // Called after the check has been done. The page is full of optional categories that must be selected for patching
 class CAHClosePatch : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHClosePatch called");
 
@@ -1799,7 +1799,7 @@ REGISTER_ACTION_HANDLER (CAHClosePatch, "close_patch");
 // Called after pushing the read note at the opening of the modal window
 class CAHSetReleaseNote : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &sParams)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &sParams) NL_OVERRIDE
 	{
 		nlinfo("CAHSetReleaseNote called");
 
@@ -1809,7 +1809,7 @@ class CAHSetReleaseNote : public IActionHandler
 		string sGroupHtml = getParam(sParams, "group");
 
 		CGroupHTML *pQH = dynamic_cast<CGroupHTML*>(CWidgetManager::getInstance()->getElementFromId(sGroupHtml));
-		if (pQH == NULL)
+		if (pQH == nullptr)
 			return;
 
 		string sURL;
@@ -1848,7 +1848,7 @@ REGISTER_ACTION_HANDLER (CAHSetReleaseNote, "set_release_note");
 // Called after pushing the read note at the opening of the modal window
 class CAHReboot : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		nlinfo("CAHReboot called");
 
@@ -1891,7 +1891,7 @@ REGISTER_ACTION_HANDLER (CAHReboot, "reboot");
 // ***************************************************************************
 class CAHAcceptEula : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		//nlinfo("CAHAcceptEula called");
 		if(CFile::fileExists(getLogDirectory() + "show_eula"))
@@ -1920,7 +1920,7 @@ REGISTER_ACTION_HANDLER (CAHAcceptEula, "accept_eula");
 // ***************************************************************************
 class CAHOpenURL : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &sParams)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &sParams) NL_OVERRIDE
 	{
 		nlinfo("CAHOpenURL called");
 
@@ -2033,10 +2033,10 @@ sint CurrentPreset = -1;
 // ***************************************************************************
 class CAHInitResLod : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		//nlinfo("CAHInitResLod called");
-		if (Driver == NULL) return;
+		if (Driver == nullptr) return;
 
 		VideoModes.clear();
 		StringModeList.clear();
@@ -2061,7 +2061,7 @@ class CAHInitResLod : public IActionHandler
 
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 		CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:checkpass:content:res_value"));
-		if (pVT != NULL)
+		if (pVT != nullptr)
 			pVT->setHardText(StringModeList[CurrentMode]);
 
 		StringPresetList.clear();
@@ -2093,13 +2093,14 @@ class CAHInitResLod : public IActionHandler
 		CfgPresetList.push_back(pair<string,bool>("Bloom",					false));
 		CfgPresetList.push_back(pair<string,bool>("SquareBloom",			false));
 		CfgPresetList.push_back(pair<string,bool>("DensityBloom",			true));
+		CfgPresetList.push_back(pair<string,bool>("MaxWaterReflections",	false));
 
 		// Check if all the preset-able cfg-variable are in a preset mode
 		sint nPreset = -1;
 		for (uint32 i = 0; i < CfgPresetList.size(); ++i)
 		{
 			CConfigFile::CVar *cfgVarPtr = ClientCfg.ConfigFile.getVarPtr(CfgPresetList[i].first);
-			if (cfgVarPtr == NULL) continue;
+			if (cfgVarPtr == nullptr) continue;
 			// Get the preset of the variable i
 			sint nVarPreset = 0;
 			for (uint32 j = 0; j < 4; ++j) // CInterfaceDDX::NumPreset
@@ -2139,7 +2140,7 @@ class CAHInitResLod : public IActionHandler
 		}
 
 		pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:checkpass:content:lod_value"));
-		if (pVT != NULL)
+		if (pVT != nullptr)
 			pVT->setHardText(StringPresetList[CurrentPreset]);
 	}
 };
@@ -2148,14 +2149,14 @@ REGISTER_ACTION_HANDLER (CAHInitResLod, "init_res_lod");
 // ***************************************************************************
 class CAHMoreRes : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		nlinfo("CAHMoreRes called");
 		if (CurrentMode < ((sint)StringModeList.size()-1))
 			CurrentMode++;
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 		CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:checkpass:content:res_value"));
-		if (pVT != NULL)
+		if (pVT != nullptr)
 			pVT->setHardText(StringModeList[CurrentMode]);
 	}
 };
@@ -2164,14 +2165,14 @@ REGISTER_ACTION_HANDLER (CAHMoreRes, "more_res");
 // ***************************************************************************
 class CAHLessRes : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		nlinfo("CAHLessRes called");
 		if (CurrentMode > 0)
 			CurrentMode--;
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 		CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:checkpass:content:res_value"));
-		if (pVT != NULL)
+		if (pVT != nullptr)
 			pVT->setHardText(StringModeList[CurrentMode]);
 	}
 };
@@ -2180,14 +2181,14 @@ REGISTER_ACTION_HANDLER (CAHLessRes, "less_res");
 // ***************************************************************************
 class CAHMoreLod : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		nlinfo("CAHMoreLod called");
 		if (CurrentPreset < ((sint)StringPresetList.size()-1))
 			CurrentPreset++;
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 		CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:checkpass:content:lod_value"));
-		if (pVT != NULL)
+		if (pVT != nullptr)
 			pVT->setHardText(StringPresetList[CurrentPreset]);
 	}
 };
@@ -2196,14 +2197,14 @@ REGISTER_ACTION_HANDLER (CAHMoreLod, "more_lod");
 // ***************************************************************************
 class CAHLessLod : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		nlinfo("CAHMoreLod called");
 		if (CurrentPreset > 0)
 			CurrentPreset--;
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 		CViewText *pVT = dynamic_cast<CViewText*>(CWidgetManager::getInstance()->getElementFromId("ui:login:checkpass:content:lod_value"));
-		if (pVT != NULL)
+		if (pVT != nullptr)
 			pVT->setHardText(StringPresetList[CurrentPreset]);
 	}
 };
@@ -2213,7 +2214,7 @@ REGISTER_ACTION_HANDLER (CAHLessLod, "less_lod");
 // TODO: remove resolution change from login screen
 class CAHUninitResLod : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* sParams */) NL_OVERRIDE
 	{
 		//nlinfo("CAHUninitResLod called");
 
@@ -2248,7 +2249,7 @@ class CAHUninitResLod : public IActionHandler
 			for (uint32 i = 0; i < CfgPresetList.size(); ++i)
 			{
 				CConfigFile::CVar *cfgVarPtr = ClientCfg.ConfigFile.getVarPtr(CfgPresetList[i].first);
-				if (cfgVarPtr == NULL) continue;
+				if (cfgVarPtr == nullptr) continue;
 
 				string sPresetName = CfgPresetList[i].first + "_ps" + toString(CurrentPreset);
 				CConfigFile::CVar *presetVarPtr = ClientCfg.ConfigFile.getVarPtr(sPresetName);
@@ -2289,7 +2290,7 @@ void initDataScan()
 // Called after the check has been done. The page is full of optional categories that must be selected for patching
 class CAHOnScanDataStart : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHOnScanDataStart called");
 
@@ -2303,7 +2304,7 @@ REGISTER_ACTION_HANDLER (CAHOnScanDataStart, "on_scan_data_start");
 // Called when the user cancel the scan
 class CAHOnScanDataClose : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHOnScanDataClose called");
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
@@ -2507,7 +2508,7 @@ bool initCreateAccount()
 			rulesGr->setActive(false);
 
 		// must be done after hide rules
-		CAHManager::getInstance()->runActionHandler("set_keyboard_focus", NULL, "target=" CTRL_EDITBOX_CREATEACCOUNT_LOGIN "|select_all=false");
+		CAHManager::getInstance()->runActionHandler("set_keyboard_focus", nullptr, "target=" CTRL_EDITBOX_CREATEACCOUNT_LOGIN "|select_all=false");
 	}
 
 
@@ -2520,7 +2521,7 @@ bool initCreateAccount()
 // Called when the user focus one of the edit boxes during the account creation
 class CAHCreateAccountRules : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &Params)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &Params) NL_OVERRIDE
 	{
 		nlinfo("CAHCreateAccountRules called");
 
@@ -2560,7 +2561,7 @@ REGISTER_ACTION_HANDLER (CAHCreateAccountRules, "create_account_rules");
 // Called when the user choose the account creation
 class CAHOnCreateAccount : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHOnCreateAccount called");
 
@@ -2573,7 +2574,7 @@ REGISTER_ACTION_HANDLER (CAHOnCreateAccount, "on_create_account");
 // Called when the user submit the account creation
 class CAHOnCreateAccountSubmit : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHOnCreateAccountSubmit called");
 
@@ -2725,7 +2726,7 @@ REGISTER_ACTION_HANDLER (CAHOnCreateAccountSubmit, "on_create_account_submit");
 // Called when the user cancel the account creation
 class CAHOnCreateAccountClose : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHOnCreateAccountClose called");
 
@@ -2737,7 +2738,7 @@ REGISTER_ACTION_HANDLER (CAHOnCreateAccountClose, "on_create_account_close");
 // ***************************************************************************
 class CAHCreateAccountLogin : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		nlinfo("CAHCreateAccountLogin called");
 
@@ -2764,7 +2765,7 @@ REGISTER_ACTION_HANDLER (CAHCreateAccountLogin, "create_account_login");
 // Called by html embeded lua script
 class CAHOnConnectToShard: public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &Params)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &Params) NL_OVERRIDE
 	{
 		// warning : pCaller is null when event come from lua scrip embeded in HTML
 		Cookie = getParam(Params, "cookie");
@@ -2789,7 +2790,7 @@ REGISTER_ACTION_HANDLER (CAHOnConnectToShard, "on_connect_to_shard");
 // Called to return to login screen in case of error
 class CAHOnBackToLogin: public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */)
+	virtual void execute (CCtrlBase * /* pCaller */, const string &/* Params */) NL_OVERRIDE
 	{
 		setLoginFinished( false );
 		loginOK = false;
@@ -3120,7 +3121,7 @@ string checkLogin(const string &login, const string &password, const string &cli
 					}*/
 				}
 
-				if (res.size() < 7 && res.size() > 8)
+				if (res.size() < 7 || res.size() > 8)
 				{
 					nlwarning("bad | numbers %u != %d", (uint)res.size(), 8);
 					nlwarning("'%s'", lines[i].c_str());
@@ -3169,7 +3170,7 @@ string selectShard(uint32 shardId, string &cookie, string &addr)
 	std::string url = ClientCfg.ConfigFile.getVar("StartupHost").asString() + ClientCfg.ConfigFile.getVar("StartupPage").asString();
 
 	if(!HttpClient.sendGet(url + "?cmd=login&shardid=" + toString(shardId) + "&login=" + LoginLogin + "&password=" + cryptedPassword + "&clientApplication=" + ClientApp + "&cp=2"))
-		return "Can't send (error code 11)";
+		return std::string("Can't send (error code 11) ") + HttpClient.lastError();
 
 	string res;
 
@@ -3204,6 +3205,11 @@ string selectShard(uint32 shardId, string &cookie, string &addr)
 
 	nldebug("res2: %s", res.c_str());
 
+	// a headers-only reply would otherwise fall through the parse below
+	// and come back as success with an empty cookie
+	if (res.empty())
+		return "Empty answer body from server (error code 67)";
+
 	if (res[0] == 'H')
 	{
 		nlwarning("missing response body: %s", res.c_str());
@@ -3233,7 +3239,7 @@ string selectShard(uint32 shardId, string &cookie, string &addr)
 
 		std::vector<std::string>	patchURIs;
 
-		CShard*	shard = NULL;
+		CShard*	shard = nullptr;
 		uint	i;
 		for (i=0; i<Shards.size(); ++i)
 		{

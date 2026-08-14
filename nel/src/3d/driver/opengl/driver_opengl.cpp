@@ -205,8 +205,8 @@ CDriverGL::CDriverGL()
 
 #elif defined (NL_OS_UNIX)
 
-	_dpy = 0;
-	_visual_info = NULL;
+	_dpy = nullptr;
+	_visual_info = nullptr;
 
 #	ifdef XF86VIDMODE
 	// zero the old screen mode
@@ -252,7 +252,7 @@ CDriverGL::CDriverGL()
 	_DecorationWidth = 0;
 	_DecorationHeight = 0;
 
-	_CurrentMaterial=NULL;
+	_CurrentMaterial = nullptr;
 	_Initialized = false;
 
 	_FogEnabled= false;
@@ -275,11 +275,11 @@ CDriverGL::CDriverGL()
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
 
-	_AGPVertexArrayRange= NULL;
-	_VRAMVertexArrayRange= NULL;
-	_CurrentVertexArrayRange= NULL;
-	_CurrentVertexBufferHard= NULL;
-	_NVCurrentVARPtr= NULL;
+	_AGPVertexArrayRange = nullptr;
+	_VRAMVertexArrayRange = nullptr;
+	_CurrentVertexArrayRange = nullptr;
+	_CurrentVertexBufferHard = nullptr;
+	_NVCurrentVARPtr = nullptr;
 	_NVCurrentVARSize= 0;
 	_SupportVBHard= false;
 	_SlowUnlockVBHard= false;
@@ -294,6 +294,8 @@ CDriverGL::CDriverGL()
 	_SumTextureMemoryUsed = false;
 
 	_NVTextureShaderEnabled = false;
+
+	_UserClipPlaneEnableMask = 0;
 
 	_AnisotropicFilter = 0.f;
 
@@ -329,7 +331,8 @@ CDriverGL::CDriverGL()
 	_ATIDriverVersion = 0;
 	_ATIFogRangeFixed = true;
 
-	std::fill(ARBWaterShader, ARBWaterShader + 4, 0);
+	std::fill(ARBWaterShader, ARBWaterShader + 8, 0);
+	_CurWaterPassIsARB = false;
 
 ///	buildCausticCubeMapTex();
 
@@ -347,7 +350,7 @@ CDriverGL::CDriverGL()
 
 	_WndActive = false;
 	//
-	_CurrentOcclusionQuery = NULL;
+	_CurrentOcclusionQuery = nullptr;
 	_SwapBufferCounter = 0;
 
 	_LightMapDynamicLightEnabled = false;
@@ -525,9 +528,9 @@ bool CDriverGL::setupDisplay()
 #endif
 
 	// Reset VertexArrayRange.
-	_CurrentVertexArrayRange= NULL;
-	_CurrentVertexBufferHard= NULL;
-	_NVCurrentVARPtr= NULL;
+	_CurrentVertexArrayRange = nullptr;
+	_CurrentVertexBufferHard = nullptr;
+	_NVCurrentVARPtr = nullptr;
 	_NVCurrentVARSize= 0;
 
 	if (_SupportVBHard)
@@ -544,8 +547,8 @@ bool CDriverGL::setupDisplay()
 			// delete containers
 			delete _AGPVertexArrayRange;
 			delete _VRAMVertexArrayRange;
-			_AGPVertexArrayRange= NULL;
-			_VRAMVertexArrayRange= NULL;
+			_AGPVertexArrayRange = nullptr;
+			_VRAMVertexArrayRange = nullptr;
 
 			// disable.
 			_SupportVBHard= false;
@@ -567,8 +570,8 @@ bool CDriverGL::setupDisplay()
 	for(uint stage=0;stage<inlGetNumTextStages(); stage++)
 	{
 		// init no texture.
-		_CurrentTexture[stage]= NULL;
-		_CurrentTextureInfoGL[stage]= NULL;
+		_CurrentTexture[stage] = nullptr;
+		_CurrentTextureInfoGL[stage] = nullptr;
 		// texture are disabled in DriverGLStates.forceDefaults().
 
 		// init default env.
@@ -849,8 +852,8 @@ bool CDriverGL::swapBuffers()
 	++ _SwapBufferCounter;
 	// Reset texture shaders
 	//resetTextureShaders();
-	activeVertexProgram(NULL);
-	activePixelProgram(NULL);
+	activeVertexProgram(nullptr);
+	activePixelProgram(nullptr);
 
 #ifndef USE_OPENGLES
 	/* Yoyo: must do this (GeForce bug ??) else weird results if end render with a VBHard.
@@ -949,8 +952,8 @@ bool CDriverGL::swapBuffers()
 	for(uint stage=0;stage<inlGetNumTextStages(); stage++)
 	{
 		// init no texture.
-		_CurrentTexture[stage]= NULL;
-		_CurrentTextureInfoGL[stage]= NULL;
+		_CurrentTexture[stage] = nullptr;
+		_CurrentTextureInfoGL[stage] = nullptr;
 		// texture are disabled in DriverGLStates.forceDefaults().
 
 		// init default env.
@@ -971,7 +974,7 @@ bool CDriverGL::swapBuffers()
 	}
 #endif
 
-	_CurrentMaterial= NULL;
+	_CurrentMaterial = nullptr;
 
 	// Reset the profiling counter.
 	_PrimitiveProfileIn.reset();
@@ -1029,8 +1032,8 @@ bool CDriverGL::release()
 	// delete containers
 	delete _AGPVertexArrayRange;
 	delete _VRAMVertexArrayRange;
-	_AGPVertexArrayRange= NULL;
-	_VRAMVertexArrayRange= NULL;
+	_AGPVertexArrayRange = nullptr;
+	_VRAMVertexArrayRange = nullptr;
 
 	// destroy window and associated ressources
 	destroyWindow();
@@ -1440,8 +1443,8 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex,
 	}
 	// disable texturing.
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
-	_CurrentTexture[0] = NULL;
-	_CurrentTextureInfoGL[0] = NULL;
+	_CurrentTexture[0] = nullptr;
+	_CurrentTextureInfoGL[0] = nullptr;
 	//if (_RenderTargetFBO)
 	//	gltext->activeFrameBufferObject(tex);
 }
@@ -1985,6 +1988,100 @@ static const char *WaterCodeForARBFragmentProgram =
 "MUL result.color, R0, R1;\n"
 "END\n";
 
+// Calculated reflectivity variants: texture 2 is a reflection (realtime
+// planar RT or artist envmap, alpha channel ignored); the
+// blend alpha is the per-vertex reflectivity base (fragment.texcoord[2].z,
+// the shape's stylized fresnel) boosted by the reflection's gamma-space
+// luma, reproducing the original assets' luminance-derived envmap alpha.
+
+// Calculated reflectivity, no diffuse, no fog
+static const char *WaterCodeCalcNoDiffuseForARBFragmentProgram =
+"!!ARBfp1.0\n"
+"OPTION ARB_precision_hint_nicest;\n"
+"PARAM c[3] = { program.env[0..1], { 0.2126, 0.7152, 0.0722, 1 } };\n"
+"TEMP R0;\n"
+"TEMP R1;\n"
+"TEX R0.xy, fragment.texcoord[0], texture[0], 2D;\n"
+"MAD R0.xy, R0, c[0].x, c[0].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[1];\n"
+"TEX R0.xy, R0, texture[1], 2D;\n"
+"MAD R0.xy, R0, c[1].x, c[1].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[2];\n"
+"TEX R0.xyz, R0, texture[2], 2D;\n"
+"ADD R1.x, -fragment.texcoord[2].z, c[2].w;\n"
+"DP3 R0.w, R0, c[2];\n"
+"MAD R0.w, R0, R1.x, fragment.texcoord[2].z;\n"
+"MOV result.color, R0;\n"
+"END\n";
+
+// Calculated reflectivity, no diffuse, with fog
+static const char *WaterCodeCalcNoDiffuseWithFogForARBFragmentProgram =
+"!!ARBfp1.0\n"
+"OPTION ARB_precision_hint_nicest;\n"
+"PARAM c[5] = { program.env[0..2], state.fog.color, { 0.2126, 0.7152, 0.0722, 1 } };\n"
+"TEMP R0;\n"
+"TEMP R1;\n"
+"TEX R0.xy, fragment.texcoord[0], texture[0], 2D;\n"
+"MAD R0.xy, R0, c[0].x, c[0].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[1];\n"
+"TEX R0.xy, R0, texture[1], 2D;\n"
+"MAD R0.xy, R0, c[1].x, c[1].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[2];\n"
+"TEX R0.xyz, R0, texture[2], 2D;\n"
+"ADD R1.x, -fragment.texcoord[2].z, c[4].w;\n"
+"DP3 R0.w, R0, c[4];\n"
+"MAD R0.w, R0, R1.x, fragment.texcoord[2].z;\n"
+"ADD R0, R0, -c[3];\n"
+"MAD_SAT R1.x, fragment.fogcoord, c[2], c[2].y;\n"
+"MAD result.color, R1.x, R0, c[3];\n"
+"END\n";
+
+// Calculated reflectivity, with diffuse, no fog
+static const char *WaterCodeCalcForARBFragmentProgram =
+"!!ARBfp1.0\n"
+"OPTION ARB_precision_hint_nicest;\n"
+"PARAM c[3] = { program.env[0..1], { 0.2126, 0.7152, 0.0722, 1 } };\n"
+"TEMP R0;\n"
+"TEMP R1;\n"
+"TEMP R2;\n"
+"TEX R0.xy, fragment.texcoord[0], texture[0], 2D;\n"
+"MAD R0.xy, R0, c[0].x, c[0].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[1];\n"
+"TEX R0.xy, R0, texture[1], 2D;\n"
+"MAD R0.xy, R0, c[1].x, c[1].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[2];\n"
+"TEX R0.xyz, R0, texture[2], 2D;\n"
+"TEX R1, fragment.texcoord[3], texture[3], 2D;\n"
+"ADD R2.x, -fragment.texcoord[2].z, c[2].w;\n"
+"DP3 R0.w, R0, c[2];\n"
+"MAD R0.w, R0, R2.x, fragment.texcoord[2].z;\n"
+"MUL result.color, R0, R1;\n"
+"END\n";
+
+// Calculated reflectivity, with diffuse, with fog
+static const char *WaterCodeCalcWithFogForARBFragmentProgram =
+"!!ARBfp1.0\n"
+"OPTION ARB_precision_hint_nicest;\n"
+"PARAM c[5] = { program.env[0..2], state.fog.color, { 0.2126, 0.7152, 0.0722, 1 } };\n"
+"TEMP R0;\n"
+"TEMP R1;\n"
+"TEMP R2;\n"
+"TEX R0.xy, fragment.texcoord[0], texture[0], 2D;\n"
+"MAD R0.xy, R0, c[0].x, c[0].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[1];\n"
+"TEX R0.xy, R0, texture[1], 2D;\n"
+"MAD R0.xy, R0, c[1].x, c[1].y;\n"
+"ADD R0.xy, R0, fragment.texcoord[2];\n"
+"TEX R0.xyz, R0, texture[2], 2D;\n"
+"DP3 R0.w, R0, c[4];\n"
+"ADD R2.x, -fragment.texcoord[2].z, c[4].w;\n"
+"TEX R1, fragment.texcoord[3], texture[3], 2D;\n"
+"MAD R0.w, R0, R2.x, fragment.texcoord[2].z;\n"
+"MAD R1, R0, R1, -c[3];\n"
+"MAD_SAT R0.x, fragment.fogcoord, c[2], c[2].y;\n"
+"MAD result.color, R0.x, R1, c[3];\n"
+"END\n";
+
 // With diffuse, with fog (11 instructions, 2 R-regs)
 static const char *WaterCodeWithFogForARBFragmentProgram =
 "!!ARBfp1.0\n"
@@ -2110,6 +2207,29 @@ void CDriverGL::initFragmentShaders()
 		if (ok)
 		{
 			nlinfo("WATER: ARB_fragment_program OK, Use it");
+			// Calculated reflectivity variants (optional: such draws fall
+			// back to the flat reflection alpha if unavailable)
+			ARBWaterShader[4] = loadARBFragmentProgramStringNative(WaterCodeCalcNoDiffuseForARBFragmentProgram, _ForceNativeFragmentPrograms);
+			ARBWaterShader[5] = loadARBFragmentProgramStringNative(WaterCodeCalcNoDiffuseWithFogForARBFragmentProgram, _ForceNativeFragmentPrograms);
+			ARBWaterShader[6] = loadARBFragmentProgramStringNative(WaterCodeCalcForARBFragmentProgram, _ForceNativeFragmentPrograms);
+			ARBWaterShader[7] = loadARBFragmentProgramStringNative(WaterCodeCalcWithFogForARBFragmentProgram, _ForceNativeFragmentPrograms);
+			for (uint k = 4; k < 8; ++k)
+			{
+				if (!ARBWaterShader[k])
+				{
+					nlwarning("WATER: calculated reflectivity fragment %d not loaded, keeping the flat reflection alpha", k);
+					for (uint l = 4; l < 8; ++l)
+					{
+						if (ARBWaterShader[l])
+						{
+							GLuint progId = ARBWaterShader[l];
+							nglDeleteProgramsARB(1, &progId);
+							ARBWaterShader[l] = 0;
+						}
+					}
+					break;
+				}
+			}
 			return;
 		}
 	}
@@ -2201,7 +2321,7 @@ void CDriverGL::deleteARBFragmentPrograms()
 	H_AUTO_OGL(CDriverGL_deleteARBFragmentPrograms);
 
 #ifndef USE_OPENGLES
-	for(uint k = 0; k < 4; ++k)
+	for(uint k = 0; k < 8; ++k)
 	{
 		if (ARBWaterShader[k])
 		{
@@ -2778,7 +2898,7 @@ IOcclusionQuery *CDriverGL::createOcclusionQuery()
 		nglGenOcclusionQueriesNV(1, &id);
 	else
 		nglGenQueriesARB(1, &id);
-	if (id == 0) return NULL;
+	if (id == 0) return nullptr;
 	COcclusionQueryGL *oqgl = new COcclusionQueryGL;
 	oqgl->Driver = this;
 	oqgl->ID = id;
@@ -2801,7 +2921,7 @@ void CDriverGL::deleteOcclusionQuery(IOcclusionQuery *oq)
 	if (!oq) return;
 	COcclusionQueryGL *oqgl = NLMISC::safe_cast<COcclusionQueryGL *>(oq);
 	nlassert((CDriverGL *) oqgl->Driver == this); // should come from the same driver
-	oqgl->Driver = NULL;
+	oqgl->Driver = nullptr;
 	nlassert(oqgl->ID != 0);
 	GLuint id = oqgl->ID;
 	if (_Extensions.NVOcclusionQuery)
@@ -2811,7 +2931,7 @@ void CDriverGL::deleteOcclusionQuery(IOcclusionQuery *oq)
 	_OcclusionQueryList.erase(oqgl->Iterator);
 	if (oqgl == _CurrentOcclusionQuery)
 	{
-		_CurrentOcclusionQuery = NULL;
+		_CurrentOcclusionQuery = nullptr;
 	}
 	delete oqgl;
 #endif
@@ -2849,7 +2969,7 @@ void COcclusionQueryGL::end()
 		nglEndOcclusionQueryNV();
 	else
 		nglEndQueryARB(GL_SAMPLES_PASSED);
-	Driver->_CurrentOcclusionQuery = NULL;
+	Driver->_CurrentOcclusionQuery = nullptr;
 #endif
 }
 
@@ -3025,6 +3145,15 @@ void CDriverGL::enableClipPlane(uint index, bool enable)
 {
 	H_AUTO_OGL(CDriverGL_enableClipPlane)
 
+	nlassert(index < CDriverGLStates::MaxClipPlanes);
+
+	// Mirror the enable mask: activeARBVertexProgram binds the clip variant
+	// of vertex programs while any user clip plane is enabled.
+	if (enable)
+		_UserClipPlaneEnableMask |= (1 << index);
+	else
+		_UserClipPlaneEnableMask &= ~(1u << index);
+
 	_DriverGLStates.enableClipPlane(index, enable);
 }
 
@@ -3055,6 +3184,53 @@ void CDriverGL::setClipPlane(uint index, const NLMISC::CPlane &plane)
 	glLoadMatrixf((const GLfloat *)_ViewMtx.get());
 	glClipPlane(GL_CLIP_PLANE0 + index, equation);
 	glPopMatrix();
+
+	// When vertex programs run through the ARB path with
+	// NV_vertex_program2_option (see preferARBVertexProgram), their clip
+	// variant computes the clip distances itself, from the CLIP-SPACE plane
+	// equation stored at program.env[96+index] (the equation applies to the
+	// program's output position): p_clip = transpose(inverse(Proj*View)) * p_world.
+	// Same snapshot-at-set-time semantics as glClipPlane above; the
+	// projection and view matrices are set before the plane for each pass.
+	if (preferARBVertexProgram())
+	{
+		refreshProjMatrixFromGL();
+		CMatrix invViewProj = _GLProjMat * _ViewMtx;
+		invViewProj.invert();
+		const float *m = invViewProj.get();	// column major
+		float pc[4];
+		for (uint r = 0; r < 4; ++r)
+		{
+			// row r of the transpose = column r of the inverse
+			pc[r] = (float)(m[4*r+0] * equation[0] + m[4*r+1] * equation[1]
+			              + m[4*r+2] * equation[2] + m[4*r+3] * equation[3]);
+		}
+		nglProgramEnvParameter4fvARB(GL_VERTEX_PROGRAM_ARB, 96 + index, pc);
+	}
+#endif
+}
+
+// ***************************************************************************
+bool CDriverGL::supportVertexProgramClipPlanes() const
+{
+	H_AUTO_OGL(CDriverGL_supportVertexProgramClipPlanes)
+
+#ifdef USE_OPENGLES
+	// no user clip plane support at all in this driver
+	return false;
+#else
+	// The NV_vertex_program (VP1.0) path ignores user clip planes by spec,
+	// and without NV_vertex_program2_option there is no clip variant either
+	// (see preferARBVertexProgram). EXT_vertex_shader clip behaviour is
+	// unspecified; that R200-era hardware gets the envmap fallback too.
+	// The ARB path clips (natively on Mesa/AMD, via the clip variant with
+	// NV_vertex_program2_option), and without any vertex program support
+	// the fixed function pipeline clips everything through glClipPlane.
+	if (_Extensions.NVVertexProgram)
+		return preferARBVertexProgram();
+	if (_Extensions.EXTVertexShader && !_Extensions.ARBVertexProgram)
+		return false;
+	return true;
 #endif
 }
 

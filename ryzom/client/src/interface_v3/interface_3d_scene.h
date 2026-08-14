@@ -53,19 +53,19 @@ class CInterface3DScene : public CInterfaceGroup
 public:
 
 	CInterface3DScene(const TCtorParam &param);
-	virtual ~CInterface3DScene();
+	virtual ~CInterface3DScene() NL_OVERRIDE;
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
-	virtual void checkCoords();
+	virtual void checkCoords() NL_OVERRIDE;
 
-	virtual void updateCoords ();
+	virtual void updateCoords () NL_OVERRIDE;
 
-	virtual void draw ();
+	virtual void draw () NL_OVERRIDE;
 
-	virtual bool handleEvent (const NLGUI::CEventDescriptor &eventDesc);
+	virtual bool handleEvent (const NLGUI::CEventDescriptor &eventDesc) NL_OVERRIDE;
 
-	virtual CInterfaceElement* getElement (const std::string &id);
+	virtual CInterfaceElement* getElement (const std::string &id) NL_OVERRIDE;
 
 	NL3D::UScene *getScene() { return _Scene; }
 
@@ -149,11 +149,11 @@ class CInterface3DCharacter : public CInterfaceElement
 {
 public:
 	CInterface3DCharacter();
-	virtual ~CInterface3DCharacter();
+	virtual ~CInterface3DCharacter() NL_OVERRIDE;
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
-	virtual void checkCoords();
+	virtual void checkCoords() NL_OVERRIDE;
 
 	void setClusterSystem (NL3D::UInstanceGroup *pIG);
 
@@ -232,14 +232,14 @@ class CInterface3DShape : public CInterfaceElement
 public:
 	CInterface3DShape()
 	{
-		_Instance = NULL;
+		_Instance = nullptr;
 		_Pos = NLMISC::CVector(0,0,0);
 		_Rot = NLMISC::CVector(0,0,0);
 	}
 
-	virtual ~CInterface3DShape();
+	virtual ~CInterface3DShape() NL_OVERRIDE;
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
 	NL3D::UInstance getShape() { return _Instance; }
 
@@ -291,14 +291,14 @@ class CInterface3DIG : public CInterfaceElement
 public:
 	CInterface3DIG()
 	{
-		_IG = NULL;
+		_IG = nullptr;
 		_Pos = NLMISC::CVector(0,0,0);
 		_Rot = NLMISC::CVector(0,0,0);
 	}
 
-	virtual ~CInterface3DIG();
+	virtual ~CInterface3DIG() NL_OVERRIDE;
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
 	NL3D::UInstanceGroup *getIG() { return _IG; }
 
@@ -360,7 +360,7 @@ public:
 		_Dist = 0;
 	}
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 	float getFOV()				{ return _FOV; }
 	NLMISC::CVector getPos()	{ return _Pos; }
 	NLMISC::CVector getTarget() { return _Target; }
@@ -434,12 +434,12 @@ public:
 		_Near = 1.0f;
 		_Far = 4.0f;
 		_Color = NLMISC::CRGBA(255,255,255);
-		_Light = NULL;
+		_Light = nullptr;
 	}
 
-	virtual ~CInterface3DLight();
+	virtual ~CInterface3DLight() NL_OVERRIDE;
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
 	float getPosX() const	{ return _Pos.x; }
 	float getPosY() const	{ return _Pos.y; }
@@ -496,14 +496,14 @@ public:
 	CInterface3DFX()
 	{
 		_Pos = NLMISC::CVector(0,0,0);
-		_FX = NULL;
+		_FX = nullptr;
 	}
 
-	virtual ~CInterface3DFX();
+	virtual ~CInterface3DFX() NL_OVERRIDE;
 
-	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup);
+	virtual bool parse (xmlNodePtr cur, CInterfaceGroup *parentGroup) NL_OVERRIDE;
 
-	virtual void checkCoords();
+	virtual void checkCoords() NL_OVERRIDE;
 
 	NL3D::UParticleSystemInstance getPS() { return _FX; }
 

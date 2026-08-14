@@ -421,9 +421,14 @@ void	beginRenderCanopyPart()
 {
 	SceneRoot->beginPartRender();
 }
-void	endRenderCanopyPart()
+void	endRenderCanopyPart(bool keepTraversals)
 {
-	SceneRoot->endPartRender(false);
+	// keepTraversals matters beyond traversals: without it endPartRender
+	// consumes the scene's ellapsed time, and replicated passes (water
+	// reflections, stereo first eye) run BEFORE the frame's scene pass —
+	// time-integrated state (e.g. flare fades) would then integrate with
+	// dt = 0 for the rest of the frame.
+	SceneRoot->endPartRender(false, true, keepTraversals);
 }
 
 void	beginRenderMainScenePart()
@@ -443,12 +448,14 @@ void	beginRenderSkyPart()
 		sky.getScene()->beginPartRender();
 	}
 }
-void	endRenderSkyPart()
+void	endRenderSkyPart(bool keepTraversals)
 {
 	if (s_SkyMode == NewSky)
 	{
 		CSky &sky = ContinentMngr.cur()->CurrentSky;
-		sky.getScene()->endPartRender(false);
+		// see endRenderCanopyPart — the sun flare fade lives in the sky
+		// scene and integrates its scene's ellapsed time
+		sky.getScene()->endPartRender(false, true, keepTraversals);
 	}
 }
 
@@ -492,6 +499,14 @@ static void renderSkyPart(UScene::TRenderPart renderPart)
 	nlassert(s_SkyMode != NoSky);
 	Driver->setDepthRange(SKY_DEPTH_RANGE_START, 1.f);
 	Driver->enableFog(false);
+	// In water reflection passes the water clip plane is set up in the
+	// reflection camera's eye space; the sky renders camera-centered with
+	// its own view, where that frozen half-space slices arbitrarily
+	// through the sky dome and sun billboards (a visible seam around the
+	// sun in the reflection). The sky needs no water clipping.
+	bool noClipPlane = Scene->isRenderingWaterReflection();
+	if (noClipPlane)
+		static_cast<CDriverUser *>(Driver)->getDriver()->enableClipPlane(0, false);
 	if (s_SkyMode == NewSky)
 	{
 		CSky &sky = ContinentMngr.cur()->CurrentSky;
@@ -509,6 +524,8 @@ static void renderSkyPart(UScene::TRenderPart renderPart)
 				CloudScape->render ();
 		}
 	#endif
+	if (noClipPlane)
+		static_cast<CDriverUser *>(Driver)->getDriver()->enableClipPlane(0, true);
 }
 
 // ***************************************************************************************************************************
@@ -571,7 +588,7 @@ void clearBuffers()
 
 void renderScene(bool forceFullDetail, bool bloom)
 {
-	CTextureUser *effectRenderTarget = NULL;
+	CTextureUser *effectRenderTarget = nullptr;
 	if (bloom && Driver->supportBloomEffect())
 	{
 		// set bloom parameters before applying bloom effect
@@ -770,9 +787,9 @@ void drawRenderScene(bool wantTraversals, bool keepTraversals)
 void endRenderScene(bool keepTraversals)
 {
 	// End Part Rendering
-	endRenderSkyPart();
+	endRenderSkyPart(keepTraversals);
 	endRenderMainScenePart(keepTraversals);
-	endRenderCanopyPart();
+	endRenderCanopyPart(keepTraversals);
 
 	// reset depth range
 	Driver->setDepthRange(0.f, CANOPY_DEPTH_RANGE_START);
@@ -874,7 +891,7 @@ void	updateGameQuitting()
 			{
 				// disable
 				CWidgetManager::getInstance()->disableModalWindow();
-				CWidgetManager::getInstance()->enableModalWindow(NULL, group);
+				CWidgetManager::getInstance()->enableModalWindow(nullptr, group);
 			}
 		}
 
@@ -900,7 +917,7 @@ void	updateGameQuitting()
 			{
 				// disable
 				CWidgetManager::getInstance()->disableModalWindow();
-				CWidgetManager::getInstance()->enableModalWindow(NULL, group);
+				CWidgetManager::getInstance()->enableModalWindow(nullptr, group);
 
 				bool farTPing = FarTP.isFarTPInProgress();
 				// Far TP: skipping not allowed (because we can't duplicate the avatar...), anyway the quit button would quit the game (no far tp)
@@ -1264,7 +1281,7 @@ bool mainLoop()
 			pIMinstance->updateFrameEvents ();
 
 
-			if ((ContinentMngr.cur()) && (UserEntity != NULL))
+			if ((ContinentMngr.cur()) && (UserEntity != nullptr))
 				ContinentMngr.cur()->FoW.explore((float)UserEntity->pos().x, (float)UserEntity->pos().y);
 
 			// Check if the window size has changed.
@@ -1513,7 +1530,7 @@ bool mainLoop()
 					// Load Zone in streaming according to the refine position (not necessarily the User Position);
 					string	zoneAdded, zoneRemoved;
 					const R2::CScenarioEntryPoints::CCompleteIsland *ci = R2::CScenarioEntryPoints::getInstance().getCompleteIslandFromCoords(CVector2f((float) UserEntity->pos().x, (float) UserEntity->pos().y));
-					Landscape->refreshZonesAround(View.refinePos(), ClientCfg.Vision + ExtraZoneLoadingVision, zoneAdded, zoneRemoved, ci ? &(ci->ZoneIDs) : NULL);
+					Landscape->refreshZonesAround(View.refinePos(), ClientCfg.Vision + ExtraZoneLoadingVision, zoneAdded, zoneRemoved, ci ? &(ci->ZoneIDs) : nullptr);
 					LandscapeIGManager.loadZoneIG(zoneAdded);
 					LandscapeIGManager.unloadZoneIG(zoneRemoved);
 				}
@@ -1569,7 +1586,7 @@ bool mainLoop()
 		// Set the right camera cluster.
 		if(GR)
 		{
-			UInstanceGroup *pPlayerClusterSystem = NULL;
+			UInstanceGroup *pPlayerClusterSystem = nullptr;
 
 			// Normal Mode
 			if(UserControls.mode() != CUserControls::ThirdMode)
@@ -1587,7 +1604,7 @@ bool mainLoop()
 				MainCam.setClusterSystem(pPlayerClusterSystem);
 
 				// important to update this each frame, for shadow map consideration against the "matis serre bug"
-				CollisionManager->setPlayerInside(pPlayerClusterSystem!=NULL);
+				CollisionManager->setPlayerInside(pPlayerClusterSystem != nullptr);
 			}
 			// Camera 3rd person complex mode
 			else
@@ -1602,7 +1619,7 @@ bool mainLoop()
 				MainCam.setClusterSystem(View.getThirdPersonClusterSystem());
 
 				// important to update this each frame, for shadow map consideration against the "matis serre bug"
-				CollisionManager->setPlayerInside(pPlayerClusterSystem!=NULL);
+				CollisionManager->setPlayerInside(pPlayerClusterSystem != nullptr);
 
 				// For debug only
 				View.getCamera3rdPersonSetup(LastDebugClusterCameraThirdPersonStart,
@@ -1619,7 +1636,7 @@ bool mainLoop()
 			if (SkipFrame > 0)
 			{
 				// update only the cluster system where the player is!
-				if (pPlayerClusterSystem != NULL)
+				if (pPlayerClusterSystem != nullptr)
 				{
 					static vector<string> PortalsName;
 					PortalsName.clear();
@@ -1651,7 +1668,7 @@ bool mainLoop()
 		}
 
 		uint i = 0;
-		CTextureUser *effectRenderTarget = NULL;
+		CTextureUser *effectRenderTarget = nullptr;
 		bool haveEffects = Render && Driver->getPolygonMode() == UDriver::Filled
 			&& Driver->supportBloomEffect()
 			&& (ClientCfg.Bloom || FXAA);
@@ -1665,6 +1682,15 @@ bool mainLoop()
 			}
 		}
 		bool fullDetail = false;
+
+		// Announce the water reflection passes wanted this frame to the
+		// render loop; the display replicates the reflections stage per
+		// pass and per eye
+		if (!ClientCfg.Light && Render)
+			StereoDisplay->setSceneReflectionPasses(Scene->beginWaterReflectionPasses());
+		else
+			StereoDisplay->setSceneReflectionPasses(0);
+
 		while (StereoDisplay->nextPass())
 		{
 			++i;
@@ -1696,8 +1722,15 @@ bool mainLoop()
 			// Commit camera changes
 			commitCamera();
 
-			// Set flare context for this pass (separate context per eye for stereo)
+			// Set flare context for this pass (separate context per eye for
+			// stereo, and per water reflection pass — reflected flares keep
+			// their own occlusion state). The sun flare lives in the sky
+			// scene: it needs the context too.
 			Scene->setFlareContext(StereoDisplay->getFlareContext());
+			if (s_SkyMode == NewSky && ContinentMngr.cur())
+				ContinentMngr.cur()->CurrentSky.getScene()->setFlareContext(StereoDisplay->getFlareContext());
+			if (SceneRoot)
+				SceneRoot->setFlareContext(StereoDisplay->getFlareContext());
 
 			//////////////////////////
 			// RENDER THE FRAME  3D //
@@ -1716,17 +1749,80 @@ bool mainLoop()
 				clearBuffers();
 			}
 
-			if (StereoDisplay->wantSceneReflections())
-			{
-				// Render water planar reflections to RTT
-				// TODO: water reflection system renders here
-			}
-
-			if (StereoDisplay->wantScene())
+			if (StereoDisplay->wantSceneReflections() || StereoDisplay->wantScene())
 			{
 				if (!ClientCfg.Light && Render)
 				{
-					if (StereoDisplay->isSceneFirst())
+					// A water reflection pass is the same scene render as
+					// the scene pass, replicated with the mirrored camera,
+					// the reflection render target and the water clip plane
+					// (all set up by beginWaterReflectionPass; water, flares
+					// and vegetation exclude themselves at engine level).
+					// TODO: mirror the sky and canopy cameras for the
+					// reflection render (they follow the unmirrored eye)
+					bool reflectionPass = StereoDisplay->wantSceneReflections();
+					uint reflPass = 0;
+					UWaterReflectionInfo reflInfo;
+					CFrustum saveCanopyFrustum;
+					bool canopyFrustumChanged = false;
+
+					Scene->setWaterReflectionView(StereoDisplay->getSceneView());
+					if (reflectionPass)
+					{
+						reflPass = StereoDisplay->getSceneReflectionPass();
+						Scene->beginWaterReflectionPass(reflPass, reflInfo);
+
+						// Mirror the sky and canopy cameras like the main
+						// scene camera (commitCamera set them from the eye
+						// camera), and give them the reflection sub-frustum
+						// and active viewport so they align with the render
+						// target's active region. The next pass's camera
+						// setup and commitCamera restore all of it.
+						CMatrix reflCamMatrix = reflInfo.ReflViewMatrix;
+						reflCamMatrix.invert();
+						CViewport reflViewport;
+						reflViewport.init(reflInfo.UBias, reflInfo.VBias, reflInfo.UScale, reflInfo.VScale);
+						if (s_SkyMode == NewSky)
+						{
+							CSky &sky = ContinentMngr.cur()->CurrentSky;
+							UCamera camSky = sky.getScene()->getCam();
+							sky.getScene()->setViewport(reflViewport);
+							CFrustum skyFrust(reflInfo.FrustumLeft, reflInfo.FrustumRight,
+								reflInfo.FrustumBottom, reflInfo.FrustumTop,
+								reflInfo.FrustumNear, SkyCameraZFar, true);
+							camSky.setFrustum(skyFrust);
+							CMatrix skyCameraMatrix = reflCamMatrix;
+							skyCameraMatrix.setPos(CVector::Null);
+							camSky.setMatrix(skyCameraMatrix);
+						}
+						if (SceneRoot)
+						{
+							UCamera camRoot = SceneRoot->getCam();
+							if (!camRoot.empty())
+							{
+								SceneRoot->setViewport(reflViewport);
+								// scale the sub-frustum window to the canopy camera's near plane
+								CFrustum rootFrust = camRoot.getFrustum();
+								// the canopy frustum is NOT re-set per pass on
+								// non-HMD displays (getCurrentFrustum is a
+								// no-op there), so it must be restored
+								// explicitly after this reflection pass
+								saveCanopyFrustum = rootFrust;
+								canopyFrustumChanged = true;
+								float subScale = rootFrust.Near / reflInfo.FrustumNear;
+								rootFrust.Left = reflInfo.FrustumLeft * subScale;
+								rootFrust.Right = reflInfo.FrustumRight * subScale;
+								rootFrust.Bottom = reflInfo.FrustumBottom * subScale;
+								rootFrust.Top = reflInfo.FrustumTop * subScale;
+								camRoot.setFrustum(rootFrust);
+								camRoot.setPos(reflCamMatrix.getPos());
+								CQuat reflRotQuat;
+								reflCamMatrix.getRot(reflRotQuat);
+								camRoot.setRotQuat(reflRotQuat);
+							}
+						}
+					}
+					else if (StereoDisplay->isSceneFirst())
 					{
 						// nb : force full detail if a screenshot is asked
 						// todo : move outside render code
@@ -1741,12 +1837,28 @@ bool mainLoop()
 						}
 					}
 
-					// Render scene
-					bool wantTraversals = StereoDisplay->isSceneFirst();
-					bool keepTraversals = !StereoDisplay->isSceneLast();
+					// Render scene, with this eye's water reflections.
+					// Reflection passes are never the frame's last render:
+					// traversals (and the frame's ellapsed time) are kept.
+					// They also never generate shadow maps: generation runs
+					// mid-render with its own render targets and camera
+					// state (a hazard nested inside the reflection target),
+					// and the maps belong to the eye scene passes.
+					bool wantTraversals = !reflectionPass && StereoDisplay->isSceneFirst();
+					bool keepTraversals = reflectionPass || !StereoDisplay->isSceneLast();
 					doRenderScene(wantTraversals, keepTraversals);
 
-					if (StereoDisplay->isSceneLast())
+					if (reflectionPass)
+					{
+						Scene->endWaterReflectionPass(reflPass);
+						if (canopyFrustumChanged)
+						{
+							UCamera camRoot = SceneRoot->getCam();
+							if (!camRoot.empty())
+								camRoot.setFrustum(saveCanopyFrustum);
+						}
+					}
+					else if (StereoDisplay->isSceneLast())
 					{
 						if (fullDetail)
 						{
@@ -1954,7 +2066,7 @@ bool mainLoop()
 						{
 							std::vector<string> res;
 							explode(ClientCfg.Logos[i],std::string(":"), res);
-							if(res.size()==9 && i<LogoBitmaps.size() && LogoBitmaps[i]!=NULL)
+							if(res.size()==9 && i<LogoBitmaps.size() && LogoBitmaps[i] != nullptr)
 							{
 								fromString(res[5], x);
 								fromString(res[6], y);
@@ -2055,7 +2167,7 @@ bool mainLoop()
 							if(ContinentMngr.cur())
 								weatherValue = ::getBlendedWeather(currDay, currHour, *WeatherFunctionParams, ContinentMngr.cur()->WeatherFunction);
 							else
-								weatherValue = ::getBlendedWeather(currDay, currHour, *WeatherFunctionParams, 0);
+								weatherValue = ::getBlendedWeather(currDay, currHour, *WeatherFunctionParams, nullptr);
 
 							NLMISC::clamp(weatherValue, 0.f, 1.f);
 							CRGBA seasonToColor[EGSPD::CSeason::Invalid] =
@@ -2190,7 +2302,7 @@ bool mainLoop()
 				{
 					H_AUTO_USE ( RZ_Client_Main_Loop_Debug )
 
-					if (SoundMngr != 0)
+					if (SoundMngr != nullptr)
 					{
 						static bool drawSound = false;
 		 				static float camHeigh = 150.0f;
@@ -2214,6 +2326,9 @@ bool mainLoop()
 
 			StereoDisplay->endRenderTarget();
 		} /* stereo pass */
+
+		if (!ClientCfg.Light && Render)
+			Scene->endWaterReflectionPasses();
 
 		if (defaultRenderTarget)
 		{
@@ -2430,7 +2545,7 @@ bool mainLoop()
 			if (ClientCfg.SoundOn && ClientCfg.MediaPlayerAutoPlay)
 			{
 				MusicPlayer.stop();
-				CAHManager::getInstance()->runActionHandler("music_player", NULL, "play_songs");
+				CAHManager::getInstance()->runActionHandler("music_player", nullptr, "play_songs");
 				MusicPlayer.play();
 			}
 		}
@@ -2585,7 +2700,7 @@ bool mainLoop()
 		Actions.enable(false);
 		EditActions.enable(false);
 
-		CWidgetManager::getInstance()->setDefaultCaptureKeyboard(NULL);
+		CWidgetManager::getInstance()->setDefaultCaptureKeyboard(nullptr);
 
 		// Interface saving
 		CInterfaceManager::getInstance()->uninitInGame0();
@@ -2618,7 +2733,7 @@ bool mainLoop()
 
 	ryzom_exit = true;
 
-	return ryzom_exit || (Driver == NULL) || (!Driver->isActive ());
+	return ryzom_exit || (Driver == nullptr) || (!Driver->isActive ());
 }// mainLoop //
 
 //---------------------------------------------------
@@ -2828,7 +2943,7 @@ void updateClouds()
 	if(ContinentMngr.cur())
 		wc.WF = ContinentMngr.cur()->WeatherFunction;
 	else
-		wc.WF = NULL;
+		wc.WF = nullptr;
 
 	if (ClientCfg.ManualWeatherSetup && !ForceTrueWeatherValue)
 	{
@@ -3102,7 +3217,7 @@ void displayPACSPrimitive()
 //-----------------------------------------------
 void displaySoundBox()
 {
-	if (SoundMngr != 0)
+	if (SoundMngr != nullptr)
 	{
 		SoundMngr->drawSounds(50.f);
 	}
@@ -3338,7 +3453,7 @@ NLMISC_COMMAND(setWeatherValue, "Set weather value", "")
 
 class CHandlerDebugUIGroup : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		DebugUIGroup = !DebugUIGroup;
 	}
@@ -3347,7 +3462,7 @@ REGISTER_ACTION_HANDLER( CHandlerDebugUIGroup, "debug_ui_group");
 
 class CHandlerDebugUICtrl : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		DebugUICtrl = !DebugUICtrl;
 	}
@@ -3356,7 +3471,7 @@ REGISTER_ACTION_HANDLER( CHandlerDebugUICtrl, "debug_ui_ctrl");
 
 class CHandlerDebugUIView : public IActionHandler
 {
-	virtual void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	virtual void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		DebugUIView = !DebugUIView;
 	}
@@ -3366,7 +3481,7 @@ REGISTER_ACTION_HANDLER( CHandlerDebugUIView, "debug_ui_view");
 
 class CAHShowTimedFX : public IActionHandler
 {
-	void execute(CCtrlBase * /* pCaller */, const std::string &/* params */)
+	void execute(CCtrlBase * /* pCaller */, const std::string &/* params */) NL_OVERRIDE
 	{
 		if (ShowTimedFX)
 		{

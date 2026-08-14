@@ -102,7 +102,7 @@ static void displayVisibleSystemMsg(const std::string &msg, const string &cat = 
 
 struct CPartyChatEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -120,7 +120,7 @@ struct CPartyChatEntryHandler : public IChatWindowListener
 // handler to manage user entry in 'around me' window
 struct CAroundMeEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -138,7 +138,7 @@ struct CAroundMeEntryHandler : public IChatWindowListener
 // handler to manage user entry in 'region' window
 struct CRegionEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -156,7 +156,7 @@ struct CRegionEntryHandler : public IChatWindowListener
 // handler to manage user entry in 'universe' window
 struct CUniverseEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -174,7 +174,7 @@ struct CUniverseEntryHandler : public IChatWindowListener
 // handler to manage user entry in 'guild chat' window
 struct CGuildChatEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -191,7 +191,7 @@ struct CGuildChatEntryHandler : public IChatWindowListener
 // handler to manage user entry in 'team chat' window
 struct CTeamChatEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -208,7 +208,7 @@ struct CTeamChatEntryHandler : public IChatWindowListener
 // handler to manage user entry in a 'talk with friend' window
 struct CFriendTalkEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -225,7 +225,7 @@ struct CFriendTalkEntryHandler : public IChatWindowListener
 // handler to manage user entry in a debug console window
 struct CDebugConsoleEntryHandler : public IChatWindowListener
 {
-	virtual void msgEntered(const string &msg, CChatWindow * /* chatWindow */)
+	virtual void msgEntered(const string &msg, CChatWindow * /* chatWindow */) NL_OVERRIDE
 	{
 		NLMISC::ICommand::execute( msg, g_log );
 	}
@@ -241,7 +241,7 @@ public:
 		DbIndex= 0;
 	}
 
-	virtual void msgEntered(const string &msg, CChatWindow *chatWindow)
+	virtual void msgEntered(const string &msg, CChatWindow *chatWindow) NL_OVERRIDE
 	{
 		if (ClientCfg.Local)
 		{
@@ -287,18 +287,25 @@ void CChatStdInput::registerListeningWindow(CChatWindow *cw)
 
 
 //===========================================================================================================
-CPeopleInterraction::CPeopleInterraction() : Region(NULL),
-											 Universe(NULL),
-											 TeamChat(NULL),
-											 GuildChat(NULL),
-											 SystemInfo(NULL),
-											 TellWindow(NULL),
-											 DebugInfo(NULL),
+CPeopleInterraction::CPeopleInterraction() : Region(nullptr)
+    ,
+											 Universe(nullptr)
+    ,
+											 TeamChat(nullptr)
+    ,
+											 GuildChat(nullptr)
+    ,
+											 SystemInfo(nullptr)
+    ,
+											 TellWindow(nullptr)
+    ,
+											 DebugInfo(nullptr)
+    ,
 											 CurrPartyChatID(0)
 {
 	for(uint i=0;i<CChatGroup::MaxDynChanPerPlayer;i++)
 	{
-		DynamicChat[i]= NULL;
+		DynamicChat[i] = nullptr;
 	}
 }
 
@@ -325,19 +332,19 @@ void CPeopleInterraction::release()
 	FriendList.reset();
 	IgnoreList.reset();
 
-	Region = NULL;
-	Universe = NULL;
-	TeamChat = NULL;
-	GuildChat  = NULL;
-	SystemInfo = NULL;
-	TellWindow = NULL;
-	DebugInfo = NULL;
+	Region = nullptr;
+	Universe = nullptr;
+	TeamChat = nullptr;
+	GuildChat  = nullptr;
+	SystemInfo = nullptr;
+	TellWindow = nullptr;
+	DebugInfo = nullptr;
 //	TellWindow = NULL;
 
 	for(uint i=0;i<CChatGroup::MaxDynChanPerPlayer;i++)
 	{
 		if(DynamicChat[i])	cwm.removeChatWindow(DynamicChat[i]);
-		DynamicChat[i]= NULL;
+		DynamicChat[i] = nullptr;
 	}
 
 	removeAllPartyChat();
@@ -367,20 +374,20 @@ void CPeopleInterraction::removeAllPartyChat()
 	for(std::vector<CPartyChatInfo>::iterator it = PartyChats.begin(); it != PartyChats.end(); ++it)
 	{
 		if (it->Window) cwm.removeChatWindow(it->Window);
-		it->Window = NULL;
+		it->Window = nullptr;
 	}
 	PartyChats.clear();
 	// remove filtered chats
 	//cwm.removeChatWindow(MainChat.Window);
 	//MainChat.Window = NULL;
 	cwm.removeChatWindow(ChatGroup.Window);
-	ChatGroup.Window = NULL;
+	ChatGroup.Window = nullptr;
 	for(uint k = 0; k < MaxNumUserChats; ++k)
 	{
 		if (UserChat[k].Window)
 		{
 			cwm.removeChatWindow(UserChat[k].Window);
-			UserChat[k].Window = NULL;
+			UserChat[k].Window = nullptr;
 		}
 	}
 
@@ -520,7 +527,7 @@ void CPeopleInterraction::createTeamList()
 	peopleListDesc.AHOnDeactiveParams = "team_list_proc_deactive";
 	peopleListDesc.HeaderColor = "UI:SAVE:WIN:COLORS:MEM";
 	//
-	TeamList.create(peopleListDesc, NULL); // &chatDesc // create the team list with a chat box in it
+	TeamList.create(peopleListDesc, nullptr); // &chatDesc // create the team list with a chat box in it
 	TeamList.setMenu("ui:interface:sort_menu");
 	// Special case for team : each entry is connected to the database so we create all team member at once
 	for(uint k = 0; k < MaxNumPeopleInTeam; ++k)
@@ -595,7 +602,7 @@ void CPeopleInterraction::createSystemInfo()
 	CChatWindowDesc chatDesc;
 	chatDesc.FatherContainer = "ui:interface";
 	chatDesc.Title = "uiSystemInfoTitle";
-	chatDesc.Listener = NULL;
+	chatDesc.Listener = nullptr;
 	chatDesc.Savable = true;
 	chatDesc.Localize = true;
 	chatDesc.ChatTemplate ="system_info_id";
@@ -619,7 +626,7 @@ void CPeopleInterraction::createDebugInfo()
 		CChatWindowDesc chatDesc;
 		chatDesc.FatherContainer = "ui:interface";
 		chatDesc.Title = "uiDebugConsole";
-		chatDesc.Listener = NULL;
+		chatDesc.Listener = nullptr;
 		chatDesc.Savable = true;
 		chatDesc.Localize = true;
 		chatDesc.Listener = &DebugConsoleEntryHandler;
@@ -638,7 +645,7 @@ void CPeopleInterraction::createAroundMeWindow()
 	CChatWindowDesc chatDesc;
 	chatDesc.FatherContainer = "ui:interface";
 	chatDesc.Title = "uiAroundMeTitle";
-	chatDesc.Listener = NULL;
+	chatDesc.Listener = nullptr;
 	chatDesc.Localize = true;
 	chatDesc.Savable = true;
 	//chatDesc.ChatTemplate = "around_me_id";
@@ -791,7 +798,7 @@ void CPeopleInterraction::createTheUserChat()
 	CChatWindowDesc chatDesc;
 	chatDesc.FatherContainer = "ui:interface";
 	chatDesc.Title = "uiUserChat";
-	chatDesc.Listener = NULL;
+	chatDesc.Listener = nullptr;
 	chatDesc.Localize = true;
 	chatDesc.Savable = true;
 	chatDesc.Id = "user_chat";
@@ -812,10 +819,10 @@ void CPeopleInterraction::createTheUserChat()
 
 class CHandlerUserChatActive : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CChatWindow *pCGW = dynamic_cast<CChatWindow*>(PeopleInterraction.TheUserChat.Window);
-		if (pCGW == NULL) return;
+		if (pCGW == nullptr) return;
 		CCtrlTextButton *pUserBut = dynamic_cast<CCtrlTextButton*>(pCGW->getContainer()->getCtrl("content:target_button"));
 		CInterfaceGroup *pEditBox = dynamic_cast<CInterfaceGroup*>(pCGW->getContainer()->getGroup("content:ebw"));
 
@@ -836,7 +843,7 @@ class CHandlerUserChatActive : public IActionHandler
 		pUserBut->getParent()->updateCoords();
 		pUserBut->updateCoords();
 
-		if (pEditBox != NULL) pEditBox->setW(-pUserBut->getWReal()-4);
+		if (pEditBox != nullptr) pEditBox->setW(-pUserBut->getWReal()-4);
 	}
 };
 REGISTER_ACTION_HANDLER(CHandlerUserChatActive, "user_chat_active");
@@ -846,7 +853,7 @@ void CPeopleInterraction::createChatGroup()
 {
 	CChatWindowDesc chatDesc;
 	chatDesc.FatherContainer = "ui:interface";
-	chatDesc.Listener = NULL;
+	chatDesc.Listener = nullptr;
 	chatDesc.Title.clear();		// NB: the chatgroup is the only one that can be not named (because of uniqueness title test)
 	chatDesc.Localize = true;
 	chatDesc.Savable = true;
@@ -867,7 +874,7 @@ void CPeopleInterraction::createChatGroup()
 
 class CHandlerChatGroupFilter : public IActionHandler
 {
-	void execute (CCtrlBase *pCaller, const std::string &sParams)
+	void execute (CCtrlBase *pCaller, const std::string &sParams) NL_OVERRIDE
 	{
 		CInterfaceManager	*pIM= CInterfaceManager::getInstance();
 
@@ -919,7 +926,7 @@ class CHandlerChatGroupFilter : public IActionHandler
 		// Special case of the user defined chat
 		if (sParams == "user")
 		{
-			if (pUserBut != NULL)
+			if (pUserBut != nullptr)
 			{
 				CChatGroup::TGroupType m = PeopleInterraction.TheUserChat.Filter.getTargetGroup();
 				switch(m)
@@ -956,7 +963,7 @@ class CHandlerChatGroupFilter : public IActionHandler
 				pEmoteBut->setActive (true);
 				pEmoteBut->updateCoords ();
 
-				if (pEditBox != NULL)
+				if (pEditBox != nullptr)
 				{
 					pEditBox->setW(-pUserBut->getWReal()-pEmoteBut->getWReal()-8);
 					pEditBox->setX(pUserBut->getWReal()+4);
@@ -968,7 +975,7 @@ class CHandlerChatGroupFilter : public IActionHandler
 		}
 		else
 		{
-			if (pUserBut != NULL) pUserBut->setActive(false);
+			if (pUserBut != nullptr) pUserBut->setActive(false);
 
 			if (pEmoteBut)
 			{
@@ -976,7 +983,7 @@ class CHandlerChatGroupFilter : public IActionHandler
 				pEmoteBut->updateCoords ();
 			}
 
-			if (pEditBox != NULL)
+			if (pEditBox != nullptr)
 			{
 				if(pEmoteBut)
 					pEditBox->setW(-pEmoteBut->getWReal()-4);
@@ -984,7 +991,7 @@ class CHandlerChatGroupFilter : public IActionHandler
 					pEditBox->setW(0);
 				pEditBox->setX(0);
 			}
-			if (pTextList != NULL) pTextList->setX(0);
+			if (pTextList != nullptr) pTextList->setX(0);
 		}
 
 		// if called from a tab button => force the tab ctrl button to have standard color
@@ -1002,7 +1009,7 @@ REGISTER_ACTION_HANDLER(CHandlerChatGroupFilter, "chat_group_filter");
 //===========================================================================================================
 class CHandlerChatGroupUpdatePrompt : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// re set the target group will automatically reset the prompt and prompt color
 		CChatTargetFilter &rCTF = PeopleInterraction.ChatGroup.Filter;
@@ -1018,7 +1025,7 @@ CPeopleList *CPeopleInterraction::getPeopleListFromContainerID(const std::string
 	if (TeamList.getContainerID() == id) return &TeamList;
 	else if (FriendList.getContainerID() == id) return &FriendList;
 	else if (IgnoreList.getContainerID() == id) return &IgnoreList;
-	return NULL;
+	return nullptr;
 }
 
 
@@ -1065,12 +1072,12 @@ CPeopleList *CPeopleInterraction::getPeopleListFromCurrentMenu()
 	CInterfaceManager *im = CInterfaceManager::getInstance();
 	// the group that launched the modal window (the menu) must be the header of the group container that represent a people entry
 	CInterfaceGroup *header = dynamic_cast<CInterfaceGroup *>(CWidgetManager::getInstance()->getCtrlLaunchingModal());
-	if (!header) return NULL;
+	if (!header) return nullptr;
 	// get the parent container
 	CGroupContainer *gc = dynamic_cast<CGroupContainer *>(header->getParent());
-	if (!gc) return NULL;
+	if (!gc) return nullptr;
 	std::string::size_type pos = gc->getId().find_last_of(":");
-	if (pos == std::string::npos) return NULL;
+	if (pos == std::string::npos) return nullptr;
 	return getPeopleListFromContainerID(gc->getId().substr(pos + 1));
 }
 
@@ -1085,13 +1092,13 @@ CFilteredChat *CPeopleInterraction::getFilteredChatFromChatWindow(CChatWindow *c
 	{
 		if (UserChat[k].Window == cw) return &UserChat[k];
 	}
-	return NULL;
+	return nullptr;
 }
 
 //===========================================================================================================
 void CPeopleInterraction::askAddContact(const string &contactName, CPeopleList *pl)
 {
-	if (pl == NULL)
+	if (pl == nullptr)
 		return;
 
 	if ((pl != &IgnoreList) && (pl != &FriendList))
@@ -1144,7 +1151,7 @@ void CPeopleInterraction::askAddContact(const string &contactName, CPeopleList *
 //=================================================================================================================
 void CPeopleInterraction::askMoveContact(uint peopleIndexInSrc, CPeopleList *plSRC, CPeopleList *plDST)
 {
-	if ((plSRC == NULL) || (plDST == NULL)) return;
+	if ((plSRC == nullptr) || (plDST == nullptr)) return;
 	if ((plSRC != &IgnoreList) && (plSRC != &FriendList))
 	{
 		nlwarning("<askMoveContact> For now, only support friend list & ignore list");
@@ -1207,7 +1214,7 @@ void CPeopleInterraction::askMoveContact(uint peopleIndexInSrc, CPeopleList *plS
 //=================================================================================================================
 void CPeopleInterraction::askRemoveContact(uint peopleIndex, CPeopleList *pl)
 {
-	if (pl == NULL) return;
+	if (pl == nullptr) return;
 	if ((pl != &IgnoreList) && (pl != &FriendList))
 	{
 		nlwarning("<askRemoveContact> For now, only support friend pl & ignore pl");
@@ -1542,7 +1549,7 @@ bool CPeopleInterraction::createNewPartyChat(const string &title)
 	chatDesc.Localize = false;
 
 	// CChatWindow *newPartyChat = getChatWndMgr().createChatWindow(chatDesc);
-	CChatWindow *newPartyChat = NULL;
+	CChatWindow *newPartyChat = nullptr;
 
 	//if (newPartyChat)
 	{
@@ -1585,7 +1592,7 @@ void CPeopleInterraction::buildFilteredChatSummary(const CFilteredChat &src, CFi
 	fcs.SrcUniverse   = ChatInput.Universe.isListeningWindow(src.Window);
 
 	// fill target infos
-	if (src.Filter.getTargetPartyChat() != NULL || !src.Filter.getTargetPlayer().empty())
+	if (src.Filter.getTargetPartyChat() != nullptr || !src.Filter.getTargetPlayer().empty())
 	{
 		fcs.Target = CChatGroup::say;
 	}
@@ -1608,7 +1615,7 @@ void CPeopleInterraction::buildFilteredDynChatSummary(const CFilteredChat &src, 
 void CPeopleInterraction::saveFilteredChat(NLMISC::IStream &f, const CFilteredChat &src)
 {
 	bool present;
-	if (src.Window == NULL)
+	if (src.Window == nullptr)
 	{
 		present = false;
 		f.serial(present);
@@ -1627,7 +1634,7 @@ void CPeopleInterraction::saveFilteredChat(NLMISC::IStream &f, const CFilteredCh
 void CPeopleInterraction::saveFilteredDynChat(NLMISC::IStream &f, const CFilteredChat &src)
 {
 	bool present;
-	if (src.Window == NULL)
+	if (src.Window == nullptr)
 	{
 		present = false;
 		f.serial(present);
@@ -1842,7 +1849,7 @@ void CPeopleInterraction::removeAllUserChats()
 		{
 			getChatWndMgr().removeChatWindow(UserChat[k].Window);
 			UserChat[k].Filter.reset();
-			UserChat[k].Window = NULL;
+			UserChat[k].Window = nullptr;
 		}
 	}
 }
@@ -1861,7 +1868,7 @@ void CPeopleInterraction::createUserChat(uint index)
 	//chatDesc.FatherContainer = "ui:interface:communication";
 	chatDesc.FatherContainer = "ui:interface:contact_list";
 	chatDesc.Title = userChatStr;
-	chatDesc.Listener = NULL;
+	chatDesc.Listener = nullptr;
 	chatDesc.Localize = false;
 	chatDesc.Savable = true;
 	chatDesc.ChatTemplate = "filtered_chat_id";
@@ -1919,7 +1926,7 @@ void CPeopleInterraction::displayTellInMainChat(const string &playerName)
 // See also CAHTargetTeammateShortcut
 class CHandlerTeamTarget : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &sParams)
+	void execute (CCtrlBase * /* pCaller */, const std::string &sParams) NL_OVERRIDE
 	{
 		CInterfaceManager	*pIM= CInterfaceManager::getInstance();
 
@@ -1975,7 +1982,7 @@ REGISTER_ACTION_HANDLER( CHandlerTeamTarget, "team_target" );
 class CHandlerDismissMember : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// retrieve the index of the people
 		CPeopleList *list;
@@ -2006,7 +2013,7 @@ REGISTER_ACTION_HANDLER( CHandlerDismissMember, "dismiss_member");
 class CHandlerSetTeamLeader : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// retrieve the index of the people
 		CPeopleList *list;
@@ -2040,7 +2047,7 @@ REGISTER_ACTION_HANDLER( CHandlerSetTeamLeader, "set_team_leader");
 class CHandlerSetSuccessor : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// retrieve the index of the people
 		CPeopleList *list;
@@ -2079,7 +2086,7 @@ REGISTER_ACTION_HANDLER( CHandlerSetSuccessor, "set_successor");
 class CHandlerQuitTeam : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// Create the message for the server to execute a phrase.
 		const string msgName = "TEAM:LEAVE";
@@ -2100,7 +2107,7 @@ REGISTER_ACTION_HANDLER( CHandlerQuitTeam, "quit_team");
 class CHandlerShareSeeds : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// TODO_GAMEDEV : enable disable seeds sharing
 	}
@@ -2116,7 +2123,7 @@ REGISTER_ACTION_HANDLER( CHandlerShareSeeds, "share_seeds");
 class CHandlerRemoveContact : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// retrieve the index of the people
 		CPeopleList *list;
@@ -2135,7 +2142,7 @@ REGISTER_ACTION_HANDLER( CHandlerRemoveContact, "remove_contact");
 class CHandlerMenuTellContact : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		// retrieve the index of the people
 		CPeopleList *list;
@@ -2153,7 +2160,7 @@ REGISTER_ACTION_HANDLER( CHandlerMenuTellContact, "menu_tell_contact");
 // Invoke the 'tell' command on a contact from a left click
 class CHandlerTellContact : public IActionHandler
 {
-	void execute (CCtrlBase *pCaller, const std::string &/* sParams */)
+	void execute (CCtrlBase *pCaller, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		if (!pCaller) return;
 		CInterfaceGroup *ig = pCaller->getParent();
@@ -2178,7 +2185,7 @@ std::string LastFatherAddContactId;
 class CHandlerAddContactBegin : public IActionHandler
 {
 public:
-	void execute (CCtrlBase *pCaller, const std::string &sParams)
+	void execute (CCtrlBase *pCaller, const std::string &sParams) NL_OVERRIDE
 	{
 		/** This msg may have been triggered from valid button or from the edit box itself, so retrieve
 		  * the edit box from the enclosing group
@@ -2220,7 +2227,7 @@ REGISTER_ACTION_HANDLER( CHandlerAddContactBegin, "add_contact_begin");
 class CHandlerAddContact : public IActionHandler
 {
 public:
-	void execute (CCtrlBase *pCaller, const std::string &/* sParams */)
+	void execute (CCtrlBase *pCaller, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CInterfaceManager *pIM = CInterfaceManager::getInstance();
 
@@ -2279,7 +2286,7 @@ REGISTER_ACTION_HANDLER( CHandlerAddContact, "add_contact");
 class CHandlerMoveContact : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &sParams)
+	void execute (CCtrlBase * /* pCaller */, const std::string &sParams) NL_OVERRIDE
 	{
 		// retrieve the index of the people
 		CPeopleList *srcList;
@@ -2316,7 +2323,7 @@ REGISTER_ACTION_HANDLER( CHandlerMoveContact, "move_contact");
 class CHandlerSortContacts : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CInterfaceManager* pIM= CInterfaceManager::getInstance();
 		nlinfo("Load Order : %d", NLGUI::CDBManager::getInstance()->getDbProp("UI:SAVE:CONTACT_LIST:SORT_ORDER")->getValue32());
@@ -2343,21 +2350,21 @@ REGISTER_ACTION_HANDLER( CHandlerSortContacts, "sort_contacts");
 class CHandlerContactDirectChat : public IActionHandler
 {
 public:
-	void execute (CCtrlBase *pCaller, const std::string &/* sParams */)
+	void execute (CCtrlBase *pCaller, const std::string &/* sParams */) NL_OVERRIDE
 	{
-		if (pCaller == NULL)
+		if (pCaller == nullptr)
 			return;
 
 		CInterfaceGroup *fatherGC = pCaller->getParent();
-		if (fatherGC == NULL)
+		if (fatherGC == nullptr)
 			return;
 		fatherGC = fatherGC->getParent();
-		if (fatherGC == NULL)
+		if (fatherGC == nullptr)
 			return;
 		string str = fatherGC->getId().substr(0,fatherGC->getId().rfind('_'));
 		str = str.substr(str.rfind(':')+1, str.size());
 		CPeopleList *peopleList = PeopleInterraction.getPeopleListFromContainerID(str);
-		if (peopleList == NULL)
+		if (peopleList == nullptr)
 			return;
 
 		sint index = peopleList->getIndexFromContainerID(fatherGC->getId());
@@ -2380,7 +2387,7 @@ REGISTER_ACTION_HANDLER( CHandlerContactDirectChat, "contact_direct_chat");
 class CHandlerNewPartyChat : public IActionHandler
 {
 public:
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		nlwarning("Deactivated for now!");
 		return;
@@ -2413,7 +2420,7 @@ REGISTER_ACTION_HANDLER( CHandlerNewPartyChat, "new_party_chat");
   */
 class CHandlerValidatePartyChatName : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CInterfaceManager *im = CInterfaceManager::getInstance();
 		CGroupContainer *gc = dynamic_cast<CGroupContainer *>(CWidgetManager::getInstance()->getElementFromId(NEW_PARTY_CHAT_WINDOW));
@@ -2451,7 +2458,7 @@ REGISTER_ACTION_HANDLER(CHandlerValidatePartyChatName, "validate_party_chat_name
   */
 class CHandlerRemovePartyChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CChatWindow *chat = getChatWndMgr().getChatWindowFromCaller(CWidgetManager::getInstance()->getCtrlLaunchingModal());
 		if (chat) PeopleInterraction.removePartyChat(chat);
@@ -2464,7 +2471,7 @@ REGISTER_ACTION_HANDLER( CHandlerRemovePartyChat, "remove_party_chat");
   */
 class CHandlerPartyChatInvite : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CChatWindow *am = PeopleInterraction.AroundMe.Window;
 		if (!am) return;
@@ -2490,7 +2497,7 @@ REGISTER_ACTION_HANDLER( CHandlerPartyChatInvite, "party_chat_invite" );
   */
 class CHandlerAddAllTeamMembersToPartyChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 //		CChatWindow *chat = getChatWndMgr().getChatWindowFromCaller(CWidgetManager::getInstance()->getCtrlLaunchingModal());
 		// TODO GAMEDEV : add all team members
@@ -2503,7 +2510,7 @@ REGISTER_ACTION_HANDLER( CHandlerAddAllTeamMembersToPartyChat, "add_all_team_mem
   */
 class CHandlerRemoveAllTeamMembersToPartyChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 //		CChatWindow *chat = getChatWndMgr().getChatWindowFromCaller(CWidgetManager::getInstance()->getCtrlLaunchingModal());
 		// TODO GAMEDEV : remove all team members
@@ -2516,7 +2523,7 @@ REGISTER_ACTION_HANDLER( CHandlerRemoveAllTeamMembersToPartyChat, "remove_all_te
   */
 class CHandlerAddAllGuildMembersToPartyChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 //		CChatWindow *chat = getChatWndMgr().getChatWindowFromCaller(CWidgetManager::getInstance()->getCtrlLaunchingModal());
 		// TODO GAMEDEV : add all guild members
@@ -2529,7 +2536,7 @@ REGISTER_ACTION_HANDLER( CHandlerAddAllGuildMembersToPartyChat, "add_all_guild_m
   */
 class CHandlerRemoveAllGuildMembersToPartyChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 //		CChatWindow *chat = getChatWndMgr().getChatWindowFromCaller(CWidgetManager::getInstance()->getCtrlLaunchingModal());
 		// TODO_GAMEDEV : remove all guild members
@@ -2548,7 +2555,7 @@ REGISTER_ACTION_HANDLER( CHandlerRemoveAllGuildMembersToPartyChat, "remove_all_g
 class CHandlerSelectChatTarget : public IActionHandler
 {
 public:
-	void execute (CCtrlBase *pCaller, const std::string &sParams)
+	void execute (CCtrlBase *pCaller, const std::string &sParams) NL_OVERRIDE
 	{
 		CChatWindow	*cw = getChatWndMgr().getChatWindowFromCaller(pCaller);
 		if (!cw) return;
@@ -2666,12 +2673,12 @@ REGISTER_ACTION_HANDLER( CHandlerSelectChatTarget, "select_chat_target");
   */
 class CHandlerChatTargetSelected : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &sParams)
+	void execute (CCtrlBase * /* pCaller */, const std::string &sParams) NL_OVERRIDE
 	{
 		// for now, manage a single filtered chat window
 		CChatWindow	*cw = ChatWindowForFilter;
 		if (!cw) return;
-		ChatWindowForFilter = NULL;
+		ChatWindowForFilter = nullptr;
 		CFilteredChat *fc = PeopleInterraction.getFilteredChatFromChatWindow(cw);
 		if (!fc) return;
 		CChatTargetFilter &cf = fc->Filter;
@@ -2720,12 +2727,12 @@ class CHandlerChatTargetSelected : public IActionHandler
 		if (cw == PeopleInterraction.ChatGroup.Window)
 		{
 			PeopleInterraction.TheUserChat.Filter.setTargetGroup(cf.getTargetGroup(), cf.getTargetDynamicChannelDbIndex());
-			CAHManager::getInstance()->runActionHandler("chat_group_filter", NULL, "user");
+			CAHManager::getInstance()->runActionHandler("chat_group_filter", nullptr, "user");
 		}
 		if (cw == PeopleInterraction.TheUserChat.Window)
 		{
 			PeopleInterraction.TheUserChat.Filter.setTargetGroup(cf.getTargetGroup(), cf.getTargetDynamicChannelDbIndex());
-			CAHManager::getInstance()->runActionHandler("user_chat_active", NULL, "");
+			CAHManager::getInstance()->runActionHandler("user_chat_active", nullptr, "");
 		}
 
 		// The target should be a party chat
@@ -2755,7 +2762,7 @@ REGISTER_ACTION_HANDLER( CHandlerChatTargetSelected, "chat_target_selected");
   */
 class CHandlerLeaveTeamChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		if( PeopleInterraction.TheUserChat.Filter.getTargetGroup() == CChatGroup::team )
 		{
@@ -2788,9 +2795,9 @@ static CInterfaceGroup *createMenuCheckBox(const std::string &onclickL, const st
 
 	CInterfaceManager *im = CInterfaceManager::getInstance();
 	CInterfaceGroup *ig = CWidgetManager::getInstance()->getParser()->createGroupInstance("menu_checkbox", "", params, sizeof(params) / sizeof(params[0]));
-	if (!ig) return NULL;
+	if (!ig) return nullptr;
 	CCtrlBaseButton *cb = dynamic_cast<CCtrlBaseButton *>(ig->getCtrl("b"));
-	if (!cb) return NULL;
+	if (!cb) return nullptr;
 	cb->setPushed(checked);
 	return ig;
 }
@@ -2802,7 +2809,7 @@ static CInterfaceGroup *createMenuCheckBox(const std::string &onclickL, const st
   */
 class CHandlerSelectChatSource : public IActionHandler
 {
-	void execute (CCtrlBase *pCaller, const std::string &/* sParams */)
+	void execute (CCtrlBase *pCaller, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		static const char *FILTER_TOGGLE = "chat_source_selected";
 		CPeopleInterraction &pi = PeopleInterraction;
@@ -2813,7 +2820,7 @@ class CHandlerSelectChatSource : public IActionHandler
 
 
 		// *** get the main_chat or user_chat menu
-		CGroupMenu *menu= NULL;
+		CGroupMenu *menu = nullptr;
 		bool	addUserChatEntries= false;
 		// If the current window is the chat group
 		if (cw == pi.ChatGroup.Window)
@@ -2942,7 +2949,7 @@ class CHandlerSelectChatSource : public IActionHandler
 			std::vector<CPartyChatInfo> &pc = pi.PartyChats;
 			for(uint l = 0; l < pc.size(); ++l)
 			{
-				if (pc[l].Filter != NULL)
+				if (pc[l].Filter != nullptr)
 				{
 					menu->addLineAtIndex(insertionIndex, pc[l].Window->getTitle(), FILTER_TOGGLE, toString(pc[l].ID));
 					menu->setUserGroupLeft(insertionIndex, createMenuCheckBox(FILTER_TOGGLE, toString(pc[l].ID), pc[l].Filter->isListeningWindow(cw)));
@@ -2984,7 +2991,7 @@ REGISTER_ACTION_HANDLER(CHandlerSelectChatSource, "select_chat_source");
   */
 class CHandlerChatSourceSelected : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &sParams)
+	void execute (CCtrlBase * /* pCaller */, const std::string &sParams) NL_OVERRIDE
 	{
 		int partyChatID;
 
@@ -3066,7 +3073,7 @@ class CHandlerChatSourceSelected : public IActionHandler
 			{
 				if (partyChats[k].ID == (uint) partyChatID)
 				{
-					if (partyChats[k].Filter != NULL)
+					if (partyChats[k].Filter != nullptr)
 					{
 						if (partyChats[k].Filter->isListeningWindow(cw)) partyChats[k].Filter->removeListeningWindow(partyChats[k].Window);
 						else partyChats[k].Filter->addListeningWindow(cw);
@@ -3089,7 +3096,7 @@ REGISTER_ACTION_HANDLER( CHandlerChatSourceSelected, "chat_source_selected");
 // show / hide the edit/box of a chatbox
 class CHandlerToggleChatEBVis : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CCtrlBase *clm = CWidgetManager::getInstance()->getCtrlLaunchingModal();
 		if (!clm) return;
@@ -3119,12 +3126,12 @@ REGISTER_ACTION_HANDLER( CHandlerToggleChatEBVis, "toggle_chat_eb_vis");
 // create a new user chat
 class CHandlerNewUserChat : public IActionHandler
 {
-	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */)
+	void execute (CCtrlBase * /* pCaller */, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CPeopleInterraction &pi = PeopleInterraction;
 		for(uint k = 0; k < MaxNumUserChats; ++k)
 		{
-			if (pi.UserChat[k].Window == NULL) // not used ?
+			if (pi.UserChat[k].Window == nullptr) // not used ?
 			{
 				pi.createUserChat(k);
 				// add to std listeners
@@ -3150,7 +3157,7 @@ REGISTER_ACTION_HANDLER(CHandlerNewUserChat, "new_user_chat");
 
 class CHandlerRemoveUserChat : public IActionHandler
 {
-	void execute (CCtrlBase *pCaller, const std::string &/* sParams */)
+	void execute (CCtrlBase *pCaller, const std::string &/* sParams */) NL_OVERRIDE
 	{
 		CPeopleInterraction &pi = PeopleInterraction;
 		CChatWindow *cw = getChatWndMgr().getChatWindowFromCaller(pCaller);
@@ -3159,7 +3166,7 @@ class CHandlerRemoveUserChat : public IActionHandler
 		if (!fc) return;
 		getChatWndMgr().removeChatWindow(fc->Window);
 		fc->Filter.reset();
-		fc->Window = NULL;
+		fc->Window = nullptr;
 	}
 };
 REGISTER_ACTION_HANDLER(CHandlerRemoveUserChat, "remove_user_chat");
@@ -3307,7 +3314,7 @@ static DECLARE_INTERFACE_USER_FCT(getNumUserChatLeft)
 	uint left = 0;
 	for(uint k = 0; k < MaxNumUserChats; ++k)
 	{
-		if (pi.UserChat[k].Window == NULL) ++ left;
+		if (pi.UserChat[k].Window == nullptr) ++ left;
 	}
 	result.setInteger(left);
 	return true;

@@ -188,6 +188,7 @@ CMeshMRMSkinnedGeom::CMeshMRMSkinnedGeom()
 	_MeshDataId= 0;
 	_SupportShadowSkinGrouping= false;
 	_GPUSkinBuilt= false;
+	_RuntimeCompiled = false;
 }
 
 
@@ -682,8 +683,8 @@ void	CMeshMRMSkinnedGeom::render(IDriver *drv, CTransformShape *trans, float pol
 			}
 		}
 
-		drv->bindUniformBuffer(UBBindingVertexProgram, NULL);
-		drv->activeVertexProgram(NULL);
+		drv->bindUniformBuffer(UBBindingVertexProgram, nullptr);
+		drv->activeVertexProgram(nullptr);
 		drv->forceNormalize(bkupNorm);
 		return;
 	}
@@ -1349,13 +1350,30 @@ void	CMeshMRMSkinnedGeom::compileRunTime()
 {
 	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
 
-	// The Mesh must follow those restrictions, to support group skinning
-	nlassert (_VBufferFinal.getNumVertices() < NL3D_MESH_SKIN_MANAGER_MAXVERTICES);
+	// The mesh MUST fit in the shared skin-manager vertex buffer (a fixed-size preallocated VB
+	// this class exists specifically to feed — see NL3D_MESH_SKIN_MANAGER_MAXVERTICES in
+	// render_trav.h). CMeshMRMSkinned::isCompatible gates the INPUT vertex count, but MRM
+	// construction can add vertices at boundaries with distinct smoothing groups, materials, or
+	// bone assignments — so a 4999-vert input can grow to 5100 verts post-MRM and violate the
+	// invariant. Log a clear warning and mark the geom invalid; the export tool can query
+	// isRuntimeCompiled() and route the mesh to CMeshMRM instead (or the artist can set
+	// LOD_MRM=0 / split the geometry).
+	if (_VBufferFinal.getNumVertices() >= NL3D_MESH_SKIN_MANAGER_MAXVERTICES)
+	{
+		nlwarning("CMeshMRMSkinnedGeom: post-MRM vertex count %u exceeds "
+			"NL3D_MESH_SKIN_MANAGER_MAXVERTICES=%u (skin-grouping fixed VB size). "
+			"The mesh needs to be exported as plain CMesh (LOD_MRM=0) or split.",
+			_VBufferFinal.getNumVertices(),
+			(uint)NL3D_MESH_SKIN_MANAGER_MAXVERTICES);
+		_RuntimeCompiled = false;
+		return;
+	}
 
 	// Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
 	_SupportShadowSkinGrouping= !_ShadowSkin.Vertices.empty() &&
 		NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
 		_ShadowSkin.Vertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
+	_RuntimeCompiled = true;
 }
 
 
@@ -1679,7 +1697,7 @@ void	CMeshMRMSkinned::changeMRMDistanceSetup(float distanceFinest, float distanc
 // ***************************************************************************
 IMeshGeom	*CMeshMRMSkinned::supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const
 {
-	return NULL;
+	return nullptr;
 }
 
 // ***************************************************************************
@@ -1723,7 +1741,7 @@ void		CMeshMRMSkinnedGeom::updateRawSkinNormal(bool enabled, CMeshMRMSkinnedInst
 	else
 	{
 		// If the instance has no RawSkin, or has a too old RawSkin cache, must delete it, and recreate
-		if ((mi->_RawSkinCache == NULL) || (mi->_RawSkinCache->MeshDataId!=_MeshDataId))
+		if ((mi->_RawSkinCache == nullptr) || (mi->_RawSkinCache->MeshDataId!=_MeshDataId))
 		{
 			// first delete if too old.
 			mi->clearRawSkinCache();
@@ -2544,7 +2562,7 @@ void CMeshMRMSkinnedGeom::renderGPUSkin(CMeshMRMSkinnedInstance *mi, float alpha
 	}
 
 	// Unbind UBO
-	drv->bindUniformBuffer(UBBindingVertexProgram, NULL);
+	drv->bindUniformBuffer(UBBindingVertexProgram, nullptr);
 }
 
 // ***************************************************************************
