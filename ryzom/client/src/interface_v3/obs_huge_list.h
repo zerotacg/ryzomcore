@@ -94,7 +94,7 @@ public:
 	};
 
 	CHugeListObs(ListType category = ListTypeCount);
-	~CHugeListObs();
+	~CHugeListObs() NL_OVERRIDE;
 
 	// Init the category. This must be called (no more that once) before any other method (or the ctor must provide the category)
 	void setListType(ListType listType);
@@ -158,37 +158,63 @@ private:
 		NLMISC::CCDBNodeLeaf *FactionPointPrice;
 		NLMISC::CCDBNodeLeaf *SellerType;
 	public:
-		CItemDBLeaves() :	GuildIcon(NULL),
-							GuildName(NULL),
-							SlotType(NULL),
-							Quality(NULL),
-							SheetIDOrSkill(NULL),
-							LogicTextID(NULL),
-							DescTextID(NULL),
-							Price(NULL),
-							MissionText(NULL),
-							MissionDetailText(NULL),
-							MissionIcon(NULL),
-							MissionPreReqState(NULL),
-							Weight(NULL),
-							NameId(NULL),
-							InfoVersion(NULL),
-							UserColor(NULL),
-							CharacBuffs(NULL),
-							Enchant(NULL),
-							RMClassType(NULL),
-							RMFaberStatType(NULL),
-							Quantity(NULL),
-							PriceRetire(NULL),
-							ResaleTimeLeft(NULL),
-							VendorNameId(NULL),
-							FactionType(NULL),
-							FactionPointPrice(NULL),
-							SellerType(NULL)
+		CItemDBLeaves() :	GuildIcon(nullptr)
+		    ,
+							GuildName(nullptr)
+		    ,
+							SlotType(nullptr)
+		    ,
+							Quality(nullptr)
+		    ,
+							SheetIDOrSkill(nullptr)
+		    ,
+							LogicTextID(nullptr)
+		    ,
+							DescTextID(nullptr)
+		    ,
+							Price(nullptr)
+		    ,
+							MissionText(nullptr)
+		    ,
+							MissionDetailText(nullptr)
+		    ,
+							MissionIcon(nullptr)
+		    ,
+							MissionPreReqState(nullptr)
+		    ,
+							Weight(nullptr)
+		    ,
+							NameId(nullptr)
+		    ,
+							InfoVersion(nullptr)
+		    ,
+							UserColor(nullptr)
+		    ,
+							CharacBuffs(nullptr)
+		    ,
+							Enchant(nullptr)
+		    ,
+							RMClassType(nullptr)
+		    ,
+							RMFaberStatType(nullptr)
+		    ,
+							Quantity(nullptr)
+		    ,
+							PriceRetire(nullptr)
+		    ,
+							ResaleTimeLeft(nullptr)
+		    ,
+							VendorNameId(nullptr)
+		    ,
+							FactionType(nullptr)
+		    ,
+							FactionPointPrice(nullptr)
+		    ,
+							SellerType(nullptr)
 		{}
 	};
 	//
-	virtual void update(NLMISC::ICDBNode *node);
+	virtual void update(NLMISC::ICDBNode *node) NL_OVERRIDE;
 
 	void updateUIItemPage(uint index);
 

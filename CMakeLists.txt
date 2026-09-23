@@ -30,8 +30,10 @@ IF(HUNTER_ENABLED)
 
   INCLUDE("CMakeModules/HunterGate.cmake")
   HunterGate(
-    URL "https://github.com/cpp-pm/hunter/archive/v0.26.1.tar.gz"
-    SHA1 "e41ac7a18c49b35ebac99ff2b5244317b2638a65"
+    # v0.26.7+ carries the Visual Studio 2026 MSVC_VERSION mapping
+    # (0.26.1 dies with "Unexpected MSVC_VERSION: '1951'" on VS2026 runners)
+    URL "https://github.com/cpp-pm/hunter/archive/v0.26.10.tar.gz"
+    SHA1 "3d904b93ba684f0e671a2d44969a1a127abe3e66"
     FILEPATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules/HunterConfig.cmake"
   )
 
@@ -194,18 +196,65 @@ IF(HUNTER_ENABLED)
   SET(ZLIB_INCLUDE_DIR ZLIB_ROOT/include)
 ELSE()
 IF(EMSCRIPTEN)
-  # For Emscripten builds, zlib/libpng/libxml2 are not required for the sample demos.
-  # Create stub ZLIB::ZLIB imported target so nelmisc's TARGET_LINK_LIBRARIES doesn't
-  # error out. No actual zlib is linked; the stub is intentionally empty.
+  # For Emscripten builds, zlib and libpng come from Emscripten ports
+  # (-sUSE_ZLIB=1 / -sUSE_LIBPNG=1), same pattern as the FreeType port in
+  # nel/CMakeLists.txt. The options must be present at both compile time
+  # (port headers) and link time (port libraries); INTERFACE options on the
+  # imported targets propagate to consumers of nelmisc. libxml2 stays
+  # unavailable; XML-dependent code is compiled out.
   ADD_LIBRARY(ZLIB::ZLIB INTERFACE IMPORTED)
+  SET_TARGET_PROPERTIES(ZLIB::ZLIB PROPERTIES
+    INTERFACE_COMPILE_OPTIONS "-sUSE_ZLIB=1"
+    INTERFACE_LINK_OPTIONS "-sUSE_ZLIB=1")
   SET(ZLIB_FOUND TRUE)
   SET(ZLIB_INCLUDE_DIRS "")
   SET(ZLIB_LIBRARIES "")
-  # Do NOT create PNG::PNG - no libpng available, bitmap_png.cpp will be compiled out
-  SET(PNG_FOUND FALSE)
-  SET(LIBXML2_FOUND FALSE)
-  SET(LIBXML2_INCLUDE_DIR "")
-  SET(LIBXML2_LIBRARIES "")
+  ADD_LIBRARY(PNG::PNG INTERFACE IMPORTED)
+  SET_TARGET_PROPERTIES(PNG::PNG PROPERTIES
+    INTERFACE_COMPILE_OPTIONS "-sUSE_ZLIB=1;-sUSE_LIBPNG=1"
+    INTERFACE_LINK_OPTIONS "-sUSE_ZLIB=1;-sUSE_LIBPNG=1")
+  SET(PNG_FOUND TRUE)
+  # libxml2 becomes available when a cross-built static libxml2 is provided
+  # (e.g. -DLibXml2_DIR=<prefix>/lib/cmake/libxml2-<version>); without one,
+  # XML-dependent code is compiled out as before.
+  FIND_PACKAGE(LibXml2 QUIET CONFIG)
+  IF(TARGET LibXml2::LibXml2)
+    SET(LIBXML2_FOUND TRUE)
+  ELSE()
+    SET(LIBXML2_FOUND FALSE)
+    SET(LIBXML2_INCLUDE_DIR "")
+    SET(LIBXML2_LIBRARIES "")
+  ENDIF()
+  # OpenSSL only when provided (stub or cross-built) via OPENSSL_* variables.
+  # Same emscripten find_library-mode-ONLY caveat as CURL below: build the
+  # imported targets directly from the -D cache vars. Skipping find_package
+  # entirely — when it does run under the emscripten toolchain it can create
+  # the OpenSSL::SSL/Crypto targets with an empty or host-side INCLUDE_DIR
+  # (find_path is subject to the same ROOT_PATH restriction as find_library),
+  # and then our -D INCLUDE_DIR never reaches consumers of nelweb/nelmisc.
+  IF(OPENSSL_INCLUDE_DIR AND OPENSSL_SSL_LIBRARY AND NOT TARGET OpenSSL::SSL)
+    ADD_LIBRARY(OpenSSL::SSL STATIC IMPORTED)
+    SET_TARGET_PROPERTIES(OpenSSL::SSL PROPERTIES
+      IMPORTED_LOCATION "${OPENSSL_SSL_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+  ENDIF()
+  IF(OPENSSL_INCLUDE_DIR AND OPENSSL_CRYPTO_LIBRARY AND NOT TARGET OpenSSL::Crypto)
+    ADD_LIBRARY(OpenSSL::Crypto STATIC IMPORTED)
+    SET_TARGET_PROPERTIES(OpenSSL::Crypto PROPERTIES
+      IMPORTED_LOCATION "${OPENSSL_CRYPTO_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+  ENDIF()
+  # If someone else already published the imported target (find_package that
+  # ran earlier via a different path) but with an empty include dir, forcibly
+  # append ours so consumers still see the headers.
+  IF(TARGET OpenSSL::SSL AND OPENSSL_INCLUDE_DIR)
+    SET_PROPERTY(TARGET OpenSSL::SSL APPEND PROPERTY
+      INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+  ENDIF()
+  IF(TARGET OpenSSL::Crypto AND OPENSSL_INCLUDE_DIR)
+    SET_PROPERTY(TARGET OpenSSL::Crypto APPEND PROPERTY
+      INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+  ENDIF()
 ELSE()
   FIND_PACKAGE(ZLIB REQUIRED)
   FIND_PACKAGE(LibXml2 REQUIRED)
@@ -337,22 +386,49 @@ IF(WITH_NEL)
   IF(HUNTER_ENABLED)
     IF(WITH_GUI)
       HUNTER_ADD_PACKAGE(luabind)
-      FIND_PACKAGE(Luabind REQUIRED)
     ENDIF()
 
     HUNTER_ADD_PACKAGE(CURL)
     FIND_PACKAGE(CURL CONFIG REQUIRED)
   ELSE()
-    IF(WITH_GUI)
-      FIND_PACKAGE(Luabind REQUIRED)
-    ENDIF()
-
     IF(EMSCRIPTEN)
-      # CURL not needed for Emscripten builds
+      # CURL only when a cross-built (or stub) curl is provided via
+      # -DCURL_INCLUDE_DIR/-DCURL_LIBRARY; requests fail gracefully with a stub.
+      # find_package(CURL) can silently fail here because CMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY
+      # rejects any cache path outside the emsdk sysroot; when that happens,
+      # manually publish the imported target from the -D cache vars so
+      # nelweb/nelgui still see curl headers and stub archives.
+      FIND_PACKAGE(CURL QUIET)
+      IF(NOT TARGET CURL::libcurl AND CURL_INCLUDE_DIR AND CURL_LIBRARY)
+        ADD_LIBRARY(CURL::libcurl STATIC IMPORTED)
+        SET_TARGET_PROPERTIES(CURL::libcurl PROPERTIES
+          IMPORTED_LOCATION "${CURL_LIBRARY}"
+          INTERFACE_INCLUDE_DIRECTORIES "${CURL_INCLUDE_DIR}")
+      ENDIF()
+      # Same "empty include dir on the imported target" defense as OpenSSL below.
+      IF(TARGET CURL::libcurl AND CURL_INCLUDE_DIR)
+        SET_PROPERTY(TARGET CURL::libcurl APPEND PROPERTY
+          INTERFACE_INCLUDE_DIRECTORIES "${CURL_INCLUDE_DIR}")
+      ENDIF()
     ELSE()
-    FIND_PACKAGE(CURL REQUIRED)
+      FIND_PACKAGE(CURL REQUIRED)
     ENDIF() # !EMSCRIPTEN
   ENDIF() #hunter
+
+  IF(WITH_GUI)
+    find_package(Luabind REQUIRED)
+    find_package(Lua REQUIRED)
+
+    if(Lua_FOUND AND NOT TARGET Lua::Lua)
+      add_library(Lua::Lua INTERFACE IMPORTED)
+      set_target_properties(
+              Lua::Lua
+              PROPERTIES
+              INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+              INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}"
+      )
+    endif()
+  ENDIF()
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/nel/include)
   ADD_SUBDIRECTORY(nel)

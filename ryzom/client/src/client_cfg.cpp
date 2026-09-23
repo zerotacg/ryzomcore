@@ -404,6 +404,9 @@ CClientConfig::CClientConfig()
 	Bloom				= true;
 	SquareBloom			= true;
 	DensityBloom		= 255.f;
+	MaxWaterReflections	= 3;
+	MaxWaterReflectionTextures = 1;
+	ForceWaterReflections = false;
 
 	GlobalWindPower		= 0.10f;					// Default is 0.25
 	GlobalWindDirection	= CVector(1,0,0);			// Default direction is X>0
@@ -770,7 +773,7 @@ void CClientConfig::setValuesOnFileChange()
 //---------------------------------------------------
 void CClientConfig::setValues()
 {
-	CConfigFile::CVar *varPtr = 0;
+	CConfigFile::CVar *varPtr = nullptr;
 	static bool	firstTimeSetValues= true;
 
 	//////////////////////
@@ -1031,6 +1034,10 @@ void CClientConfig::setValues()
 	READ_BOOL_FV(Bloom)
 	READ_BOOL_FV(SquareBloom)
 	READ_FLOAT_FV(DensityBloom)
+	// Water reflections
+	READ_INT_FV(MaxWaterReflections)
+	READ_INT_FV(MaxWaterReflectionTextures)
+	READ_BOOL_DEV(ForceWaterReflections)
 
 	// FXAA
 	READ_BOOL_FV(FXAA)
@@ -2034,7 +2041,7 @@ void CClientConfig::init(const string &configFileName)
 		// create the basic .cfg
 		FILE *fp = nlfopen(configFileName, "w");
 
-		if (fp == NULL)
+		if (fp == nullptr)
 			nlerror("CFG::init: Can't create config file '%s'", configFileName.c_str());
 		else
 			nlwarning("CFG::init: creating '%s' with default values", configFileName.c_str ());
@@ -2142,7 +2149,7 @@ void CClientConfig::release ()
 		// Save values
 		try
 		{
-			CConfigFile::CVar *varPtr = NULL;
+			CConfigFile::CVar *varPtr = nullptr;
 
 			// Driver still alive ?
 			if (Driver && Driver->isActive ())

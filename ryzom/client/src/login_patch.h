@@ -140,7 +140,7 @@ public:
 	/// Singleton method : Get the unique patch manager instance
 	static CPatchManager* getInstance()
 	{
-		if (_Instance == NULL)
+		if (_Instance == nullptr)
 			_Instance = new CPatchManager();
 		return _Instance;
 	}
@@ -315,9 +315,9 @@ private:
 	CPatchThread *getPatchThread() { return PatchThread; }
 
 	// Get a file from the server and decompress it if zipped
-	void getServerFile (const std::string &name, bool bZipped = false, const std::string& destName="", NLMISC::IProgressCallback *progress = NULL);
-	void downloadFileWithCurl (const std::string &source, const std::string &dest, NLMISC::IProgressCallback *progress = NULL);
-	void downloadFile (const std::string &source, const std::string &dest, NLMISC::IProgressCallback *progress = NULL);
+	void getServerFile (const std::string &name, bool bZipped = false, const std::string& destName="", NLMISC::IProgressCallback *progress = nullptr);
+	void downloadFileWithCurl (const std::string &source, const std::string &dest, NLMISC::IProgressCallback *progress = nullptr);
+	void downloadFile (const std::string &source, const std::string &dest, NLMISC::IProgressCallback *progress = nullptr);
 	// Decompress zipped file override destination file
 	void decompressFile (const std::string &filename);
 	void applyDate (const std::string &sFilename, uint32 nDate);
@@ -354,7 +354,7 @@ private:
 		std::string patchFilename;
 		std::string srcFilename;
 
-		virtual void progress(float f);
+		virtual void progress(float f) NL_OVERRIDE;
 	};
 	friend class CPatchManager::MyPatchingCB;
 
@@ -503,7 +503,7 @@ public:
 
 private:
 
-	void run();
+	void run() NL_OVERRIDE;
 
 };
 
@@ -549,7 +549,7 @@ private:
 	friend class CPatchThreadDownloadProgress;
 private:
 
-	void run();
+	void run() NL_OVERRIDE;
 	void processFile (CPatchManager::SFileToPatch &rFTP);
 	void xDeltaPatch(const std::string &patch, const std::string &src, const std::string &out);
 
@@ -564,7 +564,7 @@ class CInstallThread : public NLMISC::IRunnable
 {
 public:
 	CInstallThread(const std::vector<CInstallThreadEntry> entries):_Entries(entries){}
-	void run();
+	void run() NL_OVERRIDE;
 	std::vector<CInstallThreadEntry> _Entries;
 };
 
@@ -572,7 +572,7 @@ class CDownloadThread : public NLMISC::IRunnable
 {
 public:
 	CDownloadThread(const std::vector<CInstallThreadEntry> entries):_Entries(entries){}
-	void run();
+	void run() NL_OVERRIDE;
 	std::vector<CInstallThreadEntry> _Entries;
 };
 
@@ -602,7 +602,7 @@ public:
 
 private:
 
-	void run();
+	void run() NL_OVERRIDE;
 
 };
 

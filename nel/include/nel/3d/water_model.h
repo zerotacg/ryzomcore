@@ -26,6 +26,7 @@
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/texture_emboss.h"
 #include "nel/3d/driver.h"
+#include "nel/3d/water_reflection_manager.h"
 
 
 namespace MISC
@@ -61,7 +62,7 @@ public:
 	CWaterModel();
 
 	// dtor
-	~CWaterModel();
+	~CWaterModel() NL_OVERRIDE;
 
 	// to call the first time after the shape & the matrix  has been set
 	void init()
@@ -74,7 +75,7 @@ public:
 	static CTransform *creator() { return new CWaterModel; }
 
 	// get default tracks
-	virtual ITrack* getDefaultTrack (uint valueId);
+	virtual ITrack* getDefaultTrack (uint valueId) NL_OVERRIDE;
 
 	/// inherited from UWaterInstance
 	virtual uint32	getWaterHeightMapID() const;
@@ -90,8 +91,8 @@ public:
 
 	/// \name CTransform traverse specialisation
 	// @{
-	virtual void	traverseRender();
-	virtual	bool	clip();
+	virtual void	traverseRender() NL_OVERRIDE;
+	virtual	bool	clip() NL_OVERRIDE;
 	// @}
 
 	// get num wanted vertices for current frame (& precache clipped triangles)
@@ -100,8 +101,13 @@ public:
 	// fill vertex buffer with this shape datas, and returns pointer to next free location
 	uint fillVB(void *dataStart, uint startTri, IDriver &drv);
 
-	// setup vertex buffer before render
-	static void setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, IDriver *drv);
+	// setup vertex buffer before render; planarUVs adds a TexCoord0 channel
+	// for realtime planar reflection UVs on the water-shader path
+	static void setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, IDriver *drv, bool baseChannelUVs);
+	/** True when this surface wants the per-vertex reflectivity base channel
+	  * in the water VB: reflection-capable shapes (fallback continuity) and
+	  * shapes flagged for calculated reflectivity over the artist envmap. */
+	bool wantsCalcReflectivityUVs() const;
 
 	// For Debug purpose
 	void	debugDumpMem(void* &clippedPolyBegin, void* &clippedPolyEnd);
@@ -130,6 +136,11 @@ private:
 	sint							 _MinYInside;
 	// water surface clipped by frustum
 	NLMISC::CPolygon		   _ClippedPoly;
+	// active realtime planar reflection for this surface's plane, or NULL
+	// (set during getNumWantedVertices() — inside the render traversal,
+	// where the traversal camera state is fresh — from the scene's water
+	// reflection manager; valid for the current render only)
+	const CWaterReflectionManager::CActiveReflection *_PlanarReflection;
 	// link into list of water model to display
 public:
 	CWaterModel **_Prev;
@@ -167,7 +178,7 @@ class CWaveMakerModel : public CTransformShape
 	static CTransform *creator() { return new CWaveMakerModel; }
 
 	// get default tracks
-	virtual ITrack* getDefaultTrack (uint valueId);
+	virtual ITrack* getDefaultTrack (uint valueId) NL_OVERRIDE;
 
 	/// \name CTransform traverse specialisation
 	// @{
@@ -175,7 +186,7 @@ class CWaveMakerModel : public CTransformShape
 	 *  - call CTransformShape::traverseAnimDetail()
 	 *  - perform perturbation
 	 */
-	virtual void	traverseAnimDetail();
+	virtual void	traverseAnimDetail() NL_OVERRIDE;
 	// @}
 
 protected:

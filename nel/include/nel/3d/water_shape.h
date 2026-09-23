@@ -69,13 +69,15 @@ public:
 		uint DiffuseMapVector0;
 		uint DiffuseMapVector1;
 	};
-	CVertexProgramWaterVPNoWave(bool diffuse);
-	virtual ~CVertexProgramWaterVPNoWave() { }
-	virtual void buildInfo();
+	CVertexProgramWaterVPNoWave(bool diffuse, bool planar = false, bool envCalc = false);
+	virtual ~CVertexProgramWaterVPNoWave() NL_OVERRIDE { }
+	virtual void buildInfo() NL_OVERRIDE;
 	inline const CIdx &idx() const { return m_Idx; }
 private:
 	CIdx m_Idx;
 	bool m_Diffuse;
+	bool m_Planar;
+	bool m_EnvCalc;
 };
 
 /**
@@ -109,31 +111,31 @@ public:
 	CWaterShape();
 
 	/// dtor
-	~CWaterShape();
+	~CWaterShape() NL_OVERRIDE;
 
 
 	/// serial this shape
-	void serial(NLMISC::IStream &f);
+	void serial(NLMISC::IStream &f) NL_OVERRIDE;
 	//@}
 
 
 	/// inherited from IShape
-	virtual	CTransformShape		*createInstance(CScene &scene);
+	virtual	CTransformShape		*createInstance(CScene &scene) NL_OVERRIDE;
 
 	/// inherited from IShape
-	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
+	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) NL_OVERRIDE;
 
 	/// inherited from IShape. Does nothing. A new traverseRender() was set for that
-	virtual void				render(IDriver * /* drv */, CTransformShape * /* trans */, bool /* opaquePass */) {}
+	virtual void				render(IDriver * /* drv */, CTransformShape * /* trans */, bool /* opaquePass */) NL_OVERRIDE {}
 
 	/// inherited from IShape
-	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const { bbox = _BBox; }
+	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const NL_OVERRIDE { bbox = _BBox; }
 
 	/// inherited from ishape
-	virtual float				getNumTriangles (float distance);
+	virtual float				getNumTriangles (float distance) NL_OVERRIDE;
 
 	/// inherited from ishape
-	virtual void				flushTextures (IDriver &driver, uint selectedTexture);
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture) NL_OVERRIDE;
 
 
 	///\name Geometry setup
@@ -230,6 +232,28 @@ public:
 	// Use envmap computed from scene instead of user envmap
 	void				setUseSceneWaterEnvMap(uint index, bool enable) { nlassert(index < 2); _UsesSceneWaterEnvMap[index] = enable; }
 	bool				getUseSceneWaterEnvMap(uint index) const { nlassert(index < 2); return _UsesSceneWaterEnvMap[index]; }
+	/** Artist flag: this surface may use a realtime planar reflection instead
+	  * of the envmap, subject to the scene's water reflection budget.
+	  * See CWaterReflectionManager. */
+	void				enableRealtimeReflection(bool enable) { _RealtimeReflection = enable; }
+	bool				isRealtimeReflectionEnabled() const { return _RealtimeReflection; }
+	/** Realtime planar reflection reflectivity base, an HL2-era stylized
+	  * fresnel evaluated per vertex:
+	  *   F = clamp(bias + scale * (1 - cosTheta)^power, 0, 1)
+	  * The water shader blends the reflection by lerp(F, 1, luminance) —
+	  * the luminance boost reproduces the original envmap alpha authoring.
+	  * scale = 0 gives a flat, view-independent reflectivity of 'bias'. */
+	void				setReflectivityFresnel(float bias, float scale, float power) { _ReflFresnelBias = bias; _ReflFresnelScale = scale; _ReflFresnelPower = power; }
+	float				getReflectivityFresnelBias() const { return _ReflFresnelBias; }
+	float				getReflectivityFresnelScale() const { return _ReflFresnelScale; }
+	float				getReflectivityFresnelPower() const { return _ReflFresnelPower; }
+	/** Use calculated reflectivity (the per-vertex fresnel base boosted by
+	  * the reflection luminance) over the artist envmap too, ignoring its
+	  * alpha channel. Reflection-capable surfaces do this automatically
+	  * while falling back from a realtime planar reflection, for visual
+	  * continuity; this flag extends it to always-envmap surfaces. */
+	void				enableEnvMapCalcReflectivity(bool enable) { _EnvMapCalcReflectivity = enable; }
+	bool				isEnvMapCalcReflectivityEnabled() const { return _EnvMapCalcReflectivity; }
 	//@}
 	// TMP : get mean color of over envmap
 	CRGBA				computeEnvMapMeanColor();
@@ -263,6 +287,11 @@ private:
 	float								_WaveHeightFactor;
 	bool								_ComputeLightmap;
 	bool								_SplashEnabled;
+	bool								_RealtimeReflection;
+	float								_ReflFresnelBias;
+	float								_ReflFresnelScale;
+	float								_ReflFresnelPower;
+	bool								_EnvMapCalcReflectivity;
 	bool								_HeightMapTouch[2];
 	float								_HeightMapNormalizationFactor[2];
 
@@ -287,6 +316,10 @@ private:
 	//
 	static NLMISC::CSmartPtr<CVertexProgramWaterVPNoWave>    _VertexProgramNoWave; // STATIC GPU RESOURCE: Blocks multiple driver instances
 	static NLMISC::CSmartPtr<CVertexProgramWaterVPNoWave>    _VertexProgramNoWaveDiffuse; // STATIC GPU RESOURCE: Blocks multiple driver instances
+	static NLMISC::CSmartPtr<CVertexProgramWaterVPNoWave>    _VertexProgramNoWavePlanar; // STATIC GPU RESOURCE: Blocks multiple driver instances
+	static NLMISC::CSmartPtr<CVertexProgramWaterVPNoWave>    _VertexProgramNoWavePlanarDiffuse; // STATIC GPU RESOURCE: Blocks multiple driver instances
+	static NLMISC::CSmartPtr<CVertexProgramWaterVPNoWave>    _VertexProgramNoWaveEnvCalc; // STATIC GPU RESOURCE: Blocks multiple driver instances
+	static NLMISC::CSmartPtr<CVertexProgramWaterVPNoWave>    _VertexProgramNoWaveEnvCalcDiffuse; // STATIC GPU RESOURCE: Blocks multiple driver instances
 
 	// Water VP UBO (bump map params, observer, etc.)
 	struct CWaterVPUBOOffsets
@@ -317,31 +350,31 @@ public:
 		CWaveMakerShape();
 
 		/// dtor
-		~CWaveMakerShape();
+		~CWaveMakerShape() NL_OVERRIDE;
 
 
 		/// serial this shape
-		void serial(NLMISC::IStream &f);
+		void serial(NLMISC::IStream &f) NL_OVERRIDE;
 	//@}
 
 
 	/// inherited from IShape
-	virtual	CTransformShape		*createInstance(CScene &scene);
+	virtual	CTransformShape		*createInstance(CScene &scene) NL_OVERRIDE;
 
 	/// inherited from IShape
-	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
+	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) NL_OVERRIDE;
 
 	/// inherited from IShape. Does nothing. A new traverseRender() was set for that
-	virtual void				render(IDriver * /* drv */, CTransformShape * /* trans */, bool /* opaquePass */) {}
+	virtual void				render(IDriver * /* drv */, CTransformShape * /* trans */, bool /* opaquePass */) NL_OVERRIDE {}
 
 	/// inherited from IShape
-	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const;
+	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const NL_OVERRIDE;
 
 	/// inherited from ishape
-	virtual float				getNumTriangles (float /* distance */) { return 0.f; }
+	virtual float				getNumTriangles (float /* distance */) NL_OVERRIDE { return 0.f; }
 
 	/// inherited from ishape
-	virtual void				flushTextures (IDriver &/* driver */, uint /* selectedTexture */) {}
+	virtual void				flushTextures (IDriver &/* driver */, uint /* selectedTexture */) NL_OVERRIDE {}
 
 
 	/// set the period for this wave maker

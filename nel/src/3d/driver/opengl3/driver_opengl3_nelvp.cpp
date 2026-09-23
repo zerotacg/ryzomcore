@@ -58,13 +58,13 @@ static const int s_OutputHWSlot[] = {
 
 // GLSL varying names for output registers (indexed by EOutputRegister enum)
 static const char *s_OutputVaryingName[] = {
-	NULL,              // OHPosition -> gl_Position (builtin, not a varying)
+	nullptr,              // OHPosition -> gl_Position (builtin, not a varying)
 	"diffuseColor",    // OPrimaryColor
 	"specularColor",   // OSecondaryColor
-	NULL,              // OBackFacePrimaryColor (unsupported)
-	NULL,              // OBackFaceSecondaryColor (unsupported)
+	nullptr,              // OBackFacePrimaryColor (unsupported)
+	nullptr,              // OBackFaceSecondaryColor (unsupported)
 	"fog",             // OFogCoord
-	NULL,              // OPointSize -> gl_PointSize (builtin)
+	nullptr,              // OPointSize -> gl_PointSize (builtin)
 	"texCoord0",       // OTex0
 	"texCoord1",       // OTex1
 	"texCoord2",       // OTex2
@@ -296,11 +296,14 @@ static void writeBroadcastAssign(std::stringstream &ss, const CVPOperand &dest,
 	ss << ";\n";
 }
 
-// Convert a nelvp program to GLSL and append as a new source entry
-bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
+// Convert a nelvp program to GLSL and append as a new source entry.
+// 'clip' emits the gl_ClipDistance epilogue (native clip variant, selected
+// per pass when clip planes are enabled; never used when the PP handles
+// clip planes via discard).
+bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked, bool clip)
 {
 	// Find the nelvp source
-	IProgram::CSource *nelvpSrc = NULL;
+	IProgram::CSource *nelvpSrc = nullptr;
 	for (int i = 0; i < program->getSourceNb(); i++)
 	{
 		IProgram::CSource *s = program->getSource(i);
@@ -386,7 +389,13 @@ bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
 	std::stringstream ss;
 
 	if (linked)
+	{
 		ss << "#version 300 es\n";
+		// Native clip distances in ES-profile source (same as the mega VP's
+		// linked hwClip variant). Desktop GL 3.3 also uses linked mode.
+		if (clip)
+			ss << "#extension GL_EXT_clip_cull_distance : enable\n";
+	}
 	else
 	{
 		ss << "#version 330\n";
@@ -398,7 +407,12 @@ bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
 		ss << "precision highp float;\n\n";
 
 	if (!linked)
-		ss << "out gl_PerVertex { vec4 gl_Position; float gl_PointSize; };\n\n";
+	{
+		if (clip)
+			ss << "out gl_PerVertex { vec4 gl_Position; float gl_PointSize; float gl_ClipDistance[6]; };\n\n";
+		else
+			ss << "out gl_PerVertex { vec4 gl_Position; float gl_PointSize; };\n\n";
+	}
 
 	// Input attributes — always use layout(location) for vertex inputs,
 	// even in linked mode. GLSL ES 3.00 supports layout(location) on
@@ -443,7 +457,7 @@ bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
 		for (int i = 0; i < CVPOperand::OutputRegisterCount; i++)
 		{
 			if (!outputUsed[i]) continue;
-			if (s_OutputVaryingName[i] == NULL) continue;
+			if (s_OutputVaryingName[i] == nullptr) continue;
 			int loc = s_OutputVaryingLocation[i];
 			if (loc < 0) continue;
 
@@ -630,7 +644,7 @@ bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
 				}
 				else
 				{
-					static const char *vecCast[] = { NULL, NULL, "vec2", "vec3", "vec4" };
+					static const char *vecCast[] = { nullptr, nullptr, "vec2", "vec3", "vec4" };
 					ss << " = " << vecCast[mc] << "(lessThan(";
 					writeSrcOperand(ss, instr.Src1, registerCount, mc);
 					ss << ", ";
@@ -654,7 +668,7 @@ bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
 				}
 				else
 				{
-					static const char *vecCast[] = { NULL, NULL, "vec2", "vec3", "vec4" };
+					static const char *vecCast[] = { nullptr, nullptr, "vec2", "vec3", "vec4" };
 					ss << " = " << vecCast[mc] << "(greaterThanEqual(";
 					writeSrcOperand(ss, instr.Src1, registerCount, mc);
 					ss << ", ";
@@ -731,6 +745,24 @@ bool CDriverGL3::convertNelvpToGLSL(CVertexProgram *program, bool linked)
 	// Must be NeL space (not GL eye space) because builtin PP fog uses ecPos.y as forward depth.
 	ss << "\n// Synthesize NeL-space position for fog\n";
 	ss << "ecPos = inverseProjectionBasis * gl_Position;\n";
+
+	// Native clip distances (clip variant only — the pass-level compiled
+	// split, mirroring the mega VP hwClip axis): eye-space planes from the
+	// camera UBO dotted with the synthesized NeL eye-space position. Fold
+	// per plane on the UBO mask like the mega VP's hwClip variant, so any
+	// enabled-plane combination is correct within the one variant. GL
+	// ignores distances whose GL_CLIP_DISTANCEi enable is off.
+	if (clip)
+	{
+		ss << "\n// Clip distances from camera UBO planes (uniform-folded)\n";
+		for (int i = 0; i < 6; ++i) // CDriverGL3::MaxClipPlanes
+		{
+			ss << "if ((nlClipPlaneMask & " << (1 << i) << ") != 0)\n";
+			ss << "  gl_ClipDistance[" << i << "] = dot(clipPlane" << i << ", ecPos);\n";
+			ss << "else\n";
+			ss << "  gl_ClipDistance[" << i << "] = 1.0;\n";
+		}
+	}
 
 	ss << "}\n";
 

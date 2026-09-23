@@ -57,11 +57,11 @@ CMeshBase::CMeshBase()
 
 	_AutoAnim = false;
 
-	_LodCharacterTexture= NULL;
+	_LodCharacterTexture = nullptr;
 
 	_CollisionMeshGeneration= AutoCameraCol;
 
-	_VisualCollisionMesh= NULL;
+	_VisualCollisionMesh = nullptr;
 
 	_DefaultOpacity= false;
 	_DefaultTransparency= false;
@@ -82,7 +82,7 @@ CMeshBase::~CMeshBase()
 	if(_VisualCollisionMesh)
 	{
 		delete _VisualCollisionMesh;
-		_VisualCollisionMesh= NULL;
+		_VisualCollisionMesh = nullptr;
 	}
 }
 
@@ -115,7 +115,7 @@ CMaterialBase	*CMeshBase::getAnimatedMaterial(uint id)
 	if(it!=_AnimatedMaterials.end())
 		return &it->second;
 	else
-		return NULL;
+		return nullptr;
 }
 
 
@@ -141,20 +141,17 @@ CMeshBase::CMeshBaseBuild::CMeshBaseBuild()
 }
 
 // ***************************************************************************
-#if 0
 void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f)
 {
-	/*
-	Version 1:
-		- Cut in version because of badly coded ITexture* serialisation. throw an exception if
-			find a version < 1.
-	Version 0:
-		- 1st version.
-	*/
-	sint	ver= f.serialVersion(1);
+	/* Versioned pre-build base-mesh state — the 1_export -> standalone-lightmapper
+	 * scene-graph contract (never serialized before that; an old #if 0 sketch of this
+	 * method existed but was never shipped). Bump the version and keep old readers
+	 * working when fields change. */
+	(void)f.serialVersion(0);
 
-	if(ver<1)
-		throw NLMISC::EStream(f, "MeshBuild in Stream is too old (MeshBaseBuild version < 1)");
+	f.serial( bCastShadows );
+	f.serial( bRcvShadows );
+	f.serial( UseLightingLocalAttenuation );
 
 	f.serial( DefaultPos );
 	f.serial( DefaultPivot );
@@ -163,8 +160,13 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f)
 	f.serial( DefaultScale );
 
 	f.serialCont( Materials );
+	f.serialCont( LightInfoMap );
+
+	f.serialCont( DefaultBSFactors );
+	f.serialCont( BSNames );
+
+	f.serialEnum( CollisionMeshGeneration );
 }
-#endif
 
 // ***************************************************************************
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f)
@@ -479,7 +481,7 @@ void	CMeshBase::resetLodCharacterTexture()
 	if(_LodCharacterTexture)
 	{
 		delete _LodCharacterTexture;
-		_LodCharacterTexture= NULL;
+		_LodCharacterTexture = nullptr;
 	}
 }
 

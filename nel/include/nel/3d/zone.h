@@ -109,7 +109,9 @@ public:
 
 	public:
 		void			serial(NLMISC::IStream &f);
-		CBindInfo() {NPatchs=0;}
+		// All fields initialized: serial() writes the whole record including unused Next/Edge
+		// slots, so uninitialized values here leak nondeterministic bytes into built .zone files.
+		CBindInfo() {NPatchs=0; ZoneId=0; Next[0]=Next[1]=Next[2]=Next[3]=0; Edge[0]=Edge[1]=Edge[2]=Edge[3]=0;}
 	};
 
 
@@ -501,6 +503,20 @@ public:
 	 * \return A patch pointer in read only.
 	 */
 	const CPatch	*getPatch(sint patch) const {nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(Patchs[patch]);}
+
+	/**
+	 * Overwrite one patch's control points from a world-space Bezier, WITHOUT rebuilding the
+	 * zone. For editors: a rebuild would drop bind state and any undo the caller is keeping,
+	 * so this packs in place and leaves re-tessellation to refreshTesselationGeometry(), which
+	 * the caller can batch across a whole edit together with the bind neighbours.
+	 *
+	 * Returns false and writes NOTHING when a control point falls outside the range the zone
+	 * was compiled for. Control points are 16-bit fixed point around PatchBias/PatchScale, and
+	 * CVector3s::pack clamps silently - a clamped control point is a vertex that stops
+	 * following the editor with no explanation. Only a rebuild recomputes the bounds, so the
+	 * caller has to be told rather than quietly given a wrong surface.
+	 */
+	bool			setPatchGeometry(sint patch, const CBezierPatch &bezier);
 
 	/**
 	 * Get a read only patch connect pointer.

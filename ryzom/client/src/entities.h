@@ -106,7 +106,7 @@ public:
 		BboxActive = bbox_active;
 		Deleted = false;
 		LastDeleted = -1;
-		Primitive = NULL;
+		Primitive = nullptr;
 		PrimSize = CVector(1.f, 1.f, 1.f);
 		PrimHeight = 1.f;
 		PrimRelativePos = CVector(0.f, 0.f, 0.f);
@@ -211,7 +211,7 @@ public:
 	/// Constructor.
 	CEntityManager();
 	/// Destructor.
-	~CEntityManager();
+	~CEntityManager() NL_OVERRIDE;
 
 	/**
 	 * Initialize some dynamic parameters.
@@ -378,7 +378,7 @@ public:
 	sint64 getLogStageChangeStartLocalTime() const;
 
 	/// Serialize entities.
-	virtual void serial(NLMISC::IStream &f);
+	virtual void serial(NLMISC::IStream &f) NL_OVERRIDE;
 
 	// remove all attached fx of all entities (so that they can be reloaded)
 	virtual void removeAllAttachedFX();
